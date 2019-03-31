@@ -38,6 +38,8 @@ public class Plugin extends JavaPlugin {
 	public EditorManager editorManager;
 	public GameManager gameManager;
 	
+	private static final String NAMESPACE_KEY_ID = "survivalgames";
+	
 	public Plugin() {
 		VersionGetter.init();
 	}
@@ -49,7 +51,7 @@ public class Plugin extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
-		getLogger().info("BackwardsNode's Survival Games Copyright (C) 2019 BossWasHere/BackwardsNode");
+		getLogger().info("BackwardsNode's Survival Games Copyright (C) 2019 BossWasHere/BackwardsNode | Version: " + getDescription().getVersion());
 		editorManager = new EditorManager(this);
 		
 		CommandMap commandMap = null;
@@ -57,13 +59,13 @@ public class Plugin extends JavaPlugin {
 			Field field = SimplePluginManager.class.getDeclaredField("commandMap");
 			field.setAccessible(true);
 			commandMap = (CommandMap)(field.get(getServer().getPluginManager()));
-			commandMap.register("survivalgames", new CheckConfig(this));
-			commandMap.register("survivalgames", new SGEdit(this));
-			commandMap.register("survivalgames", new SGStart(this));
-			commandMap.register("survivalgames", new SGStop(this));
-			commandMap.register("survivalgames", new SGDeathmatch(this));
-			commandMap.register("survivalgames", new SGDelete(this));
-			commandMap.register("survivalgames", new SGDiscard(this));
+			commandMap.register(NAMESPACE_KEY_ID, new CheckConfig(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGEdit(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGStart(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGStop(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGDeathmatch(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGDelete(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGDiscard(this));
 
 		} catch (NoSuchFieldException e) {
 			getLogger().severe("[EC] An error occured while building the new commandmap");

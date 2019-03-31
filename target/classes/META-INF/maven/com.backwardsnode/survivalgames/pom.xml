@@ -4,7 +4,7 @@
 
   <groupId>com.backwardsnode</groupId>
   <artifactId>survivalgames</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <name>Survival Games Bukkit Plugin</name>
@@ -43,7 +43,8 @@
       <version>${bukkit.targetapi}</version>
       <scope>provided</scope>
     </dependency>
-    <!-->dependency>
+    <!-- Now using Gson -->
+    <!--dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20180813</version>
@@ -60,6 +61,7 @@
     		<directory>${basedir}/</directory>
     		<includes>
     			<include>plugin.yml</include>
+    			<include>example.json</include>
     		</includes>
     	</resource>
     </resources>
