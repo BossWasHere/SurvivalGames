@@ -1,0 +1,139 @@
+{
+    "mapName": "Example Small",
+    "implements": [],
+    "spawnLocations": [
+        "0,58,12,survivalgames",
+        "-6,58,10,survivalgames",
+        "-10,58,6,survivalgames",
+        "-12,58,0,survivalgames",
+        "-10,58,-6,survivalgames",
+        "-6,58,-10,survivalgames",
+        "0,58,-12,survivalgames",
+        "6,58,-10,survivalgames",
+        "10,58,-6,survivalgames",
+        "12,58,0,survivalgames",
+        "10,58,6,survivalgames",
+        "6,58,10,survivalgames"
+    ],
+    "border": {
+        "damagePerSecond": 2,
+        "deathmatchTime": 900,
+        "borderStartRadius": 300,
+        "deathmatchLocations": [
+            {
+                "loc": "0,0,survivalgames",
+                "borderRadius": 20,
+                "shrinkTime": 120,
+                "deathmatchTime": 200
+            }
+        ]
+    },
+    "waitTime": 20,
+    "gracePeriod": 10,
+    "chestLocations":[
+        {
+            "itemSets": ["Rare"],
+            "loc": "0,57,1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "1,59,1,survivalgames"
+        },
+        {
+            "itemSets": ["Rare"],
+            "loc": "-2,59,1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "-2,56,-1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "0,58,-1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "2,57,1,survivalgames"
+        }
+    ],
+    "itemSets": [
+        {
+            "default": true,
+            "name": "common",
+            "items": [
+                {
+                    "id": "bow",
+                    "max": 1,
+                    "name": "",
+                    "lore": [
+                       "Shoots things",
+                       "Pull to shoot"
+                    ],
+                    "enchantments": []
+                },
+                {
+                    "id": "arrow",
+                    "max": 8,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": []
+                },
+                {
+                    "id": "chainmail_chestplate",
+                    "max": 1,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": [
+                        {
+                            "id": "protection",
+                            "level": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Rare",
+            "items": [
+                {
+                    "id": "bow",
+                    "max": 1,
+                    "name": "",
+                    "lore": [
+                        "Kills things",
+                        "Pull to shoot"
+                    ],
+                    "enchantments": [
+                        {
+                            "id": "punch",
+                            "level": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "arrow",
+                    "max": 20,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": []
+                },
+                {
+                    "id": "iron_chestplate",
+                    "max": 1,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": [
+                        {
+                            "id": "protection",
+                            "level": 3
+                        },
+                        {
+                            "id": "projectile_protection",
+                            "level": 3
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
