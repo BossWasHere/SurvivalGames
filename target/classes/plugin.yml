@@ -1,6 +1,6 @@
 main: com.backwardsnode.survivalgames.Plugin
 name: SurvivalGames
-version: 1.0-Release
+version: 1.0.1-Release
 description: Survival Games plugin for Bukkit
 author: IballisticBoss
 api-version: 1.13

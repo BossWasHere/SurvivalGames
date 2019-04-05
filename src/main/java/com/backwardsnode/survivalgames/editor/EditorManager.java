@@ -278,7 +278,7 @@ class EditorManagerListener implements Listener {
 					if (target.getType() == Material.CHEST) {
 						if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 							if (current.isItemChest(target.getLocation())) {
-								if (ItemUtil.matchesMeta(e.getItem(), handler.bookItem)) {
+								if (ItemUtil.matchesMetaAndType(e.getItem(), handler.bookItem)) {
 									handler.openChestItemSetInventory(e.getPlayer(), target.getLocation());
 								} else {
 									if (e.getItem() == null) {
@@ -287,7 +287,7 @@ class EditorManagerListener implements Listener {
 									}
 								}
 							} else {
-								if (ItemUtil.matchesMeta(e.getItem(), handler.bookItem)) {
+								if (ItemUtil.matchesMetaAndType(e.getItem(), handler.bookItem)) {
 									e.getPlayer().sendMessage(ChatColor.AQUA + "[!] Click chest without book first to add to list, then click with book to modify it [!]");
 								} else if (e.getItem() == null) {
 									current.addItemChest(target.getLocation());
@@ -325,9 +325,9 @@ class EditorManagerListener implements Listener {
 						return;
 					}
 				}
-				if (ItemUtil.matchesMeta(e.getItem(), handler.swordItem)) {
+				if (ItemUtil.matchesMetaAndType(e.getItem(), handler.swordItem)) {
 					handler.openItemSetInventory(e.getPlayer());
-				} else if (ItemUtil.matchesMeta(e.getItem(), handler.comparatorItem)) {
+				} else if (ItemUtil.matchesMetaAndType(e.getItem(), handler.comparatorItem)) {
 					handler.openSettingInventory(e.getPlayer());
 				}
 			}
@@ -344,7 +344,7 @@ class EditorManagerListener implements Listener {
 			String title = i == null ? "" : i.getTitle();
 			if (i != null && c != null) {
 				if (title.equals(EditorManager.ITEM_SET_INV_TITLE)) {
-					if (ItemUtil.matchesMeta(c, handler.addItemSetItem)) {
+					if (ItemUtil.matchesMetaAndType(c, handler.addItemSetItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the name for the new item set:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.NEW_ITEMSET_NAME);
@@ -410,7 +410,7 @@ class EditorManagerListener implements Listener {
 					}
 					e.setCancelled(true);
 				} else if (title.equals(EditorManager.OPTION_SET_TITLE)) {
-					if (ItemUtil.matchesMeta(c, handler.mapNameItem)) {
+					if (ItemUtil.matchesMetaAndType(c, handler.mapNameItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the name for the map:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.MAP_NAME);
@@ -422,9 +422,9 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
-					} else if (ItemUtil.matchesMeta(c, handler.implementItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.implementItem)) {
 						//TODO
-					} else if (ItemUtil.matchesMeta(c, handler.borderDpsItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.borderDpsItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the border damage per second:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.BORDER_DPS);
@@ -436,10 +436,10 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
-					} else if (ItemUtil.matchesMeta(c, handler.deathmatchConfigItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.deathmatchConfigItem)) {
 						e.getWhoClicked().closeInventory();
 						handler.openDeathmatchInventory((Player)e.getWhoClicked());
-					} else if (ItemUtil.matchesMeta(c, handler.toDeathmatchItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.toDeathmatchItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the amount of time (seconds) before deathmatch begins:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.TIME_TO_DM);
@@ -451,7 +451,7 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
-					} else if (ItemUtil.matchesMeta(c, handler.borderStartItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.borderStartItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the border start radius:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.BORDER_START_RADIUS);
@@ -463,7 +463,7 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
-					} else if (ItemUtil.matchesMeta(c, handler.waitPeriodItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.waitPeriodItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the amount of time (seconds) before game starts on command:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.WAIT_PERIOD);
@@ -475,7 +475,7 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
-					} else if (ItemUtil.matchesMeta(c, handler.gracePeriodItem)) {
+					} else if (ItemUtil.matchesMetaAndType(c, handler.gracePeriodItem)) {
 						e.getWhoClicked().closeInventory();
 						e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Please enter the amount of time (seconds) before PvP is enabled:");
 						ChatQueryObject cqo = new ChatQueryObject(current, QueryUpdater.GRACE_PERIOD);

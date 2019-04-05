@@ -26,8 +26,13 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
 public class ItemModel {
 
@@ -39,11 +44,36 @@ public class ItemModel {
 	
 	public ItemStack getEquivalent() {
 		try {
-			ItemStack item = new ItemStack(Material.matchMaterial(id), max);
-			ItemMeta meta = item.getItemMeta();
+			int ind = id.indexOf('#');
+			ItemStack item = null;
+			ItemMeta meta;
+			if (ind > 0) {
+				String matId = id.substring(0, ind);
+				String special = id.substring(ind + 1, id.length());
+				
+				item = new ItemStack(Material.matchMaterial(matId), max);
+				meta = item.getItemMeta();
+				if (meta instanceof PotionMeta) {
+					PotionMeta potMeta = (PotionMeta) meta;
+					PotionData eff = translatePotionData(special);
+					if (eff == null) {
+						Bukkit.getLogger().warning("[SG ItemModel] An unknown potion data tag has been provided. Check the config! [Provided: #" + special + "]");
+					} else {
+						potMeta.setBasePotionData(eff);
+					}
+				} else if (meta instanceof EnchantmentStorageMeta) {
+					EnchantmentStorageMeta encMeta = (EnchantmentStorageMeta) meta;
+					if (!addStoredEnchant(encMeta, special)) {
+						Bukkit.getLogger().warning("[SG ItemModel] An unknown enchant store data tag has been provided. Check the config! [Provided: #" + special + "]");
+					}
+				}
+			} else {
+				item = new ItemStack(Material.matchMaterial(id), max);
+				meta = item.getItemMeta();
+			}
 			if (name != null) {
 				meta.setDisplayName(name);
-			}
+			}	
 			if (lore != null) {
 				meta.setLore(lore);
 			}
@@ -65,7 +95,13 @@ public class ItemModel {
 	public static ItemModel fromItemStack(ItemStack item) {
 		checkNotNull(item);
 		ItemModel m = new ItemModel();
-		m.id = item.getType().name().toLowerCase();
+		if (item.getItemMeta() instanceof PotionMeta) {
+			m.id = item.getType().name().toLowerCase() + "#" + fromPotionData((PotionMeta)item.getItemMeta());
+		} else if (item.getItemMeta() instanceof EnchantmentStorageMeta) {
+			m.id = item.getType().name().toLowerCase() + "#" + fromEnchantmentData((EnchantmentStorageMeta)item.getItemMeta());
+		} else {
+			m.id = item.getType().name().toLowerCase();
+		}
 		m.max = item.getAmount();
 		if (item.hasItemMeta()) {
 			if (item.getItemMeta().hasDisplayName()) {
@@ -86,5 +122,46 @@ public class ItemModel {
 			}
 		}
 		return m;
+	}
+	
+	private static PotionData translatePotionData(String data) {
+		if (!data.contains(".")) {
+			return null;
+		}
+		String[] parts = data.split("\\.");
+		String name = parts[0].toUpperCase();
+		boolean extended = parts.length > 1 ? parts[1] == "1" : false;
+		boolean upgraded = parts.length > 2 ? parts[2] == "1" : false;
+		try {
+			return new PotionData(PotionType.valueOf(name), extended, upgraded);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private static String fromPotionData(PotionMeta potion) {
+		checkNotNull(potion);
+		PotionData pd = potion.getBasePotionData();
+		return pd.getType().name() + "." + (pd.isExtended() ? 1 : 0) + "." + (pd.isUpgraded() ? 1 : 0);
+		//return eff.getType().getName() + "." + eff.getDuration() + "." + eff.getAmplifier();
+	}
+	
+	private static boolean addStoredEnchant(EnchantmentStorageMeta meta, String data) {
+		if (!data.contains(".")) {
+			return false;
+		}
+		String[] parts = data.split("\\.");
+		String name = parts[0].toLowerCase();
+		int level = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+		Enchantment enc = new EnchantmentWrapper(name);
+		return meta.addStoredEnchant(enc, level, true);
+	}
+	
+	private static String fromEnchantmentData(EnchantmentStorageMeta enc) {
+		checkNotNull(enc);
+		for (Enchantment e : enc.getStoredEnchants().keySet()) {
+			return e.getKey().getKey() + "." + enc.getStoredEnchantLevel(e);
+		}
+		return "";
 	}
 }

@@ -17,6 +17,8 @@
  */
 package com.backwardsnode.survivalgames.json;
 
+import static com.google.common.base.Preconditions.*;
+
 public class TextEvent {
 
 	public String action;
@@ -41,5 +43,37 @@ public class TextEvent {
 		te.action = "show_text";
 		te.value = msg;
 		return te;
+	}
+	
+	public boolean isClickEvent() {
+		return isClickEvent(this);
+	}
+	
+	public boolean isHoverEvent() {
+		return isHoverEvent(this);
+	}
+	
+	public static final boolean isClickEvent(TextEvent e) {
+		checkNotNull(e);
+		switch (e.action.toLowerCase()) {
+		case "run_command":
+		case "suggest_command":
+		case "open_url":
+		case "change_page":
+			return true;
+		}
+		return false;
+	}
+	
+	public static final boolean isHoverEvent(TextEvent e) {
+		checkNotNull(e);
+		switch (e.action.toLowerCase()) {
+		case "show_text":
+		case "show_item":
+		case "show_entity":
+		case "show_achievement":
+			return true;
+		}
+		return false;
 	}
 }

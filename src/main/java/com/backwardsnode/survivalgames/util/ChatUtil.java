@@ -17,7 +17,8 @@
  */
 package com.backwardsnode.survivalgames.util;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +28,7 @@ import org.bukkit.entity.Player;
 
 import com.backwardsnode.survivalgames.VersionGetter;
 import com.backwardsnode.survivalgames.json.JsonMessage;
+import com.backwardsnode.survivalgames.json.JsonMessage.CompoundJsonMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -83,8 +85,23 @@ public class ChatUtil {
 
 	public static boolean sendRawMessage(Player p, JsonMessage message) {
 		checkNotNull(message);
+		return sendRawMessage(p, buildRawMessage(message));
+	}
+	
+	public static boolean sendRawMessage(Player p, CompoundJsonMessage compoundMessage) {
+		checkNotNull(compoundMessage);
+		String construct = "[\"\"";
+		for (JsonMessage msg : compoundMessage.messages) {
+			construct += "," + buildRawMessage(msg);
+		}
+		construct += "]";
+		//Bukkit.getLogger().info(construct);
+		return sendRawMessage(p, construct);
+	}
+	
+	protected static String buildRawMessage(JsonMessage message) {
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.create();
-		return sendRawMessage(p, gson.toJson(message));
+		return gson.toJson(message);
 	}
 }

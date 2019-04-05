@@ -38,11 +38,14 @@ public class ItemUtil {
 		return item;
 	}
 	
-	public static boolean matchesMeta(ItemStack item, ItemStack reference) {
+	public static boolean matchesMetaAndType(ItemStack item, ItemStack reference) {
 		if (item == null) {
 			return false;
 		}
 		checkNotNull(reference);
+		if (item.getType() != reference.getType()) {
+			return false;
+		}
 		if (!item.hasItemMeta() || !reference.hasItemMeta()) {
 			return false;
 		}

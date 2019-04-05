@@ -80,11 +80,14 @@ public class GameConfiguration {
 	}
 	
 	public static GameConfiguration loadGameConfigurationOrCreateEmpty(File configDirectory, File configFile) {
+		GameConfiguration configToReturn = null;
 		try {
-			return loadGameConfiguration(configDirectory, configFile);
-		} catch (Exception e) {
+			configToReturn = loadGameConfiguration(configDirectory, configFile);
+		} catch (Exception e) {}
+		if (configToReturn == null) {
 			return createEmptyConfiguration(configDirectory, configFile);
 		}
+		return configToReturn;
 	}
 	
 	public static GameConfiguration loadGameConfiguration(File configDirectory, File configFile) throws FileNotFoundException, JsonIOException, JsonSyntaxException {

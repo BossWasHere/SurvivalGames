@@ -4,7 +4,7 @@
 
   <groupId>com.backwardsnode</groupId>
   <artifactId>survivalgames</artifactId>
-  <version>1.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
 
   <name>Survival Games Bukkit Plugin</name>

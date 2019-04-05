@@ -28,6 +28,7 @@ import com.backwardsnode.survivalgames.command.SGDeathmatch;
 import com.backwardsnode.survivalgames.command.SGDelete;
 import com.backwardsnode.survivalgames.command.SGDiscard;
 import com.backwardsnode.survivalgames.command.SGEdit;
+import com.backwardsnode.survivalgames.command.SGList;
 import com.backwardsnode.survivalgames.command.SGStart;
 import com.backwardsnode.survivalgames.command.SGStop;
 import com.backwardsnode.survivalgames.editor.EditorManager;
@@ -66,6 +67,7 @@ public class Plugin extends JavaPlugin {
 			commandMap.register(NAMESPACE_KEY_ID, new SGDeathmatch(this));
 			commandMap.register(NAMESPACE_KEY_ID, new SGDelete(this));
 			commandMap.register(NAMESPACE_KEY_ID, new SGDiscard(this));
+			commandMap.register(NAMESPACE_KEY_ID, new SGList(this));
 
 		} catch (NoSuchFieldException e) {
 			getLogger().severe("[EC] An error occured while building the new commandmap");
