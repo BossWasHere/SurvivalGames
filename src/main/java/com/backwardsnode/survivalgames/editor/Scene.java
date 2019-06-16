@@ -105,6 +105,10 @@ public class Scene {
 	public void setBorderStartRadius(int radius) {
 		gameConfig.border.borderStartRadius = radius;
 	}
+	
+	public void setPreFillChest(boolean prefill) {
+		gameConfig.preFillChests = prefill;
+	}
 
 	public String getMapName() {
 		return gameConfig.mapName;
@@ -132,6 +136,10 @@ public class Scene {
 	
 	public List<ItemSet> getItemSets() {
 		return gameConfig.itemSets;
+	}
+	
+	public boolean getPreFillChests() {
+		return gameConfig.preFillChests;
 	}
 	
 	public boolean isItemChest(Location l) {

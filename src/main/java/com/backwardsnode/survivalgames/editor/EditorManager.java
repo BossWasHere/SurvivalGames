@@ -61,7 +61,7 @@ public class EditorManager {
 	
 	final ItemStack chestItem,plateItem,swordItem,comparatorItem,bookItem;
 	final ItemStack addItemSetItem;
-	final ItemStack mapNameItem,implementItem,borderDpsItem,deathmatchConfigItem,toDeathmatchItem,borderStartItem,waitPeriodItem,gracePeriodItem;
+	final ItemStack mapNameItem,implementItem,borderDpsItem,deathmatchConfigItem,toDeathmatchItem,borderStartItem,waitPeriodItem,gracePeriodItem,preFillItem;
 
 	Map<String, Scene> editorsActive;
 	Map<String, InventoryMemory> editorMemory;
@@ -88,6 +88,7 @@ public class EditorManager {
 		borderStartItem = ItemUtil.addNameAndLore(new ItemStack(Material.MAP), ChatColor.GREEN + "Change border start radius", "Set the radius of the", "border before game starts", "(should be small enough that", "border doesn't shrink 100m in 1s)");
 		waitPeriodItem = ItemUtil.addNameAndLore(new ItemStack(Material.CLOCK), ChatColor.GREEN + "Change the wait period", "Set the amount of time", "before looting begins");
 		gracePeriodItem = ItemUtil.addNameAndLore(new ItemStack(Material.POPPY), ChatColor.GREEN + "Change PvP Off-time", "Set the 'grace period'", "before PvP is enabled");
+		preFillItem = ItemUtil.addNameAndLore(new ItemStack(Material.CHEST_MINECART), ChatColor.GREEN + "Toggle chest fill at start", "Toggle filling at start", "to on-demand (useful for", "large maps)");
 		
 	}
 
@@ -231,7 +232,7 @@ public class EditorManager {
 	
 	public boolean openSettingInventory(Player player) {
 		Inventory i = Bukkit.createInventory(null, 18, OPTION_SET_TITLE);
-		i.addItem(mapNameItem, implementItem, borderDpsItem, deathmatchConfigItem, toDeathmatchItem, borderStartItem, waitPeriodItem, gracePeriodItem);
+		i.addItem(mapNameItem, implementItem, borderDpsItem, deathmatchConfigItem, toDeathmatchItem, borderStartItem, waitPeriodItem, gracePeriodItem, preFillItem);
 		player.openInventory(i);
 		return true;
 	}
@@ -334,14 +335,13 @@ class EditorManagerListener implements Listener {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority=EventPriority.LOW)
 	public void onPlayerInventoryEvent(InventoryClickEvent e) {
 		Scene current = handler.editorsActive.get(e.getWhoClicked().getName());
 		if (current != null) {
 			Inventory i = e.getClickedInventory();
 			ItemStack c = e.getCurrentItem();
-			String title = i == null ? "" : i.getTitle();
+			String title = i == null ? "" : e.getView().getTitle();
 			if (i != null && c != null) {
 				if (title.equals(EditorManager.ITEM_SET_INV_TITLE)) {
 					if (ItemUtil.matchesMetaAndType(c, handler.addItemSetItem)) {
@@ -487,21 +487,28 @@ class EditorManagerListener implements Listener {
 							}
 						});
 						chatQueries.put(e.getWhoClicked().getName(), cqo);
+					} else if (ItemUtil.matchesMetaAndType(c, handler.preFillItem)) {
+						e.getWhoClicked().closeInventory();
+						current.setPreFillChest(!current.getPreFillChests());
+						if (current.getPreFillChests()) {
+							e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Chests will now be filled at the start of each game");
+						} else {
+							e.getWhoClicked().sendMessage(ChatColor.AQUA + "[SGEdit] Chests will now be filled when a player opens one");
+						}
 					}
 				}
 			}
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority=EventPriority.LOW)
 	public void onPlayerInventoryCloseEvent(InventoryCloseEvent e) {
 		Scene current = handler.editorsActive.get(e.getPlayer().getName());
 		if (current != null) {
 			Inventory i = e.getInventory();
 			if (i != null) {
-				if (i.getTitle().startsWith(EditorManager.ITEM_SET_CUST_TITLE)) {
-					String set = i.getTitle().substring(EditorManager.ITEM_SET_CUST_TITLE.length(), i.getTitle().length());
+				if (e.getView().getTitle().startsWith(EditorManager.ITEM_SET_CUST_TITLE)) {
+					String set = e.getView().getTitle().substring(EditorManager.ITEM_SET_CUST_TITLE.length(), e.getView().getTitle().length());
 					if (current.replaceItemSet(i.getContents(), set)) {
 						e.getPlayer().sendMessage(ChatColor.AQUA + "[!] Updated items for set " + set + " [!]");
 					} else {

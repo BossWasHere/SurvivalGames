@@ -68,14 +68,15 @@ public class CheckConfig extends Command {
 						if (sender instanceof Player) {
 							JsonMessage jm = new JsonMessage();
 							jm.color = "red";
-							jm.text = "2. Warning: Missing chests detected (Hover Over)";
+							jm.text = "2. Warning: Missing chests detected [" + invalidLocations.size() + "/" + c.chestLocations.size() + "] (Hover Over)";
 							jm.hoverEvent = TextEvent.showText(locs);
 							ChatUtil.sendRawMessage((Player)sender, jm);
 						} else {
-							sender.sendMessage(ChatColor.RED + "2. Warning: Missing chests detected\n" + locs);
+							sender.sendMessage(ChatColor.RED + "2. Warning: Missing chests detected [" + invalidLocations.size() + "/" + c.chestLocations.size() + "]\n" + locs);
 						}
 					} else {
-						sender.sendMessage(ChatColor.GREEN + "2. Chests located successfully!");
+						int count = c.chestLocations.size();
+						sender.sendMessage(ChatColor.GREEN + "2. Chests located successfully! [" + count + "/" + count + "]");
 					}
 				} catch (FileNotFoundException e) {
 					sender.sendMessage(ChatColor.RED + "1. Error: No file with name " + args[0]);

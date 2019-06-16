@@ -31,6 +31,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -43,6 +45,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
@@ -54,11 +57,12 @@ import com.backwardsnode.survivalgames.exception.GameRunningException;
 import com.backwardsnode.survivalgames.game.GameManager.PlayerState;
 import com.backwardsnode.survivalgames.game.ScoreboardController.ScoreboardElement;
 import com.backwardsnode.survivalgames.util.WorldUtil;
+import com.google.common.base.Preconditions;
 
 public class GameManager {
 
 	private final Plugin plugin;
-	private final GameConfiguration config;
+	protected final GameConfiguration config;
 	private ScoreboardController scoreboard;
 	private BossBarController bossbar;
 	Map<String, PlayerState> players;
@@ -71,8 +75,9 @@ public class GameManager {
 	
 	private static GameManagerListener listener;
 	
-	public boolean isActive, noMovement, pvpEnabled;
+	public boolean isActive, noMovement, pvpEnabled, preFillChests;
 	public final String mapName;
+	protected List<String> openedChests;
 	
 	private GameManager(Plugin plugin, GameConfiguration config) {
 		this.plugin = plugin;
@@ -81,6 +86,7 @@ public class GameManager {
 		this.config = config;
 		plugin.gameManager = this;
 		this.mapName = config.mapName;
+		this.openedChests = new ArrayList<String>();
 		border = config.spawnLocs.get(0).getWorld().getWorldBorder();
 		pre_borderRadius = border.getSize();
 		pre_borderCentre = border.getCenter();
@@ -124,16 +130,16 @@ public class GameManager {
 		for (int i = 0; i < players.size(); i++) {
 			if (i < config.spawnLocs.size()) {
 				this.players.put(players.get(i).getName(), new PlayerState(players.get(i).getName()));
+				players.get(i).getInventory().clear();
 			} else {
 				Player spec = players.get(i);
 				spec.sendMessage(ChatColor.GREEN + "You will be a spectator for this round");
 				spec.setGameMode(GameMode.SPECTATOR);
 				spec.teleport(config.spawnLocs.get(0));
-				
 			}
 		}
 		setupScoreboard();
-		fillChests(instigator);
+		fillChests(instigator, config.preFillChests);
 		teleportPlayers();
 		bossbar = BossBarController.initBossBar("Game Starting...", BarColor.BLUE, config.waitTime);
 		bossbar.addPlayers(Bukkit.getOnlinePlayers());
@@ -157,6 +163,7 @@ public class GameManager {
 		if (config.gracePeriod < 1) {
 			countdownDeathmatch();
 		} else {
+			playGlobalPingSound();
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "PvP Off");
 			announce(ChatColor.DARK_AQUA + "[!] PvP is disabled for " + config.gracePeriod + " seconds!");
 			bossbar.resetHealth(config.gracePeriod);
@@ -176,6 +183,7 @@ public class GameManager {
 	}
 	
 	protected void countdownDeathmatch() {
+		playGlobalPingSound();
 		announce(ChatColor.DARK_AQUA + "[!] PvP enabled!");
 		pvpEnabled = true;
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Active");
@@ -196,6 +204,7 @@ public class GameManager {
 	
 	protected void shrinkPlayArea() {
 		if (deathmatchSettings != null) {
+			playGlobalPingSound();
 			announce(ChatColor.DARK_AQUA + "[!] The border is now shrinking!");
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Border Shrinking");
 			border.setCenter(WorldUtil.locationFromString(deathmatchSettings.loc, true));
@@ -228,6 +237,7 @@ public class GameManager {
 	}
 	
 	protected void startDeathmatch() {
+		playGlobalPingSound();
 		announce(ChatColor.DARK_AQUA + "[!] Deathmatch has started!");
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Deathmatch");
 		bossbar.resetHealth(deathmatchSettings.deathmatchTime);
@@ -246,6 +256,7 @@ public class GameManager {
 	}
 	
 	protected void closeBorder() {
+		playGlobalPingSound();
 		announce(ChatColor.DARK_AQUA + "[!] The border is now shrinking!");
 		border.setSize(1, 60);
 		scoreboard.setTimer(plugin, 60,  new Runnable() {
@@ -259,40 +270,43 @@ public class GameManager {
 		}, null);
 	}
 	
-	private void fillChests(Player instigator) {
-		for (ChestObject co : config.chestLocations) {
-			Block b = co.location.getBlock();
-			if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest)) {
-				instigator.sendMessage(ChatColor.RED + "[!] Ignoring missing chest @ " + co.loc);
-				continue;
-			}
-			Chest chest = (Chest) b.getState();
-			List<ItemSet> selector = new ArrayList<ItemSet>();
-			for (ItemSet set : config.itemSets) {
-				if (co.itemSets.contains(set.name)) {
-					selector.add(set);
-				}
-			}
-			List<ItemModel> shuffler = new ArrayList<ItemModel>();
-			for (ItemSet select : selector) {
-				select.items.forEach(item -> shuffler.add(item));
-			}
-			Collections.shuffle(shuffler);
-			Random r = new Random();
-			int m = r.nextInt(4) + 2;
-			int[] slots = getRandomSlots(m, 27);
-			chest.setCustomName("Loot Chest");
-			chest.update(true);
-			Inventory blockInv = chest.getBlockInventory();
-			blockInv.clear();
-			for (int i = 0; i < shuffler.size() && i < m; i++) {
-				ItemStack item = shuffler.get(i).getEquivalent();
-				if (item == null) {
-					Bukkit.getLogger().warning("Unknown item [" + shuffler.get(i).id + "], you should check the config file");
+	private void fillChests(Player instigator, boolean prefill) {
+		if (prefill) {
+			preFillChests = true;
+			for (ChestObject co : config.chestLocations) {
+				Block b = co.location.getBlock();
+				if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest)) {
+					instigator.sendMessage(ChatColor.RED + "[!] Ignoring missing chest @ " + co.loc);
 					continue;
 				}
-				item.setAmount(r.nextInt(shuffler.get(i).max) + 1);
-				blockInv.setItem(slots[i], item);
+				Chest chest = (Chest) b.getState();
+				List<ItemSet> selector = new ArrayList<ItemSet>();
+				for (ItemSet set : config.itemSets) {
+					if (co.itemSets.contains(set.name)) {
+						selector.add(set);
+					}
+				}
+				List<ItemModel> shuffler = new ArrayList<ItemModel>();
+				for (ItemSet select : selector) {
+					select.items.forEach(item -> shuffler.add(item));
+				}
+				Collections.shuffle(shuffler);
+				Random r = new Random();
+				int m = r.nextInt(4) + 2;
+				int[] slots = getRandomSlots(m, 27);
+				chest.setCustomName("Loot Chest");
+				chest.update(true);
+				Inventory blockInv = chest.getBlockInventory();
+				blockInv.clear();
+				for (int i = 0; i < shuffler.size() && i < m; i++) {
+					ItemStack item = shuffler.get(i).getEquivalent();
+					if (item == null) {
+						Bukkit.getLogger().warning("Unknown item [" + shuffler.get(i).id + "], you should check the config file");
+						continue;
+					}
+					item.setAmount(r.nextInt(shuffler.get(i).max) + 1);
+					blockInv.setItem(slots[i], item);
+				}
 			}
 		}
 	}
@@ -304,7 +318,7 @@ public class GameManager {
 	 * @return an array of values
 	 * @throws IllegalArgumentException if max < count
 	 */
-	private int[] getRandomSlots(int count, int max) throws IllegalArgumentException {
+	static int[] getRandomSlots(int count, int max) throws IllegalArgumentException {
 		if (max < count) {
 			throw new IllegalArgumentException("Cannot create enough unique values");
 		}
@@ -320,7 +334,7 @@ public class GameManager {
 		return a;
 	}
 	
-	private boolean arrayContains(int[] arr, int check) {
+	private static boolean arrayContains(int[] arr, int check) {
 		return Arrays.stream(arr).anyMatch(a -> a==check);
 	}
 	
@@ -364,6 +378,10 @@ public class GameManager {
 			}
 		}
 		return p;
+	}
+	
+	private void playGlobalPingSound() {
+		Bukkit.getOnlinePlayers().forEach(p -> p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.MASTER, 1f, 1f));
 	}
 	
 	private void teleportPlayers() {
@@ -438,10 +456,17 @@ public class GameManager {
 	}
 	
 	public void endGame(String victor) {
+		openedChests.clear();
 		if (victor != null) {
 			announce(ChatColor.GREEN + "[Survival Games] Player " + victor + " won the game!");
 		}
 		List<PlayerState> states = new ArrayList<PlayerState>(players.values());
+		for (String player : players.keySet()) {
+			Player p = Bukkit.getPlayer(player);
+			if (p != null) {
+				p.getInventory().clear();
+			}
+		}
 		Collections.sort(states, (p1, p2) -> Integer.compare(p2.kills, p1.kills));
 		int i = 0;
 		announce(ChatColor.DARK_AQUA + "Kill leaders last game:");
@@ -498,7 +523,54 @@ class GameManagerListener implements Listener {
 	private final GameManager handler;
 	
 	public GameManagerListener(GameManager handler) {
+		Preconditions.checkNotNull(handler);
 		this.handler = handler;
+	}
+	
+	@EventHandler
+	public void onPlayerInteractEvent(PlayerInteractEvent e) {
+		if (handler.isActive && !handler.config.preFillChests) {
+			if (e.getClickedBlock() == null) {
+				return;
+			}
+			for (ChestObject co : handler.config.chestLocations) {
+				Block b = e.getClickedBlock();
+				if (co.location.equals(b.getLocation()) && b.getType() == Material.CHEST) {
+					if (!handler.openedChests.contains(b.toString())) {
+						handler.openedChests.add(b.toString());
+						Chest chest = (Chest) b.getState();
+						List<ItemSet> selector = new ArrayList<ItemSet>();
+						for (ItemSet set : handler.config.itemSets) {
+							if (co.itemSets.contains(set.name)) {
+								selector.add(set);
+							}
+						}
+						List<ItemModel> shuffler = new ArrayList<ItemModel>();
+						for (ItemSet select : selector) {
+							select.items.forEach(item -> shuffler.add(item));
+						}
+						Collections.shuffle(shuffler);
+						Random r = new Random();
+						int m = r.nextInt(4) + 2;
+						int[] slots = GameManager.getRandomSlots(m, 27);
+						chest.setCustomName("Loot Chest");
+						chest.update(true);
+						Inventory blockInv = chest.getBlockInventory();
+						blockInv.clear();
+						for (int i = 0; i < shuffler.size() && i < m; i++) {
+							ItemStack item = shuffler.get(i).getEquivalent();
+							if (item == null) {
+								Bukkit.getLogger().warning("Unknown item [" + shuffler.get(i).id + "], you should check the config file");
+								continue;
+							}
+							item.setAmount(r.nextInt(shuffler.get(i).max) + 1);
+							blockInv.setItem(slots[i], item);
+						}
+						return;
+					}
+				}
+			}
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.HIGH)

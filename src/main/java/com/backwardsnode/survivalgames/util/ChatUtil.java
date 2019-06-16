@@ -32,8 +32,6 @@ import com.backwardsnode.survivalgames.json.JsonMessage.CompoundJsonMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import net.minecraft.server.v1_13_R2.IChatBaseComponent;
-
 public class ChatUtil {
 
 	public static boolean sendRawMessage(Player p, String message) {
@@ -48,7 +46,7 @@ public class ChatUtil {
 			
 			Method jsonSerializer = chatSerializerClass.getMethod("a", String.class);
 			Object outputMessage = jsonSerializer.invoke(null, message); //IChatBaseComponent
-			IChatBaseComponent.ChatSerializer.a("");
+			
 			Constructor<?> packetConstructor = packetChatClass.getDeclaredConstructor(chatBaseClass);
 			Object packet = packetConstructor.newInstance(outputMessage);
 			

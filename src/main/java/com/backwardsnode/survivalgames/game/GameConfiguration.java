@@ -51,6 +51,7 @@ public class GameConfiguration {
 	public BorderControl border;
 	public int waitTime;
 	public int gracePeriod;
+	public boolean preFillChests;
 	public List<ChestObject> chestLocations;
 	public List<ItemSet> itemSets;
 	
