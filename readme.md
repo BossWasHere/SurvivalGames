@@ -1,11 +1,21 @@
 # BackwardsNode's SurvivalGames
 ##### Easy to use Spigot plugin with intuitive editor and interface
 
-**Version 1.0.1**
+###Version 2.0.0
++ Updated to support MC 1.18
++ Updated to Java 16 & Refactored codebase
++ Added Vault/Economy support for entry fees/rewards
++ Added new post-game rewards
++ Added new event API
++ Updated to configuration v2
++ Improved localization features
++ Quality-of-life improvements
+
+###Version 1.0.1
 + Added support for enchanted books
 + Added support for potions, splash potions, lingering potions and tipped arrows
 
-**Version 1.0**
+###Version 1.0
 * Universally known survival games, an all-in-one plugin
 * Written from the ground up to support 1.13+
 * Does not require other libraries or plugins
@@ -16,5 +26,5 @@
 * Features randomized deathmatch zones using Minecraft's built-in world border
 * Play-tested and error-checked
 
-**Info:**
+###Info:
 Plugin developed as a school assignment challenge for Minecraft. There may be some bugs which need to be squashed and potentially some new features!
