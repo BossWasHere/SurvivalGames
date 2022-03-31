@@ -1,0 +1,170 @@
+{
+    "configVersion": 2,
+    "isWIP": true,
+    "mapName": "Example Small",
+    "entryFee": 0.0,
+    "rewards": {
+        "1": {
+            "cash": 1000.0,
+            "items": []
+        },
+        "2": {
+            "cash": 0.0,
+            "items": [
+                {
+                    "id": "diamond",
+                    "count": 1,
+                    "name": "2nd place!",
+                    "lore": [
+                        "You nearly won..."
+                    ],
+                    "enchantments": []
+                }
+            ]
+        },
+        "3": {
+            "cash": 100.0,
+            "items": []
+        }
+    },
+    "implements": [],
+    "spawnLocations": [
+        "0,58,12,survivalgames",
+        "-6,58,10,survivalgames",
+        "-10,58,6,survivalgames",
+        "-12,58,0,survivalgames",
+        "-10,58,-6,survivalgames",
+        "-6,58,-10,survivalgames",
+        "0,58,-12,survivalgames",
+        "6,58,-10,survivalgames",
+        "10,58,-6,survivalgames",
+        "12,58,0,survivalgames",
+        "10,58,6,survivalgames",
+        "6,58,10,survivalgames"
+    ],
+    "border": {
+        "damagePerSecond": 1.0,
+        "borderStartRadius": 300.0,
+        "deathmatchLocations": [
+            {
+                "loc": "0,0,survivalgames",
+                "borderRadius": 25.0,
+                "shrinkTime": 120,
+                "deathmatchDuration": 200,
+                "collapseTime": 60
+            }
+        ]
+    },
+    "waitTime": 20,
+    "gracePeriod": 10,
+    "borderCollapseDelay": 900,
+    "preFillChests": false,
+    "spawnFireworkOnKill": true,
+    "spawnFireworkOnDeath": false,
+    "chestLocations": [
+        {
+            "itemSets": ["Rare"],
+            "loc": "0,57,1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "1,59,1,survivalgames"
+        },
+        {
+            "itemSets": ["Rare"],
+            "loc": "-2,59,1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "-2,56,-1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "0,58,-1,survivalgames"
+        },
+        {
+            "itemSets": ["common"],
+            "loc": "2,57,1,survivalgames"
+        }
+    ],
+    "itemSets": [
+        {
+            "default": true,
+            "name": "common",
+            "items": [
+                {
+                    "id": "bow",
+                    "count": 1,
+                    "name": "",
+                    "lore": [
+                        "Shoots things",
+                        "Pull to shoot"
+                    ],
+                    "enchantments": []
+                },
+                {
+                    "id": "arrow",
+                    "count": 8,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": []
+                },
+                {
+                    "id": "chainmail_chestplate",
+                    "count": 1,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": [
+                        {
+                            "id": "protection",
+                            "level": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Rare",
+            "items": [
+                {
+                    "id": "bow",
+                    "count": 1,
+                    "name": "",
+                    "lore": [
+                        "Kills things",
+                        "Pull to shoot"
+                    ],
+                    "enchantments": [
+                        {
+                            "id": "punch",
+                            "level": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "arrow",
+                    "count": 20,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": []
+                },
+                {
+                    "id": "iron_chestplate",
+                    "count": 1,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": [
+                        {
+                            "id": "protection",
+                            "level": 3
+                        },
+                        {
+                            "id": "projectile_protection",
+                            "level": 3
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,88 +1,138 @@
 /*
- *  BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
- *  Copyright (C) 2019 BackwardsNode/BossWasHere
+ * BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
+ * Copyright (C) 2019-2022 BackwardsNode/BossWasHere
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.backwardsnode.survivalgames;
 
-import java.lang.reflect.Field;
-
-import org.bukkit.command.CommandMap;
-import org.bukkit.plugin.SimplePluginManager;
+import com.backwardsnode.survivalgames.game.PlayerCacheSettings;
+import com.backwardsnode.survivalgames.message.MessageProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.backwardsnode.survivalgames.command.CheckConfig;
-import com.backwardsnode.survivalgames.command.SGDeathmatch;
-import com.backwardsnode.survivalgames.command.SGDelete;
-import com.backwardsnode.survivalgames.command.SGDiscard;
-import com.backwardsnode.survivalgames.command.SGEdit;
-import com.backwardsnode.survivalgames.command.SGList;
-import com.backwardsnode.survivalgames.command.SGStart;
-import com.backwardsnode.survivalgames.command.SGStop;
-import com.backwardsnode.survivalgames.editor.EditorManager;
-import com.backwardsnode.survivalgames.game.GameManager;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
 
-public class Plugin extends JavaPlugin {
+public final class Plugin extends JavaPlugin {
 	
-	public EditorManager editorManager;
-	public GameManager gameManager;
-	
-	private static final String NAMESPACE_KEY_ID = "survivalgames";
-	
-	public Plugin() {
-		VersionGetter.init();
-	}
+	public static boolean TEST = false;
+
+	private CommandRegistry commandRegistry;
+	private DependencyManager dependencyManager;
+	private MessageProvider messageProvider;
+	private PlayerCacheSettings cacheSettings;
+	private PluginListener pluginListener;
+	private SGHost sgHost;
 	
 	@Override
 	public void onLoad() {
-		getDataFolder().mkdirs();
+
+		// Pre init
+		getLanguageFolder().mkdirs();
+		getMapFolder().mkdir();
+		getBackupFolder().mkdir();
+
+		saveDefaultConfig();
+
+		String language = getConfig().getString("default-language", MessageProvider.DEFAULT_LOCALE);
+		messageProvider = new MessageProvider(this, language, true);
+
+		// Extract example.json
+		File exampleFile = new File(getMapFolder(), "example.json");
+		if (!exampleFile.exists()) {
+			extractFileSafe(exampleFile.toPath(), "example.json", "Could not copy example.json - this could indicate an OS permission error!");
+		}
+
+		dependencyManager = new DependencyManager(this);
+		cacheSettings = new PlayerCacheSettings();
 	}
 	
 	@Override
 	public void onEnable() {
-		getLogger().info("BackwardsNode's Survival Games Copyright (C) 2019 BossWasHere/BackwardsNode | Version: " + getDescription().getVersion());
-		editorManager = new EditorManager(this);
-		
-		CommandMap commandMap = null;
-		try {
-			Field field = SimplePluginManager.class.getDeclaredField("commandMap");
-			field.setAccessible(true);
-			commandMap = (CommandMap)(field.get(getServer().getPluginManager()));
-			commandMap.register(NAMESPACE_KEY_ID, new CheckConfig(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGEdit(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGStart(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGStop(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGDeathmatch(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGDelete(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGDiscard(this));
-			commandMap.register(NAMESPACE_KEY_ID, new SGList(this));
+		getLogger().info("BackwardsNode's Survival Games (C) 2019-2022 BossWasHere/BackwardsNode | Version: " + getDescription().getVersion());
 
-		} catch (NoSuchFieldException e) {
-			getLogger().severe("[EC] An error occured while building the new commandmap");
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			getLogger().severe("[EC] An error occured while building the new commandmap");
-			e.printStackTrace();
+		dependencyManager.connect();
+
+		pluginListener = new PluginListener(this);
+		sgHost = new SGHost(this);
+
+
+		// TODO help command
+		if (commandRegistry == null) {
+			commandRegistry = new CommandRegistry(this);
 		}
+		commandRegistry.registerCommands();
 	}
-	
+
 	@Override
 	public void onDisable() {
-		if (gameManager != null) {
-			gameManager.terminate(true);
+		sgHost.close();
+
+		pluginListener.reset();
+
+		dependencyManager.disconnect();
+	}
+
+	public File getBackupFolder() {
+		return new File(getDataFolder(), "backup/");
+	}
+
+	public File getLanguageFolder() {
+		return new File(getDataFolder(), "lang/");
+	}
+
+	public File getMapFolder() {
+		return new File(getDataFolder(), "maps/");
+	}
+
+	public PluginListener getDefaultListener() {
+		return pluginListener;
+	}
+
+	public DependencyManager getDependencyManager() {
+		return dependencyManager;
+	}
+
+	public MessageProvider getMessageProvider() {
+		return messageProvider;
+	}
+
+	public PlayerCacheSettings getCacheSettings() {
+		return cacheSettings;
+	}
+
+	public SGHost getHost() {
+		return sgHost;
+	}
+
+	public boolean extractFileSafe(Path destination, String internalPath, String errorMsg) {
+		try {
+			extractFile(destination, internalPath);
+			return true;
+		} catch (IOException e) {
+			getLogger().log(Level.SEVERE, errorMsg, e);
 		}
-		editorManager.closeAllEditors();
+		return false;
+	}
+
+	public void extractFile(Path destination, String internalPath, CopyOption... copyOptions) throws IOException {
+		InputStream is = this.getClass().getResourceAsStream("/" + internalPath);
+		Files.copy(is, destination, copyOptions);
 	}
 }

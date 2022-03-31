@@ -9,3 +9,6 @@
 /target/maven-status
 /target/SurvivalGames-with-dependencies.jar
 /target/SurvivalGames-without-dependencies.jar
+/target/
+/.idea/dictionaries/
+/.idea/inspectionProfiles/

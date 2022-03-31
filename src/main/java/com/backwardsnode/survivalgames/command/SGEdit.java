@@ -1,80 +1,84 @@
 /*
- *  BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
- *  Copyright (C) 2019 BackwardsNode/BossWasHere
+ * BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
+ * Copyright (C) 2019-2022 BackwardsNode/BossWasHere
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.backwardsnode.survivalgames.command;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.base.CommandType;
+import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.message.Messages;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.game.GameConfiguration;
+import java.io.File;
+import java.io.IOException;
 
-public class SGEdit extends Command {
-
-	private final Plugin plugin;
+public class SGEdit extends BaseCommand {
 
 	public SGEdit(Plugin plugin) {
-		super("sgedit", "Edit a survival game configuration file", ChatColor.RED + "Usage: /sgedit (file)", Arrays.asList("survivalgamesedit", "sge"));
-		this.plugin = plugin;
+		super(plugin, CommandType.SG_EDIT);
 	}
 
 	@Override
-	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-		if (sender.hasPermission("survivalgames.sgedit")) {
-			if (sender instanceof Player) {
-				if (args.length > 0) {
-					sender.sendMessage(ChatColor.LIGHT_PURPLE + "[!] Loading file " + args[0] + " [!]");
-					try {
-						if (plugin.editorManager.isEditor((Player)sender)) {
-							plugin.editorManager.closeEditor((Player) sender, true);
-						} else {
-							File target;
-							if (args[0].toLowerCase().endsWith(".json")) {
-								target = new File(plugin.getDataFolder(), args[0]);
-							} else {
-								target = new File(plugin.getDataFolder(), args[0] + ".json");
-							}
-							if (!target.exists()) {
-								sender.sendMessage(ChatColor.AQUA + "File doesn't exist, creating one now");
-								target.createNewFile();
-							}
-							plugin.editorManager.addEditor((Player) sender, GameConfiguration.loadGameConfigurationOrCreateEmpty(plugin.getDataFolder(), target).createScene());
-						}
-					} catch (IOException e) {
-						sender.sendMessage(ChatColor.RED + "Error: Cannot load or create configuration file");
-					}
+	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+		Player player = (Player) sender;
+
+		if (args.length > 0) {
+			try {
+				if (PLUGIN.getHost().getEditorManager().closeEditor(player, true)) {
+					sendMessage(sender, Messages.COMMAND.SG_EDIT.CLOSING);
 				} else {
-					if (plugin.editorManager.isEditor((Player)sender)) {
-						plugin.editorManager.closeEditor((Player)sender, true);
+					File target;
+					if (args[0].toLowerCase().endsWith(".json")) {
+						target = new File(PLUGIN.getMapFolder(), args[0]);
 					} else {
-						sender.sendMessage(usageMessage);
+						target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
+					}
+					GameConfiguration gc;
+					if (!target.exists()) {
+						target.createNewFile();
+						gc = GameConfiguration.createEmptyConfiguration(target);
+						sendMessage(sender, Messages.COMMAND.SG_EDIT.CREATED);
+					} else {
+						gc = GameConfiguration.loadGameConfiguration(target);
+						sendMessage(sender, Messages.COMMAND.SG_EDIT.LOADED, target.getName());
+					}
+
+					if (gc == null) {
+						sendMessage(sender, Messages.CONFIG.OUTDATED);
+					} else {
+						PLUGIN.getHost().getEditorManager().addEditor(player, gc);
+						sendMessage(sender, Messages.COMMAND.SG_EDIT.OPENING);
 					}
 				}
+			} catch (IOException e) {
+				sendMessage(sender, Messages.PLUGIN.IO_EXCEPTION);
 			}
 		} else {
-			sender.sendMessage(ChatColor.RED + "You don't have permission to use this command");
+			if (PLUGIN.getHost().getEditorManager().isEditor(player)) {
+				PLUGIN.getHost().getEditorManager().closeEditor(player, true);
+				sendMessage(sender, Messages.COMMAND.SG_EDIT.CLOSING);
+			} else {
+				return ExecutionStatus.BAD_USAGE;
+			}
 		}
-		return true;
+		return ExecutionStatus.SUCCESS;
 	}
 
 }

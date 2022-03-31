@@ -1,80 +1,99 @@
 /*
- *  BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
- *  Copyright (C) 2019 BackwardsNode/BossWasHere
+ * BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
+ * Copyright (C) 2019-2022 BackwardsNode/BossWasHere
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.backwardsnode.survivalgames.command;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.Arrays;
-
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.base.CommandType;
+import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import com.backwardsnode.survivalgames.message.JsonMessage;
+import com.backwardsnode.survivalgames.message.JsonTextEvent;
+import com.backwardsnode.survivalgames.message.Messages;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.json.JsonMessage;
-import com.backwardsnode.survivalgames.json.JsonMessage.CompoundJsonMessage;
-import com.backwardsnode.survivalgames.util.ChatUtil;
-import com.backwardsnode.survivalgames.json.TextEvent;
+import java.io.File;
+import java.io.FilenameFilter;
 
-public class SGList extends Command {
-
-	private final Plugin plugin;
+public class SGList extends BaseCommand {
 
 	public SGList(Plugin plugin) {
-		super("sglist", "List all SG Maps", ChatColor.RED + "Usage: /sglist", Arrays.asList("sgl"));
-		this.plugin = plugin;
+		super(plugin, CommandType.SG_LIST);
 	}
 
 	@Override
-	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-		if (sender.hasPermission("survivalgames.sglist")) {
-			File[] jsons = plugin.getDataFolder().listFiles(new FilenameFilter() {
-				
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.endsWith(".json");
+	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+		if (sender instanceof Player) {
+			Player player = (Player) sender;
+			String locale = player.getLocale();
+			JsonMessage.CompoundJsonMessage cmsg = new JsonMessage.CompoundJsonMessage();
+			boolean canStartAll = player.hasPermission(CommandType.SG_START.getBasicPermission() + ".all");
+			boolean canEdit = player.hasPermission(CommandType.SG_EDIT.getBasicPermission());
+			boolean canCheck = player.hasPermission(CommandType.SG_CHECK.getBasicPermission());
+
+			// TODO check colors as JSON messages work (or implement a JSON message factory inside/with MessageProvider)
+
+			cmsg.messages.add(new JsonMessage().setText(PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.TITLE, locale)));
+			String loadCmd = "\n" + PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.LOAD_INVITE, locale);
+			String loadCmdAll = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.LOAD_ALL, locale);
+			String edit = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.EDIT, locale);
+			String checkconfig = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.CHECK_CONFIG, locale);
+
+			String sgStartCommand = '/' + CommandType.SG_START.getCommand() + " ";
+			String sgEditCommand = '/' + CommandType.SG_EDIT.getCommand() + " ";
+			String sgCheckCommand = '/' + CommandType.SG_CHECK.getCommand() + " ";
+
+			for (File json : getJsons(PLUGIN.getMapFolder())) {
+				cmsg.messages.add(new JsonMessage().setText(loadCmd).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " invite")));
+				if (canStartAll) {
+					cmsg.messages.add(new JsonMessage().setText(" " + loadCmdAll).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " all")));
 				}
-			});
-			if (jsons.length < 1) {
-				sender.sendMessage(ChatColor.RED + "[SG] Found no saved files!");
-			} else {
-				if (sender instanceof Player) {
-					CompoundJsonMessage cmsg = new CompoundJsonMessage();
-					cmsg.messages.add(new JsonMessage().setText("[SG] Available Game Files:").setColor("dark_aqua").setBold(true));
-					for (File json : jsons) {
-						cmsg.messages.add(new JsonMessage().setText("\n[Load]").setColor("green").setUnderlined(true).setClickEvent(TextEvent.runCommand("/sgs " + json.getName())));
-						cmsg.messages.add(new JsonMessage().setText(" - ").setColor("green"));
-						cmsg.messages.add(new JsonMessage().setText(json.getName()).setColor("gray"));
-					}
-					ChatUtil.sendRawMessage((Player)sender, cmsg);
-				} else {
-					String msg = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "[SG] Available Game Files:" + ChatColor.RESET;
-					for (File json : jsons) {
-						msg += "\n" + ChatColor.GRAY + json.getName();
-					}
-					sender.sendMessage(msg);
+				if (canEdit) {
+					cmsg.messages.add(new JsonMessage().setText(" " + edit).setClickEvent(JsonTextEvent.runCommand(sgEditCommand + json.getName())));
 				}
+				if (canCheck) {
+					cmsg.messages.add(new JsonMessage().setText(" " + checkconfig).setClickEvent(JsonTextEvent.runCommand(sgCheckCommand + json.getName())));
+				}
+				cmsg.messages.add(new JsonMessage().setText(" - ").setColor(ChatColor.GREEN).setBold(true));
+				cmsg.messages.add(new JsonMessage().setText(json.getName()).setColor(ChatColor.GRAY));
 			}
+
+			Utils.sendJsonMessage(player, cmsg);
 		} else {
-			sender.sendMessage(ChatColor.RED + "You don't have permission to use this command");
+			sendMessage(sender, Messages.COMMAND.SG_LIST.TITLE);
+			for (File json : getJsons(PLUGIN.getMapFolder())) {
+				sender.sendMessage(ChatColor.GRAY + json.getName());
+			}
 		}
-		return true;
+
+		return ExecutionStatus.SUCCESS;
+	}
+	
+	private File[] getJsons(File dataFolder) {
+		return dataFolder.listFiles(new FilenameFilter() {
+			
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".json");
+			}
+		});
 	}
 
 }

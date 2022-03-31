@@ -1,82 +1,145 @@
 /*
- *  BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
- *  Copyright (C) 2019 BackwardsNode/BossWasHere
+ * BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
+ * Copyright (C) 2019-2022 BackwardsNode/BossWasHere
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.backwardsnode.survivalgames.command;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.base.CommandType;
+import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.exception.GameConfigurationException;
+import com.backwardsnode.survivalgames.game.PlayerSelectionMethod;
+import com.backwardsnode.survivalgames.message.JsonMessage;
+import com.backwardsnode.survivalgames.message.JsonTextEvent;
+import com.backwardsnode.survivalgames.message.Messages;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.exception.GameConfigurationException;
-import com.backwardsnode.survivalgames.exception.GameRunningException;
-import com.backwardsnode.survivalgames.game.GameConfiguration;
-import com.backwardsnode.survivalgames.game.GameManager;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Collection;
 
-public class SGStart extends Command {
-	
-	private final Plugin plugin;
+public class SGStart extends BaseCommand {
 
 	public SGStart(Plugin plugin) {
-		super("sgstart", "Start the game", ChatColor.RED + "Usage: /sgstart (file)", Arrays.asList("sgs"));
-		this.plugin = plugin;
+		super(plugin, CommandType.SG_START);
 	}
 
 	@Override
-	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-		if (sender.hasPermission("survivalgames.sgstart")) {
-			if (sender instanceof Player) {
-				if (args.length > 0) {
-					try {
-						File target = new File(plugin.getDataFolder(), args[0]);
-						if (!target.isFile()) {
-							target = new File(plugin.getDataFolder(), args[0] + ".json");
-						}
-						GameConfiguration c = GameConfiguration.loadGameConfiguration(plugin.getDataFolder(), target);
-						List<Location> invalidLocations = c.checkChests();
-						if (invalidLocations.size() > 0) {
-							sender.sendMessage(ChatColor.RED + "Warning: Missing chests detected (Run /checkconfig command)");
-						} else {
-							try {
-								plugin.gameManager = GameManager.createInstance(plugin, c);
-								plugin.gameManager.begin((Player)sender);
-							} catch (GameRunningException | GameConfigurationException e) {
-								sender.sendMessage(ChatColor.RED + e.getMessage());
-							}
-						}
-					} catch (FileNotFoundException e) {
-						sender.sendMessage(ChatColor.RED + "1. Error: No file with name " + args[0]);
-					} catch (JsonIOException | JsonSyntaxException e) {
-						sender.sendMessage(ChatColor.RED + "1. Error: There is a io/syntax error in the file:\n" + e.getMessage());
+	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+		Player player = (Player) sender;
+
+		if (args.length > 0) {
+			boolean canStartAll = player.hasPermission(TYPE.getBasicPermission() + ".all");
+			if (args.length > 1) {
+				args[1] = args[1].toLowerCase();
+				if (args[1].contentEquals("all")) {
+					if (canStartAll) {
+						start(player, args[0], Bukkit.getServer().getOnlinePlayers());
+					} else {
+						return ExecutionStatus.NO_PERMISSION;
 					}
+				} else if (args[1].contentEquals("invite")) {
+					startInvite(player, args[0]);
+				} else {
+					return ExecutionStatus.BAD_USAGE;
+				}
+			} else {
+				if (canStartAll) {
+					start(player, args[0], Bukkit.getServer().getOnlinePlayers());
+				} else {
+					startInvite(player, args[0]);
 				}
 			}
 		} else {
-			sender.sendMessage(ChatColor.RED + "You don't have permission to use this command");
+			return ExecutionStatus.BAD_USAGE;
 		}
-		return true;
+		return ExecutionStatus.SUCCESS;
+	}
+	
+	private void start(Player initiator, String mapName, Collection<? extends Player> players) {
+		GameConfiguration config = tryLoad(initiator, mapName);
+		
+		if (config != null) {
+			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
+				sendMessage(initiator, Messages.GAME.MAP_IN_USE, mapName);
+				return;
+			}
+			PLUGIN.getHost().getGameManager().startGame(config, PLUGIN.getCacheSettings(), initiator, players, true, PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS);
+		}
+	}
+	
+	private void startInvite(Player initiator, String mapName) {
+		GameConfiguration config = tryLoad(initiator, mapName);
+		
+		if (config != null) {
+			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
+				sendMessage(initiator, Messages.GAME.MAP_IN_USE, mapName);
+				return;
+			}
+
+			String indexName = config.mapName.replace(' ', '-');
+			if (PLUGIN.getHost().mapHasPendingInvitation(indexName)) {
+				sendMessage(initiator, Messages.COMMAND.SG_START.EXISTING_INVITE);
+				return;
+			}
+			String pName = initiator.getDisplayName();
+			// TODO cleanup
+			JsonMessage message = new JsonMessage().setText("[Click here to join]").setItalic(true).setColor(ChatColor.GOLD).setClickEvent(JsonTextEvent.runCommand("/sgj " + indexName));
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				if (p.hasPermission(CommandType.SG_JOIN.getBasicPermission())) {
+					sendMessage(p, Messages.GAME.INVITE_OPEN, pName, config.mapName);
+					Utils.sendJsonMessage(p, message);
+					sendMessage(p, Messages.GAME.INVITE_DURATION);
+				}
+			}
+			PLUGIN.getHost().addInvitation(initiator, config, indexName);
+		}
+	}
+	
+	private GameConfiguration tryLoad(Player player, String mapName) {
+		try {
+			File target = new File(PLUGIN.getMapFolder(), mapName);
+			if (!target.isFile()) {
+				target = new File(PLUGIN.getMapFolder(), mapName + ".json");
+			}
+			if (!target.isFile()) {
+				sendMessage(player, Messages.PLUGIN.IO_FILE_MISSING, mapName);
+				return null;
+			}
+			mapName = target.getPath();
+			GameConfiguration c = GameConfiguration.loadGameConfiguration(target);
+			return c;
+			
+		} catch (FileNotFoundException e) {
+			sendMessage(player, Messages.PLUGIN.IO_EXCEPTION);
+			e.printStackTrace();
+		} catch (GameConfigurationException e) {
+			sendMessage(player, Messages.CONFIG.OUTDATED);
+		} catch (JsonIOException | JsonSyntaxException e) {
+			sendMessage(player, Messages.CONFIG.SYNTAX, mapName);
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

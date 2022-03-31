@@ -1,0 +1,34 @@
+{
+    "configVersion": 2,
+    "mapName": "Test Minimal",
+    "implements": [],
+    "border": {
+        "damagePerSecond": 1.0,
+        "borderStartRadius": 300.0,
+        "deathmatchLocations": []
+    },
+    "waitTime": 20,
+    "gracePeriod": 10,
+    "borderCollapseDelay": 900,
+    "preFillChests": false,
+    "spawnFireworkOnKill": true,
+    "spawnFireworkOnDeath": false,
+    "chestLocations": [
+        {
+            "itemSets": ["common"],
+            "loc": "0,57,1,survivalgames"
+        }
+    ],
+    "itemSets": [
+        {
+            "default": true,
+            "name": "common",
+            "items": [
+                {
+                    "id": "dirt",
+                    "max": 1
+                }
+            ]
+        }
+    ]
+}

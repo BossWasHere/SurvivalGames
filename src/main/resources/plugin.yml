@@ -1,0 +1,7 @@
+main: com.backwardsnode.survivalgames.Plugin
+name: SurvivalGames
+version: ${build.version}
+description: Survival Games plugin for Bukkit
+author: IballisticBoss
+api-version: 1.18
+softdepend: [ProtocolLib,Vault]

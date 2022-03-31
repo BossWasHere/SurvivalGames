@@ -1,0 +1,40 @@
+{
+    "configVersion": 2,
+    "isWIP": true,
+    "mapName": "Minimal",
+    "entryFee": 0.0,
+    "rewards": {},
+    "implements": [],
+    "spawnLocations": [
+        "0,58,12,survivalgames",
+        "-6,58,10,survivalgames"
+    ],
+    "border": {},
+    "waitTime": 20,
+    "gracePeriod": 10,
+    "borderCollapseDelay": 900,
+    "preFillChests": false,
+    "spawnFireworkOnKill": true,
+    "spawnFireworkOnDeath": false,
+    "chestLocations": [
+        {
+            "itemSets": ["common"],
+            "loc": "0,50,0,survivalgames"
+        }
+    ],
+    "itemSets": [
+        {
+            "default": true,
+            "name": "common",
+            "items": [
+                {
+                    "id": "dirt",
+                    "count": 1,
+                    "name": "",
+                    "lore": [],
+                    "enchantments": []
+                }
+            ]
+        }
+    ]
+}
