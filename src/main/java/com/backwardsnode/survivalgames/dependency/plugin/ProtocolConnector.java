@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.backwardsnode.survivalgames;
+package com.backwardsnode.survivalgames.dependency.plugin;
 
+import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;

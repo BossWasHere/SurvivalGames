@@ -107,6 +107,7 @@ public class Version1Model {
         gc.borderCollapseDelay = borderCollapseDelay;
         gc.spawnFireworkOnDeath = spawnFireworkOnDeath;
         gc.spawnFireworkOnKill = spawnFireworkOnKill;
+        gc.lightningOnDeath = spawnFireworkOnDeath || spawnFireworkOnKill;
         gc.chestLocations = chestLocations;
 
         gc.itemSets = new ArrayList<>(itemSets.size());

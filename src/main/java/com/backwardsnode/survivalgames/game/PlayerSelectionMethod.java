@@ -22,5 +22,13 @@ public enum PlayerSelectionMethod {
 	ARBITRARY,
 	ARBITRARY_WITH_SPECTATORS,
 	SHUFFLED,
-	SHUFFLED_WITH_SPECTATORS
+	SHUFFLED_WITH_SPECTATORS;
+
+	public boolean allowSpectators() {
+		return this == ARBITRARY_WITH_SPECTATORS || this == SHUFFLED_WITH_SPECTATORS;
+	}
+
+	public boolean shouldShuffle() {
+		return this == SHUFFLED || this == SHUFFLED_WITH_SPECTATORS;
+	}
 }

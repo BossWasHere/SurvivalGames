@@ -15,23 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.backwardsnode.survivalgames.game;
 
-import org.bukkit.entity.Player;
+package com.backwardsnode.survivalgames.database;
 
-public class PlayerState {
-	public final PlayerStorageCache cache;
-	public boolean alive;
-	public boolean spectating;
-	public boolean spectatingInventory;
-	public int kills;
-	public int placement;
-    public int teamNumber;
+public enum DataStoreSource {
 
-    public PlayerState(Player player, boolean spectating) {
-		cache = new PlayerStorageCache(player);
-		alive = !spectating;
-		this.spectating = spectating;
-		kills = 0;
-	}
+    NONE(false),
+    CSV(false),
+    SQLITE(true),
+    H2(true),
+    MYSQL(true);
+
+    private final boolean IS_JDBC;
+
+    DataStoreSource(boolean isJdbc) {
+        IS_JDBC = isJdbc;
+    }
+
+    public boolean isJDBC() {
+        return IS_JDBC;
+    }
 }

@@ -24,6 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+import javax.annotation.Nullable;
+
 /**
  * Event called when a game is about to start but was aborted instead
  */
@@ -58,9 +60,10 @@ public class GameAbortedEvent extends Event {
     }
 
     /**
-     * Gets the player who originally tried to start the game
+     * Gets the player who originally tried to start the game, or null if started by the server
      * @return The {@link Player}
      */
+    @Nullable
     public Player getInitiator() {
         return INITIATOR;
     }

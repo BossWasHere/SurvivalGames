@@ -23,6 +23,7 @@ import com.backwardsnode.survivalgames.api.event.GameNewInvitationEvent;
 import com.backwardsnode.survivalgames.config.GameConfiguration;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.editor.EditorManager;
+import com.backwardsnode.survivalgames.editor.Scene;
 import com.backwardsnode.survivalgames.game.GameInstance;
 import com.backwardsnode.survivalgames.game.GameManager;
 import com.backwardsnode.survivalgames.game.InvitationCancelType;
@@ -83,6 +84,18 @@ public class SGHost {
             return true;
         }
         return GAME_MANAGER.isPlayerIngame(player);
+    }
+
+    public GameConfiguration getCurrentEditorOrGameConfiguration(Player player) {
+        if (closed) return null;
+
+        Scene scene = EDITOR_MANAGER.getEditor(player);
+        if (scene != null) return scene.getGameConfiguration();
+
+        GameInstance gameInstance = GAME_MANAGER.getGame(player);
+        if (gameInstance != null) return gameInstance.getGameConfiguration();
+
+        return null;
     }
 
     /**

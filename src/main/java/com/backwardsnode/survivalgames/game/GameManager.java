@@ -68,7 +68,8 @@ public class GameManager {
 		}
 
 		List<Player> listPlayers = new ArrayList<>(players);
-		switch (instance.begin(initiator, listPlayers, ignoreIngamePlayers, selectorMode)) {
+		instance.begin(initiator, listPlayers, ignoreIngamePlayers, selectorMode);
+		switch (instance.getStatus()) {
 		case START_ERR_FEW_PLAYERS:
 			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_FEW_PLAYERS, config, initiator));
 			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.GAME.INSUFFICIENT_PLAYERS);

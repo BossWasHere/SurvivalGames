@@ -18,12 +18,11 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.config.PluginConfigKeys;
 import com.backwardsnode.survivalgames.item.ChestObject;
-import com.backwardsnode.survivalgames.item.ItemModel;
-import com.backwardsnode.survivalgames.item.ItemSet;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -32,11 +31,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
@@ -47,11 +44,14 @@ public class GameListener implements Listener {
 
 	private final GameManager manager;
 	
-	private HashMap<UUID, Player> damagingEffects; 
+	private HashMap<UUID, Player> damagingEffects;
+
+	private final boolean preventSpectatorInventoryViewing;
 	
 	public GameListener(GameManager manager) {
 		this.manager = manager;
 		damagingEffects = new HashMap<>();
+		preventSpectatorInventoryViewing = !PluginConfigKeys.ALLOW_SPECTATORS_SEE_INVENTORY.get(manager.getPlugin().getConfig());
 	}
 	
 	@EventHandler
@@ -68,7 +68,7 @@ public class GameListener implements Listener {
 			if (!instance.doChestPrefill() && clicked.getState() instanceof Chest) {
 				ChestObject co = instance.getChestData(clicked.getLocation());
 				if (co != null) {
-					List<String> openedChests = instance.getOpenedChests();
+					HashSet<String> openedChests = instance.getOpenedChests();
 					if (!openedChests.contains(co.loc)) {
 						openedChests.add(co.loc);
 						Chest chest = (Chest) clicked.getState();
@@ -78,8 +78,76 @@ public class GameListener implements Listener {
 			}
 		}
 	}
+
+	@EventHandler
+	public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e) {
+		if (preventSpectatorInventoryViewing) {
+			return;
+		}
+		Entity rightClicked = e.getRightClicked();
+		if (!(rightClicked instanceof Player clicked)) {
+			return;
+		}
+
+		Player player = e.getPlayer();
+		GameInstance instance = manager.getGame(player);
+		if (instance == null) {
+			return;
+		}
+
+		PlayerState playerState = instance.getPlayerState(player);
+		if (playerState == null || playerState.alive) {
+			return;
+		}
+		PlayerState clickedState = instance.getPlayerState(clicked);
+		if (clickedState == null) {
+			return;
+		}
+
+		// TODO safer to copy inventory?
+		playerState.spectatingInventory = true;
+		player.openInventory(clicked.getInventory());
+	}
+
+	@EventHandler
+	public void onInventoryInteractEvent(InventoryInteractEvent e) {
+		if (!(e.getWhoClicked() instanceof Player player)) {
+			return;
+		}
+		GameInstance instance = manager.getGame(player);
+		if (instance == null) {
+			return;
+		}
+
+		PlayerState playerState = instance.getPlayerState(player);
+		if (playerState == null) {
+			return;
+		}
+
+		if (playerState.spectatingInventory) {
+			e.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onInventoryClosedEvent(InventoryCloseEvent e) {
+		if (!(e.getPlayer() instanceof Player player)) {
+			return;
+		}
+		GameInstance instance = manager.getGame(player);
+		if (instance == null) {
+			return;
+		}
+
+		PlayerState playerState = instance.getPlayerState(player);
+		if (playerState == null) {
+			return;
+		}
+
+		playerState.spectatingInventory = false;
+	}
 	
-	@EventHandler(priority=EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerMoveEvent(PlayerMoveEvent e) {
 		GameInstance instance = manager.getGame(e.getPlayer());
 		if (instance == null) {

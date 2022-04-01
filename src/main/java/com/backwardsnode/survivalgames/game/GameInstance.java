@@ -18,7 +18,7 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.VaultConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
 import com.backwardsnode.survivalgames.api.event.*;
 import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
 import com.backwardsnode.survivalgames.config.GameConfiguration;
@@ -37,7 +37,6 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.boss.BarColor;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -50,14 +49,20 @@ public class GameInstance {
 	private final GameManager MANAGER;
 	private final GameConfiguration CONFIG;
 	private final PlayerCacheSettings CACHE_SETTINGS;
-	private DeathmatchConfiguration deathmatchConfig;
-	
+	private final Map<UUID, PlayerState> INGAME_PLAYERS;
+	private final HashSet<String> OPENED_CHESTS;
+
 	private ScoreboardController scoreboard;
 	private BossBarController bossbar;
 	private BorderController border;
-	
-	private Map<UUID, PlayerState> ingamePlayers;
-	
+	private DeathmatchConfiguration deathmatchConfig;
+
+	private GameStatus currentStatus;
+	private Date startedAt;
+	private int initialPlayers = -1;
+	private int playersAtDeathmatch = -1;
+	private long duration = -1;
+
 	private BukkitTask timerTask;
 	private TimerCountdown timerInstance;
 	
@@ -65,7 +70,6 @@ public class GameInstance {
 	private boolean flagDisableMovement;
 	private boolean flagPVPEnabled;
 	private boolean flagDeathmatchStarted;
-	private List<String> openedChests;
 	
 	protected GameInstance(GameManager manager, GameConfiguration config, PlayerCacheSettings cacheSettings) throws GameConfigurationException {
 		MANAGER = manager;
@@ -76,34 +80,39 @@ public class GameInstance {
 			throw new GameConfigurationException("Not enough spawn locations");
 		}
 
-		ingamePlayers = new HashMap<>();
-		openedChests = new ArrayList<>();
+		INGAME_PLAYERS = new HashMap<>();
+		OPENED_CHESTS = new HashSet<>();
+
+		currentStatus = GameStatus.WAITING;
 	}
 	
-	protected GameStatus begin(Player initiator, List<Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
-		GameStatus returnStatus = GameStatus.START_SUCCESS;
-		int playerCount = players.size();
+	protected void begin(Player initiator, List<Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
+		initialPlayers = players.size();
 
-		final boolean acceptsSpectators = selectorMode == PlayerSelectionMethod.ARBITRARY_WITH_SPECTATORS || selectorMode == PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS;
+		boolean acceptsSpectators = selectorMode.allowSpectators();
 		players.removeIf(MANAGER::isPlayerIngame);
 		if (!ignoreIngamePlayers) {
-			if (players.size() != playerCount) {
-				return GameStatus.START_ERR_PLAYER_IN_GAME;
+			if (players.size() != initialPlayers) {
+				currentStatus = GameStatus.START_ERR_PLAYER_IN_GAME;
+				return;
 			}
 		}
 
-		playerCount = players.size();
+		initialPlayers = players.size();
 
-		if (playerCount < 2) {
-			return GameStatus.START_ERR_FEW_PLAYERS;
+		if (initialPlayers < 2) {
+			currentStatus = GameStatus.START_ERR_FEW_PLAYERS;
+			return;
 		}
 
-		if (playerCount > CONFIG.spawnLocs.size()) {
+		if (initialPlayers > CONFIG.spawnLocs.size()) {
 			if (acceptsSpectators) {
-				returnStatus = GameStatus.START_SUCCESS_WITH_SPECTATORS;
+				currentStatus = GameStatus.START_SUCCESS_WITH_SPECTATORS;
 			} else {
-				returnStatus = GameStatus.START_SUCCESS_WITHOUT_SPECTATORS;
+				currentStatus = GameStatus.START_SUCCESS_WITHOUT_SPECTATORS;
 			}
+		} else {
+			currentStatus = GameStatus.START_SUCCESS;
 		}
 
 		flagDisableMovement = true;
@@ -112,7 +121,7 @@ public class GameInstance {
 
 		int spawnLocationCount = CONFIG.spawnLocs.size();
 		Player pl;
-		if (selectorMode == PlayerSelectionMethod.SHUFFLED || selectorMode == PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS) {
+		if (selectorMode.shouldShuffle()) {
 			Collections.shuffle(players);
 		}
 
@@ -121,30 +130,32 @@ public class GameInstance {
 			if (i < spawnLocationCount) {
 				PlayerState ps = new PlayerState(pl, false);
 				ps.cache.cacheCurrent(CACHE_SETTINGS);
-				ingamePlayers.put(pl.getUniqueId(), ps);
+				INGAME_PLAYERS.put(pl.getUniqueId(), ps);
 			} else if (acceptsSpectators) {
 				PlayerState ps = new PlayerState(pl, true);
 				ps.cache.cacheCurrentGamemode();
-				ingamePlayers.put(pl.getUniqueId(), ps);
+				INGAME_PLAYERS.put(pl.getUniqueId(), ps);
 			}
 		}
 
-		setupBorder(initiator.getWorld());
-		setupScoreboard(Math.min(spawnLocationCount, playerCount));
+		initialPlayers = Math.min(spawnLocationCount, initialPlayers);
+		preparePlayers();
+
+		setupBorder(players.get(0).getWorld());
+		setupScoreboard(initialPlayers);
 		setupBossbar();
 		deathmatchConfig = CONFIG.selectDeathmatch();
 
 		if (CONFIG.preFillChests) {
 			fillChests(initiator);
 		}
-
-		preparePlayers();
 		startCountdownTimer(CONFIG.waitTime, GameStatus.RELEASE_PLAYERS);
+
+		startedAt = new Date();
 
 		GameStartedEvent gameStartedEvent = new GameStartedEvent(this);
 		Bukkit.getPluginManager().callEvent(gameStartedEvent);
 
-		return returnStatus;
 	}
 
 	private void setupScoreboard(int playersAlive) {
@@ -154,18 +165,18 @@ public class GameInstance {
 		scoreboard.updateScoreboardElement(ScoreboardElement.PLAYERS_LEFT, String.valueOf(playersAlive));
 		String dim = String.valueOf(Math.floor(border.getRadius()));
 		scoreboard.updateScoreboardElement(ScoreboardElement.ZONE_SIZE, dim + "," + dim + " blocks");
-		scoreboard.setVisibleTo(ingamePlayers.values());
+		scoreboard.setVisibleTo(INGAME_PLAYERS.values());
 	}
 
 	private void setupBossbar() {
 		bossbar = new BossBarController("Game Starting...", BarColor.BLUE, CONFIG.waitTime);
-		bossbar.setVisibleTo(ingamePlayers.values());
+		bossbar.setVisibleTo(INGAME_PLAYERS.values());
 	}
 
 	private void setupBorder(World defaultWorld) {
 		border = new BorderController(MANAGER.getPlugin().getDependencyManager().getProtocolConnector(), defaultWorld);
 		border.setTarget(CONFIG.border.borderStartRadius, 0);
-		border.setVisibleTo(ingamePlayers.values());
+		border.setVisibleTo(INGAME_PLAYERS.values());
 	}
 	
 	private boolean startCountdownTimer(int seconds, GameStatus nextPhase) {
@@ -185,6 +196,8 @@ public class GameInstance {
 		if (statusChangeEvent.isCancelled()) {
 			return;
 		}
+
+		currentStatus = status;
 
 		switch (status) {
 		case RELEASE_PLAYERS:
@@ -221,7 +234,7 @@ public class GameInstance {
 	
 	private void preparePlayers() {
 		int i = 0;
-		for (PlayerState player : ingamePlayers.values()) {
+		for (PlayerState player : INGAME_PLAYERS.values()) {
 			Player p = player.cache.getPlayer();
 			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.GAME.PLAYING_ON, CONFIG.mapName);
 
@@ -284,6 +297,8 @@ public class GameInstance {
 			GameStatusChangeEvent statusChangeEvent = new GameStatusChangeEvent(this, GameStatus.START_DEATHMATCH);
 			Bukkit.getServer().getPluginManager().callEvent(statusChangeEvent);
 
+			currentStatus = GameStatus.START_DEATHMATCH;
+
 			startDeathmatch();
 		}
 	}
@@ -296,6 +311,8 @@ public class GameInstance {
 		bossbar.resetHealth(deathmatchConfig.deathmatchDuration);
 		bossbar.setOptions("Deathmatch", BarColor.RED);
 		timerInstance.setOperation(GameStatus.CLOSE_PLAY_AREA, deathmatchConfig.deathmatchDuration);
+
+		playersAtDeathmatch = checkAlive();
 	}
 	
 	private void closeBorder() {
@@ -331,7 +348,7 @@ public class GameInstance {
 	}
 	
 	public void updateMostKills() {
-		List<PlayerState> states = ingamePlayers.values().stream().filter(x -> !x.spectating).sorted((p1, p2) -> Integer.compare(p2.kills, p1.kills)).toList();
+		List<PlayerState> states = INGAME_PLAYERS.values().stream().filter(x -> !x.spectating).sorted((p1, p2) -> Integer.compare(p2.kills, p1.kills)).toList();
 		int i = 0;
 		for (PlayerState state : states) {
 			switch (i) {
@@ -344,7 +361,7 @@ public class GameInstance {
 	}
 	
 	private void playGlobalPingSound() {
-		for (PlayerState ps : ingamePlayers.values()) {
+		for (PlayerState ps : INGAME_PLAYERS.values()) {
 			Player p = ps.cache.getPlayer();
 			p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 1f, 1f);
 		}
@@ -353,7 +370,7 @@ public class GameInstance {
 	public int checkAlive() {
 		Player w = null;
 		int count = 0;
-		for (PlayerState ps : ingamePlayers.values()) {
+		for (PlayerState ps : INGAME_PLAYERS.values()) {
 			if (ps.alive) {
 				if (w == null) {
 					w = ps.cache.getPlayer();
@@ -391,6 +408,10 @@ public class GameInstance {
 				}
 			}
 
+			if (CONFIG.lightningOnDeath) {
+				player.getWorld().strikeLightningEffect(player.getLocation());
+			}
+
 			GameDeathEvent gameDeathEvent = new GameDeathEvent(this, player, killer);
 			Bukkit.getPluginManager().callEvent(gameDeathEvent);
 			return true;
@@ -413,11 +434,11 @@ public class GameInstance {
 	}
 	
 	public void endGame(String victor) {
-		openedChests.clear();
+		OPENED_CHESTS.clear();
 		if (victor != null) {
 			announce(Messages.GAME.WON, victor);
 		}
-		ArrayList<PlayerState> listPlayerState = new ArrayList<>(ingamePlayers.values());
+		ArrayList<PlayerState> listPlayerState = new ArrayList<>(INGAME_PLAYERS.values());
 		listPlayerState.sort((p1, p2) -> Integer.compare(p2.kills, p1.kills));
 		announce(Messages.GAME.KILLSTATS);
 
@@ -475,7 +496,7 @@ public class GameInstance {
 	
 	public boolean removePlayer(Player player, boolean droppedFromSession) {
 		UUID uuid = player.getUniqueId();
-		PlayerState ps = ingamePlayers.get(uuid);
+		PlayerState ps = INGAME_PLAYERS.get(uuid);
 		boolean returning = ps.alive;
 		if (returning) {
 			if (droppedFromSession) {
@@ -489,7 +510,7 @@ public class GameInstance {
 		}
 		if (droppedFromSession) {
 			restoreState(ps);
-			ingamePlayers.remove(uuid);
+			INGAME_PLAYERS.remove(uuid);
 			bossbar.unsetVisibleTo(player);
 			border.unsetVisibleTo(player);
 		} else {
@@ -504,12 +525,14 @@ public class GameInstance {
 	}
 	
 	public void terminate() {
-		terminate(ingamePlayers.values());
+		terminate(INGAME_PLAYERS.values());
 	}
 	
 	private void terminate(Collection<PlayerState> playerStates) {
 		if (!flagIsActive) return;
 		flagIsActive = false;
+
+		duration = (new Date().getTime() - startedAt.getTime()) / 1000;
 
 		GameEndedEvent gameEndedEvent = new GameEndedEvent(this);
 		Bukkit.getPluginManager().callEvent(gameEndedEvent);
@@ -537,30 +560,54 @@ public class GameInstance {
 	}
 	
 	public void announce(PluginMessage message) {
-		for (PlayerState ps : ingamePlayers.values()) {
+		for (PlayerState ps : INGAME_PLAYERS.values()) {
 			Player p = ps.cache.getPlayer();
 			MANAGER.getPlugin().getMessageProvider().sendMessage(p, message);
 		}
 	}
 	
 	public void announce(PluginMessage message, Object... formatVars) {
-		for (PlayerState ps : ingamePlayers.values()) {
+		for (PlayerState ps : INGAME_PLAYERS.values()) {
 			Player p = ps.cache.getPlayer();
 			MANAGER.getPlugin().getMessageProvider().sendMessage(p, message, formatVars);
 		}
 	}
 	
 	public PlayerState getPlayerState(Player player) {
-		return ingamePlayers.get(player.getUniqueId());
+		return INGAME_PLAYERS.get(player.getUniqueId());
 	}
 
 	public ChestObject getChestData(Location location) {
 		Optional<ChestObject> oco = CONFIG.chestLocations.stream().filter(co -> co.location.equals(location)).findFirst();
 		return oco.orElse(null);
 	}
-	
+
+	public int getInitialPlayerCount() {
+		return initialPlayers;
+	}
+
+	public Date getStartedAt() {
+		return startedAt;
+	}
+
+	public long getDuration() {
+		return duration;
+	}
+
+	public int getPlayersAtDeathmatch() {
+		return playersAtDeathmatch;
+	}
+
+	public DeathmatchConfiguration getDeathmatchConfig() {
+		return deathmatchConfig;
+	}
+
 	public List<ItemSet> getItemSets() {
 		return CONFIG.itemSets;
+	}
+
+	public GameStatus getStatus() {
+		return currentStatus;
 	}
 
 	public boolean isActive() {
@@ -594,7 +641,19 @@ public class GameInstance {
 		return CONFIG.getFileName();
 	}
 
-	public List<String> getOpenedChests() {
-		return openedChests;
+	public HashSet<String> getOpenedChests() {
+		return OPENED_CHESTS;
+	}
+
+	public GameConfiguration getGameConfiguration() {
+		return CONFIG;
+	}
+
+	public Iterable<PlayerState> getPlayerStates() {
+		return INGAME_PLAYERS.values();
+	}
+
+	public int getTeamSize() {
+		return 1;
 	}
 }

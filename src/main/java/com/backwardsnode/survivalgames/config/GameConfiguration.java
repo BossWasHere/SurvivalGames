@@ -42,8 +42,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class GameConfiguration implements IConfigurable {
 
 	public transient static final int SUPPORTED_CONFIG = 2;
-	
-	private transient File _gameConfigFile;
+
+    private transient File _gameConfigFile;
 	public transient List<Location> spawnLocs;
 	public transient int defaultSetIndex = 0;
 	
@@ -63,6 +63,7 @@ public class GameConfiguration implements IConfigurable {
 	public boolean preFillChests;
 	public boolean spawnFireworkOnKill;
 	public boolean spawnFireworkOnDeath;
+	public boolean lightningOnDeath;
 	public boolean isWIP;
 	
 	public List<ChestObject> chestLocations;

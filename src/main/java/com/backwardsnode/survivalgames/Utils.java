@@ -32,6 +32,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -304,5 +305,30 @@ public class Utils {
 
     public static String secondsToString(long pTime) {
         return String.format("%02d:%02d", pTime / 60, pTime % 60);
+    }
+
+    public static String getFileChecksum(MessageDigest digest, File file) throws IOException
+    {
+        FileInputStream fis = new FileInputStream(file);
+
+        byte[] byteArray = new byte[1024];
+        int bytesCount = 0;
+
+        while ((bytesCount = fis.read(byteArray)) != -1) {
+            digest.update(byteArray, 0, bytesCount);
+        };
+
+        fis.close();
+
+        byte[] bytes = digest.digest();
+
+        StringBuilder sb = new StringBuilder(2 * bytes.length);
+        for(int i = 0; i< bytes.length; i++)
+        {
+            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+        //return complete hash
+        return sb.toString();
     }
 }

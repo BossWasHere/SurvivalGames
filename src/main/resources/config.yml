@@ -1,3 +1,217 @@
 # BackwardsNode's Survival Games, a Minecraft Bukkit custom gamemode
 # Copyright (C) 2019-2022 BackwardsNode/BossWasHere
 default-language: "en_US"
+
+# if set to true, will regularly check for updates
+update-check: true
+
+# wheter games should start when the server launches
+# false - don't auto-start
+# true - auto-start
+# invite - try to start, but with invitations only
+auto-start: false
+
+# what to do when auto-starting and the game is aborted
+# nothing - players remain connected to this server
+# bungee - sends a request using BungeeGameLib to move the players
+# bungeeshutdown - as above, but shuts down the server after some time
+# kick - kicks the players from the server
+# kickshutdown - as above, but shuts down the server after some time
+auto-start-abort: nothing
+
+# what to do when a game has completed
+# nothing - players remain connected to this server
+# newgame - a new game is started with the same players unless they choose to leave
+# invitenewgame - a new game is started but players are asked if they wish to rejoin
+# bungee - sends a request using BungeeGameLib to move the players
+# bungeeshutdown - as above, but shuts down the server after some time
+# kick - kicks the players from the server
+# kickshutdown - as above, but shuts down the server after some time
+game-completion: nothing
+
+# if set to true, players who didn't participate can begin watching even after a game has started
+# if set to false, and auto-start is set to true, players will be kicked if they try to join
+allow-spectate-in-progress: true
+
+# if set to true, spectators can look at the inventories of alive players
+allow-spectators-see-inventory: true
+
+# using the BungeeGameLib plugin, the proxy can perform actions when the game finishes
+# if enable-party is true, the current party group will be synchronized across the network
+bungee: false
+
+# try to connect to PlaceholderAPI
+placeholderapi: true
+
+# enable party mode and allow players to go into a game together
+# only the leader has to accept invitations
+enable-party: true
+
+# enable cosmetic options (custom kill firework, etc.)
+enable-cosmetics: true
+
+# override map settings with global settings below
+globalSettings:
+  # list of ids of items which should be prohibited while in-game
+  disable-items: []
+  # allow killstreak bounties
+  permit-bounties: true
+  # allow chests to be refilled after some time
+  permit-chest-refill: true
+  # allow loot drops to be called in with a special item
+  permit-callable-loot-drops: true
+  # allow loot drops to be dropped
+  permit-loot-drops: true
+  # allow the current map to specify the lobby settings
+  permit-map-lobby-override: true
+  # allow maps to use survival mode instead of adventure mode
+  permit-survival-mode: false
+  # allow maps to use a special item to track the nearest player
+  permit-tracking-compass: true
+  # how daytime should be controlled for maps that support it
+  # off - disable all time controls
+  # world - set the time in the world
+  # protocol - use ProtocolLib to send fake time data (recommended)
+  time-control-mode: protocol
+
+# settings for map voting
+map-voting:
+  # voting mode for map selection
+  # off - voting is always disabled - a map must be specified (or default-map is used with auto-start)
+  # vote - a vote can be held
+  # bungee - communicates with BungeeGameLib to determine which map to play
+  mode: vote
+  # how many random options to choose from when voting
+  # set to -1 to display all options every time
+  voting-selection: 3
+  # specifies the map to load for auto-start without voting
+  default-map: "example"
+
+# settings for special feature voting
+feature-voting:
+  # allow voting for bounties (if supported by map)
+  enable-bounty-voting: false
+  # allow voting to refill chests after some time (if supported by map)
+  chest-refill-voting: false
+  # allow voting to disable enchantments (if supported by map)
+  enchantment-voting: false
+  # allow voting for player health (if supported by map)
+  health-voting: false
+  # allow voting to enable/disable loot drops (if supported by map)
+  loot-drop-voting: false
+  # allow voting for loot tiers (if supported by map)
+  loot-strength-voting: false
+
+# settings for sponsor voting
+sponsor-voting:
+  # enable sponsor voting (give some player a bonus effect or item)
+  # off - disable sponsor voting
+  # random - players are asked if they want to sponsor, but cannot choose who
+  # on - players are given the opportunity to sponsor a specific player
+  mode: random
+  # how many spectators are required to start a vote
+  required-spectators: 2
+  # how many alive players are required to start a vote
+  required-players: 3
+  # how many times sponsor voting can be triggered per game
+  max-sponsor-votes-per-game: 2
+  # how many times sponsor voting can be triggered in a single phase
+  max-sponsor-votes-per-phase: 1
+  # the minimum amount of time to wait before a vote can be triggered in ticks
+  voting-delay-min: 800
+  # the maximum amount of time for a trigger attempt to occur after the voting delay has passed in ticks
+  voting-try-trigger-within: 500
+  # the initial probability that a vote will occur when the trigger timer reaches 0
+  voting-trigger-probability: 0.5
+  # the amount to increase the probability that a vote will occur on the next timer cycle
+  voting-trigger-probability-increment: 0.1
+
+# use a lobby for pre-game and post-game
+lobby:
+  pregame:
+    # gather all players in lobby before game starts
+    enabled: false
+    # lobby location to teleport players to
+    location: "0.5,100,0.5,survivalgames"
+  postgame:
+    # gather all players in lobby after game ends
+    enabled: false
+    # lobby location to teleport players to
+    location: "0.5,100,0.5,survivalgames"
+    # time in ticks for postgame lobby to remain open for
+    duration: 200
+    # teleport players back to their original posititon (before joining the game)
+    # when postgame lobby closes
+    teleport-back: true
+    # podium settings
+    podium:
+      # enable podium for winners/losers
+      enabled: false
+      # if set to false, players on podium positions cannot move around
+      can-move: true
+      # podium positions
+      positions:
+        1: "0.5,100,0.5,survivalgames"
+        2: "0.5,100,0.5,survivalgames"
+        3: "0.5,100,0.5,survivalgames"
+        last: "0.5,100,0.5,survivalgames"
+
+# settings for team modes
+teams:
+  # enable team modes
+  enabled: false
+  # require balanced teams to begin
+  # none - teams are filled and balanced as well as possible
+  # required - all teams must have the same number of players to begin
+  # performance - use the players' performance scores to create teams
+  # performance+ - as above, but allow splitting of party groups
+  balancing-mode: required
+  # allow players to enter team modes without joining a team
+  allow-solo-queueing: true
+  # allow parties to enter team modes, even if their party is too small
+  allow-small-party-queueing: true
+  # allow maps to use respawn points
+  allow-respawns: true
+
+# record past games, winners, kills, etc.
+record-games: true
+
+# record player stats, wins, kills, time played, etc.
+record-stats: true
+
+storage:
+  # how to store history
+  # none - disables history
+  # csv - stores as comma-separated values in multiple files (write-only)
+  # sqlite - stores as an SQLite database
+  # h2 - stores as an H2 database (recommended over SQLite)
+  # mysql - stores history on a remote server
+  mode: h2
+
+  # The table prefix for all tables
+  table-prefix: "sg_"
+
+  # configure remote database settings
+  mysql:
+    # Specify the address of the database
+    address: "127.0.0.1"
+
+    # The default port for MySQL is 3306
+    port: 3306
+
+    # Database credentials
+    username: "root"
+    password: ""
+
+    # The name of the database to store history
+    database: "sg"
+
+    pool:
+      # Sets the maximum size of the connection pool
+      maximum-pool-size: 10
+
+      # Maximum lifetime of a connection in the pool in milliseconds.
+      maximum-lifetime: 1800000 # 30 minutes
+
+      # Maximum number of milliseconds to wait for a connection from the pool
+      connection-timeout: 5000 # 5 seconds

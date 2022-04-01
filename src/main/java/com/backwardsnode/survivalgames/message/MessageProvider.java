@@ -138,8 +138,15 @@ public class MessageProvider {
     public void sendMessage(CommandSender sender, PluginMessage message, Object... formatVars) {
         String locale = CURRENT_DEFAULT;
 
-        if (sender instanceof Player) {
-            locale = ((Player) sender).getLocale();
+        if (sender == null) {
+            for (String line : compileMessage(message, CURRENT_DEFAULT, formatVars).split("\\r?\\n")) {
+                PLUGIN.getLogger().info(line);
+            }
+            return;
+        }
+
+        if (sender instanceof Player player) {
+            locale = player.getLocale();
         }
 
         String[] messages = compileMessage(message, locale, formatVars).split("\\r?\\n");

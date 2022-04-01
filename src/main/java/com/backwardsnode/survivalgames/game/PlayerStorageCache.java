@@ -28,7 +28,7 @@ public class PlayerStorageCache {
 
 	private final Player player;
 	private final boolean storeHotbarOnly;
-	private ItemStack[] storedInventory;
+    private ItemStack[] storedInventory;
 	private Location playerLocation;
 	private int playerExperienceLevel;
 	private float playerExperience;

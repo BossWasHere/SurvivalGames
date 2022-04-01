@@ -17,7 +17,7 @@
  */
 package com.backwardsnode.survivalgames.controller;
 
-import com.backwardsnode.survivalgames.ProtocolConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.ProtocolConnector;
 import com.backwardsnode.survivalgames.game.PlayerState;
 import org.bukkit.Bukkit;
 import org.bukkit.World;

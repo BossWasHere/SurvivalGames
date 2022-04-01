@@ -15,8 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.backwardsnode.survivalgames;
+package com.backwardsnode.survivalgames.dependency;
 
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.config.PluginConfigKeys;
+import com.backwardsnode.survivalgames.database.SQLDataSource;
+import com.backwardsnode.survivalgames.dependency.external.HikariConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.PlaceholderAPIConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.ProtocolConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
+import com.backwardsnode.survivalgames.dependency.redundancy.JDBCDataSource;
 import org.bukkit.Bukkit;
 
 public class DependencyManager {
@@ -25,18 +33,28 @@ public class DependencyManager {
 
     private ProtocolConnector protocolConnector;
     private VaultConnector vaultConnector;
+    private PlaceholderAPIConnector placeholderAPIConnector;
+
+    private SQLDataSource dataSource;
 
     public DependencyManager(Plugin plugin) {
         PLUGIN = plugin;
     }
 
-    public void connect() {
+    public void loadPlugins() {
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
             protocolConnector = new ProtocolConnector(PLUGIN);
             protocolConnector.listenPackets();
             PLUGIN.getLogger().info("Loaded plugin hook with ProtocolLib");
         } else {
             PLUGIN.getLogger().warning("Loaded plugin without ProtocolLib, some features will be disabled");
+        }
+
+        if (PluginConfigKeys.USE_PLACEHOLDER_API.get(PLUGIN.getConfig()) && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            placeholderAPIConnector = new PlaceholderAPIConnector(PLUGIN);
+            placeholderAPIConnector.register();
+
+            PLUGIN.getLogger().info("Loaded plugin hook with PlaceholderAPI");
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
@@ -49,20 +67,49 @@ public class DependencyManager {
         }
     }
 
+    public void loadDataSource() {
+
+        if (DependencyInjector.HIKARI_CP.downloadAndInject(PLUGIN)) {
+            dataSource = new HikariConnector();
+            PLUGIN.getLogger().info("Connected to HikariCP");
+        } else {
+            dataSource = new JDBCDataSource();
+            PLUGIN.getLogger().warning("Could not connect to HikariCP, using built-in DriverManager");
+        }
+    }
+
     public void disconnect() {
         if (protocolConnector != null) {
             protocolConnector.stopListeningPackets();
+            protocolConnector = null;
         }
 
-        protocolConnector = null;
+        if (placeholderAPIConnector != null) {
+            placeholderAPIConnector.unregister();
+            placeholderAPIConnector = null;
+        }
+
         vaultConnector = null;
+
+        if (dataSource != null) {
+            dataSource.close();
+            dataSource = null;
+        }
     }
 
     public ProtocolConnector getProtocolConnector() {
         return protocolConnector;
     }
 
+    public PlaceholderAPIConnector getPlaceholderAPIConnector() {
+        return placeholderAPIConnector;
+    }
+
     public VaultConnector getVaultConnector() {
         return vaultConnector;
+    }
+
+    public SQLDataSource getDataSource() {
+        return dataSource;
     }
 }

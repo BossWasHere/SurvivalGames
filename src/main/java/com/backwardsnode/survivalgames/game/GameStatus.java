@@ -19,6 +19,7 @@ package com.backwardsnode.survivalgames.game;
 
 public enum GameStatus {
 
+	WAITING,
 	START_ERR_MAP_IN_USE,
 	START_ERR_PLAYER_IN_GAME,
 	START_ERR_FEW_PLAYERS,

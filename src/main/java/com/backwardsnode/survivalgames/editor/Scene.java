@@ -17,7 +17,7 @@
  */
 package com.backwardsnode.survivalgames.editor;
 
-import com.backwardsnode.survivalgames.ProtocolConnector;
+import com.backwardsnode.survivalgames.dependency.plugin.ProtocolConnector;
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.BorderConfiguration;
 import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
@@ -517,5 +517,9 @@ public class Scene implements IConfigurable {
 		}
 		currentQuery = null;
 		return true;
+	}
+
+	public GameConfiguration getGameConfiguration() {
+		return gameConfig;
 	}
 }

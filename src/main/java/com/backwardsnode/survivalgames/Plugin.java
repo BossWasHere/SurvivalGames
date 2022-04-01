@@ -17,6 +17,10 @@
  */
 package com.backwardsnode.survivalgames;
 
+import com.backwardsnode.survivalgames.config.PluginConfigKeys;
+import com.backwardsnode.survivalgames.database.DataFrontend;
+import com.backwardsnode.survivalgames.database.DataStoreSource;
+import com.backwardsnode.survivalgames.dependency.DependencyManager;
 import com.backwardsnode.survivalgames.game.PlayerCacheSettings;
 import com.backwardsnode.survivalgames.message.MessageProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,6 +38,7 @@ public final class Plugin extends JavaPlugin {
 	public static boolean TEST = false;
 
 	private CommandRegistry commandRegistry;
+	private DataFrontend dataFrontend;
 	private DependencyManager dependencyManager;
 	private MessageProvider messageProvider;
 	private PlayerCacheSettings cacheSettings;
@@ -45,12 +50,13 @@ public final class Plugin extends JavaPlugin {
 
 		// Pre init
 		getLanguageFolder().mkdirs();
+		getLibraryFolder().mkdir();
 		getMapFolder().mkdir();
 		getBackupFolder().mkdir();
 
 		saveDefaultConfig();
 
-		String language = getConfig().getString("default-language", MessageProvider.DEFAULT_LOCALE);
+		String language = PluginConfigKeys.DEFAULT_LANGUAGE.get(getConfig());
 		messageProvider = new MessageProvider(this, language, true);
 
 		// Extract example.json
@@ -67,7 +73,15 @@ public final class Plugin extends JavaPlugin {
 	public void onEnable() {
 		getLogger().info("BackwardsNode's Survival Games (C) 2019-2022 BossWasHere/BackwardsNode | Version: " + getDescription().getVersion());
 
-		dependencyManager.connect();
+		dependencyManager.loadPlugins();
+
+		DataStoreSource mode = PluginConfigKeys.STORAGE_MODE.get(getConfig());
+		getLogger().info("Data store mode: " + mode);
+
+		if (mode.isJDBC()) {
+			dependencyManager.loadDataSource();
+		}
+		dataFrontend = new DataFrontend(this, mode);
 
 		pluginListener = new PluginListener(this);
 		sgHost = new SGHost(this);
@@ -86,6 +100,12 @@ public final class Plugin extends JavaPlugin {
 
 		pluginListener.reset();
 
+		try {
+			dataFrontend.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		dependencyManager.disconnect();
 	}
 
@@ -95,6 +115,10 @@ public final class Plugin extends JavaPlugin {
 
 	public File getLanguageFolder() {
 		return new File(getDataFolder(), "lang/");
+	}
+
+	public File getLibraryFolder() {
+		return new File(getDataFolder(), "lib/");
 	}
 
 	public File getMapFolder() {
