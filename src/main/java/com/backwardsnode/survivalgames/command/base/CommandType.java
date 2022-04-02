@@ -31,18 +31,22 @@ import java.util.List;
 
 public enum CommandType {
 
-    SG_CANCEL("sgcancel", "SG Cancel", Messages.COMMAND.SG_CANCEL.DESC, Messages.COMMAND.SG_CANCEL.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgleave", "sgc"),
-    SG_CHECK("sgcheck", "SG Check Config", Messages.COMMAND.SG_CHECK.DESC, Messages.COMMAND.SG_CHECK.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "checksurvivalconfig", "checksc"),
-    SG_DEATHMATCH("sgdeathmatch", "SG Deathmatch", Messages.COMMAND.SG_DEATHMATCH.DESC, Messages.COMMAND.SG_DEATHMATCH.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgdeath", "sgdm"),
-    SG_DELETE("sgdelete", "SG Delete", Messages.COMMAND.SG_DELETE.DESC, Messages.COMMAND.SG_DELETE.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgd"),
-    SG_EDIT("sgedit", "SG Edit", Messages.COMMAND.SG_EDIT.DESC, Messages.COMMAND.SG_EDIT.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "survivalgamesedit", "sge"),
-    SG_DISCARD("sgdiscard", "SG Discard Edit", Messages.COMMAND.SG_DISCARD.DESC, Messages.COMMAND.SG_DISCARD.USAGE, SG_EDIT.getBasicPermission(), ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgdisc"),
-    SG_JOIN("sgjoin", "SG Join", Messages.COMMAND.SG_JOIN.DESC, Messages.COMMAND.SG_JOIN.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgj"),
-    SG_LIST("sglist", "SG List", Messages.COMMAND.SG_LIST.DESC, Messages.COMMAND.SG_LIST.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgl"),
-    SG_MIGRATE("sgmigrate", "SG Migrate", Messages.COMMAND.SG_MIGRATE.DESC, Messages.COMMAND.SG_MIGRATE.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgm", "sgconvert"),
-    SG_RELOAD_LANG("sgreloadlang", "SG Reload Language", Messages.COMMAND.SG_RELOAD_LANG.DESC, Messages.COMMAND.SG_RELOAD_LANG.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgrl"),
-    SG_START("sgstart", "SG Start", Messages.COMMAND.SG_START.DESC, Messages.COMMAND.SG_START.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgs"),
-    SG_STOP("sgstop", "SG Stop", Messages.COMMAND.SG_STOP.DESC, Messages.COMMAND.SG_STOP.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgend");
+    SG_AUTO("sgauto", "SG Auto Start", Messages.Command.SGAuto.DESC, Messages.Command.SGAuto.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sga"),
+    SG_CANCEL("sgcancel", "SG Cancel", Messages.Command.SGCancel.DESC, Messages.Command.SGCancel.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgleave", "sgc"),
+    SG_CHECK("sgcheck", "SG Check Config", Messages.Command.SGCheck.DESC, Messages.Command.SGCheck.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "checksurvivalconfig", "checksc"),
+    SG_DEATHMATCH("sgdeathmatch", "SG Deathmatch", Messages.Command.SGDeathmatch.DESC, Messages.Command.SGDeathmatch.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgdeath", "sgdm"),
+    SG_DELETE("sgdelete", "SG Delete", Messages.Command.SGDelete.DESC, Messages.Command.SGDelete.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgd"),
+    SG_EDIT("sgedit", "SG Edit", Messages.Command.SGEdit.DESC, Messages.Command.SGEdit.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "survivalgamesedit", "sge"),
+    SG_DISCARD("sgdiscard", "SG Discard Edit", Messages.Command.SGDiscard.DESC, Messages.Command.SGDiscard.USAGE, SG_EDIT.getBasicPermission(), ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgdisc"),
+    SG_JOIN("sgjoin", "SG Join", Messages.Command.SGJoin.DESC, Messages.Command.SGJoin.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgj"),
+    SG_LIST("sglist", "SG List", Messages.Command.SGList.DESC, Messages.Command.SGList.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgl"),
+    SG_MIGRATE("sgmigrate", "SG Migrate", Messages.Command.SGMigrate.DESC, Messages.Command.SGMigrate.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgm", "sgconvert"),
+    SG_RELOAD_LANG("sgreloadlang", "SG Reload Language", Messages.Command.SGReloadLang.DESC, Messages.Command.SGReloadLang.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgrl"),
+    SG_START("sgstart", "SG Start", Messages.Command.SGStart.DESC, Messages.Command.SGStart.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgs"),
+    SG_STOP("sgstop", "SG Stop", Messages.Command.SGStop.DESC, Messages.Command.SGStop.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgend"),
+    SG_VOTE("sgvote", "SG Vote", Messages.Command.SGVote.DESC, Messages.Command.SGVote.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgv"),
+
+    TEST_LOOT_DROP("testlootdrop", "Test Loot Drop", Messages.Command.TestCommand.DESC, Messages.Command.TestCommand.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION);
 
     private final String COMMAND;
     private final String FRIENDLY_NAME;

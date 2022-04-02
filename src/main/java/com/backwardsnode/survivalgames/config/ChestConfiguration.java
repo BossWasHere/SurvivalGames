@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.backwardsnode.survivalgames.item;
+package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.IConfigurable;
+import com.backwardsnode.survivalgames.item.ItemModel;
+import com.backwardsnode.survivalgames.item.ItemSet;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Chest;
@@ -30,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class ChestObject implements IConfigurable {
+public class ChestConfiguration implements IConfigurable {
 	
 	public String loc;
 	public List<String> itemSets;

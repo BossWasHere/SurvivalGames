@@ -20,7 +20,7 @@ package com.backwardsnode.survivalgames.config.migration;
 
 import com.backwardsnode.survivalgames.config.BorderConfiguration;
 import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.item.ChestObject;
+import com.backwardsnode.survivalgames.config.ChestConfiguration;
 import com.backwardsnode.survivalgames.item.EnchantmentModel;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
@@ -35,8 +35,6 @@ public class Version1Model {
     public String mapName;
     @SerializedName("spawnLocations")
     public List<String> strSpawns;
-    @SerializedName("implements")
-    public List<String> implementList;
     public BorderConfiguration border;
 
     public int waitTime;
@@ -47,7 +45,7 @@ public class Version1Model {
     public boolean spawnFireworkOnDeath;
     public boolean isWIP;
 
-    public List<ChestObject> chestLocations;
+    public List<ChestConfiguration> chestLocations;
     public List<Version1ItemSet> itemSets;
 
     public static class Version1ItemSet {
@@ -99,7 +97,6 @@ public class Version1Model {
         gc.entryFee = 0;
         gc.rewards = new HashMap<>();
         gc.strSpawns = strSpawns;
-        gc.implementList = implementList;
         gc.border = border;
         gc.waitTime = waitTime;
         gc.gracePeriod = gracePeriod;

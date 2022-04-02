@@ -35,7 +35,7 @@ import java.util.HashSet;
 public class ProtocolConnector {
 
 	private final Plugin plugin;
-	private ProtocolManager protocolManager;
+	private final ProtocolManager protocolManager;
 	
 	public ProtocolConnector(Plugin plugin) {
 		this.plugin = plugin;
@@ -43,7 +43,7 @@ public class ProtocolConnector {
 	}
 	
 	public void listenPackets() {
-		
+
 //		protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.NORMAL, PacketType.Play.Server.WORLD_BORDER) {
 //			@Override
 //			public void onPacketSending(PacketEvent event) {

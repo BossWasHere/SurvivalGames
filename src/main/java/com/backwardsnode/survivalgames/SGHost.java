@@ -28,6 +28,7 @@ import com.backwardsnode.survivalgames.game.GameInstance;
 import com.backwardsnode.survivalgames.game.GameManager;
 import com.backwardsnode.survivalgames.game.InvitationCancelType;
 import com.backwardsnode.survivalgames.game.InvitedGameConfiguration;
+import com.backwardsnode.survivalgames.world.LootDropManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -43,6 +44,7 @@ public class SGHost {
 
     private final EditorManager EDITOR_MANAGER;
     private final GameManager GAME_MANAGER;
+    private final LootDropManager LOOT_DROP_MANAGER;
 
     private final HashMap<String, InvitedGameConfiguration> INVITATIONS;
 
@@ -53,6 +55,7 @@ public class SGHost {
 
         EDITOR_MANAGER = new EditorManager(plugin);
         GAME_MANAGER = new GameManager(plugin);
+        LOOT_DROP_MANAGER = new LootDropManager(plugin);
         INVITATIONS = new HashMap<>();
     }
 
@@ -70,6 +73,14 @@ public class SGHost {
      */
     public GameManager getGameManager() {
         return GAME_MANAGER;
+    }
+
+    /**
+     * Gets the current manager for loot drops
+     * @return The current {@link LootDropManager}
+     */
+    public LootDropManager getLootDropManager() {
+        return LOOT_DROP_MANAGER;
     }
 
     /**
@@ -264,5 +275,6 @@ public class SGHost {
 
         GAME_MANAGER.close(true);
         EDITOR_MANAGER.closeAllEditors(true);
+        LOOT_DROP_MANAGER.clearAll();
     }
 }

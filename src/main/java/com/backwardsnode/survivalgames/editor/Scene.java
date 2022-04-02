@@ -25,7 +25,7 @@ import com.backwardsnode.survivalgames.config.GameConfiguration;
 import com.backwardsnode.survivalgames.config.IConfigurable;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.game.PlayerStorageCache;
-import com.backwardsnode.survivalgames.item.ChestObject;
+import com.backwardsnode.survivalgames.config.ChestConfiguration;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -87,9 +87,6 @@ public class Scene implements IConfigurable {
 		if (gameConfig.mapName == null) {
 			gameConfig.mapName = "Untitled";
 		}
-		if (gameConfig.implementList == null) {
-			gameConfig.implementList = new ArrayList<>();
-		}
 		if (gameConfig.spawnLocs == null) {
 			gameConfig.spawnLocs = new ArrayList<>();
 		}
@@ -112,7 +109,7 @@ public class Scene implements IConfigurable {
 		for (Location spawnpoint : gameConfig.spawnLocs) {
 			gameConfig.strSpawns.add(Utils.stringFromLocation(spawnpoint, false, true));
 		}
-		for (ChestObject co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.chestLocations) {
 			co.loc = Utils.stringFromLocation(co.location, false, true);
 		}
 		return gameConfig.saveConfiguration();
@@ -163,22 +160,22 @@ public class Scene implements IConfigurable {
 	public void toggleWorldBorder() {
 		if (borderController != null) {
 			if (isBorderVisible) {
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.DISABLED_BORDER);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.DISABLED_BORDER);
 				borderController.unsetVisibleTo(editor);
 				isBorderVisible = false;
 			} else {
 				borderController.setVisibleTo(editor);
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.ENABLED_BORDER);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ENABLED_BORDER);
 				isBorderVisible = true;
 			}
 		} else {
 			if (gameConfig.getDeathmatchConfigs().size() < 1) {
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.NO_DEATHMATCH_LOCS);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.NO_DEATHMATCH_LOCS);
 				return;
 			}
 			selectedData = gameConfig.getDeathmatchConfigs().get(0);
 			if (selectedData == null) {
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.NO_DEATHMATCH_LOCS);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.NO_DEATHMATCH_LOCS);
 				return;
 			}
 			ProtocolConnector connector = manager.getHandler().getDependencyManager().getProtocolConnector();
@@ -188,10 +185,10 @@ public class Scene implements IConfigurable {
 				borderController.setTarget(selectedData.centerX, selectedData.centerZ, gameConfig.border.borderStartRadius, 0);
 				borderController.setVisibleTo(editor);
 				borderController.updatePlayers();
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.ENABLED_BORDER);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ENABLED_BORDER);
 				isBorderVisible = true;
 			} else {
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.BORDER_UNAVAILABLE);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.BORDER_UNAVAILABLE);
 			}
 		}
 	}
@@ -209,7 +206,7 @@ public class Scene implements IConfigurable {
 		}
 		if (borderController != null) {
 			if (!isBorderVisible) {
-				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.ENABLED_BORDER);
+				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ENABLED_BORDER);
 				borderController.setVisibleTo(editor);
 				isBorderVisible = true;
 			}
@@ -349,7 +346,7 @@ public class Scene implements IConfigurable {
 	}
 
 	public boolean addItemChest(Location l) {
-		ChestObject co = new ChestObject();
+		ChestConfiguration co = new ChestConfiguration();
 		co.loc = Utils.stringFromLocation(l, false, true);
 		co.location = l;
 		co.itemSets = new ArrayList<>();
@@ -362,7 +359,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public boolean addChestItemSet(Location l, String item) {
-		for (ChestObject co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.chestLocations) {
 			if (l.equals(co.location)) {
 				co.itemSets.add(item);
 				return true;
@@ -372,7 +369,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public boolean updateAllChestItemSets(Location l, List<String> itemSets) {
-		for (ChestObject co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.chestLocations) {
 			if (l.equals(co.location)) {
 				co.itemSets.clear();
 				itemSets.forEach(itemSet -> co.itemSets.add(itemSet));
@@ -383,7 +380,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public List<String> getChestItemSets(Location l) {
-		for (ChestObject co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.chestLocations) {
 			if (l.equals(co.location)) {
 				return co.itemSets;
 			}
@@ -465,20 +462,20 @@ public class Scene implements IConfigurable {
 		}
 
 		if (message.toLowerCase().contentEquals("cancel")) {
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.CANCEL_INPUT);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.CANCEL_INPUT);
 			currentQuery = null;
 			return true;
 		}
 		PredicateResult<String, ?> pr = currentQuery.getPredicate().validate(message);
 		if (!pr.SUCCESSFUL) {
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.BAD_VALUE);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.BAD_VALUE);
 			return true;
 		}
 		String strOutput = pr.INPUT;
 		switch (currentQuery) {
 		case NEW_ITEMSET_NAME:
 			createItemSet(strOutput, false);
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.ADDED_ITEM_SET);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ADDED_ITEM_SET);
 
 			Bukkit.getServer().getScheduler().callSyncMethod(manager.getHandler(), () ->
 				manager.openItemSetCustomiseInventory(editor, strOutput)
@@ -487,31 +484,31 @@ public class Scene implements IConfigurable {
 			break;
 		case RENAME_ITEMSET_NAME:
 			renameItemSet(associatedKey, strOutput);
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.RENAMED_ITEM_SET);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.RENAMED_ITEM_SET);
 			break;
 		case MAP_NAME:
 			setMapName(strOutput);
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.RENAMED_MAP);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.RENAMED_MAP);
 			break;
 		case TIME_TO_SHRINK:
 			setTimeToShrink(pr.wrapOutput(Integer.class));
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.UPDATED_PRE_SHRINK_DURATION);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_PRE_SHRINK_DURATION);
 			break;
 		case BORDER_DPS:
 			setBorderDps(pr.wrapOutput(Double.class));
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.UPDATED_BORDER_DPS);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_BORDER_DPS);
 			break;
 		case BORDER_START_RADIUS:
 			setBorderStartDiameter(pr.wrapOutput(Double.class));
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.UPDATED_BORDER_RADIUS);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_BORDER_RADIUS);
 			break;
 		case GRACE_PERIOD:
 			setGracePeriod(pr.wrapOutput(Integer.class));
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.UPDATED_PVP_OFF_TIME);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_PVP_OFF_TIME);
 			break;
 		case WAIT_PERIOD:
 			setWaitPeriod(pr.wrapOutput(Integer.class));
-			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.EDITOR.UPDATED_WAIT_PERIOD);
+			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_WAIT_PERIOD);
 		default:
 			break;
 		}

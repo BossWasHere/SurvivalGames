@@ -55,7 +55,7 @@ public class SGMigrate extends BaseCommand {
 					target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
 				}
 				if (!target.exists()) {
-					sendMessage(sender, Messages.PLUGIN.IO_FILE_MISSING, args[0]);
+					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
 				} else {
 					String data = Utils.readFile(target, Charset.defaultCharset());
 					JsonObject json = new Gson().fromJson(data, JsonObject.class);
@@ -64,7 +64,7 @@ public class SGMigrate extends BaseCommand {
 					if (jsonver != null) {
 						version = jsonver.getAsInt();
 					}
-					sendMessage(sender, Messages.COMMAND.SG_MIGRATE.ATTEMPT, target.getName(), version);
+					sendMessage(sender, Messages.Command.SGMigrate.ATTEMPT, target.getName(), version);
 					GameConfiguration gc;
 					switch (version) {
 						case 0:
@@ -76,20 +76,20 @@ public class SGMigrate extends BaseCommand {
 							gc = model1.migrate();
 							break;
 						case 2:
-							sendMessage(sender, Messages.COMMAND.SG_MIGRATE.UP_TO_DATE);
+							sendMessage(sender, Messages.Command.SGMigrate.UP_TO_DATE);
 							return ExecutionStatus.SUCCESS;
 						default:
-							sendMessage(sender, Messages.COMMAND.SG_MIGRATE.FUTURE);
+							sendMessage(sender, Messages.Command.SGMigrate.FUTURE);
 							return ExecutionStatus.SUCCESS;
 					}
 					Files.copy(target, new File(PLUGIN.getBackupFolder(), Utils.timestamp(target.getName())));
 					gc.copyConfiguration(target);
-					sendMessage(sender, Messages.COMMAND.SG_MIGRATE.SUCCESS, target.getName());
+					sendMessage(sender, Messages.Command.SGMigrate.SUCCESS, target.getName());
 				}
 			} catch (IOException e) {
-				sendMessage(sender, Messages.PLUGIN.IO_EXCEPTION);
+				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
 			} catch (JsonSyntaxException e) {
-				sendMessage(sender, Messages.CONFIG.SYNTAX, target != null ? target.getName() : args[0]);
+				sendMessage(sender, Messages.Config.SYNTAX, target != null ? target.getName() : args[0]);
 				e.printStackTrace();
 			}
 			return ExecutionStatus.SUCCESS;

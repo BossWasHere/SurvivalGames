@@ -38,9 +38,9 @@ public class SGCancel extends BaseCommand {
 
 		InvitationCancelType type = PLUGIN.getHost().cancelInvitations(player, false);
 		switch (type) {
-			case NONE -> PLUGIN.getMessageProvider().sendMessage(player, Messages.COMMAND.SG_CANCEL.NONE);
-			case LEAVE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.COMMAND.SG_CANCEL.LEAVE);
-			case DELETE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.COMMAND.SG_CANCEL.CANCEL);
+			case NONE -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.NONE);
+			case LEAVE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.LEAVE);
+			case DELETE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.CANCEL);
 		}
 
 		return ExecutionStatus.SUCCESS;

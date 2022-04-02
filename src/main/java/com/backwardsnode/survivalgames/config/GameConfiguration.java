@@ -20,7 +20,6 @@ package com.backwardsnode.survivalgames.config;
 import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
-import com.backwardsnode.survivalgames.item.ChestObject;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -41,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class GameConfiguration implements IConfigurable {
 
-	public transient static final int SUPPORTED_CONFIG = 2;
+	public transient static final int SUPPORTED_CONFIG = 3;
 
     private transient File _gameConfigFile;
 	public transient List<Location> spawnLocs;
@@ -53,20 +52,25 @@ public class GameConfiguration implements IConfigurable {
 	public Map<String, RewardConfiguration> rewards;
 	@SerializedName("spawnLocations")
 	public List<String> strSpawns;
-	@SerializedName("implements")
-	public List<String> implementList;
 	public BorderConfiguration border;
-	
+
+	public int startingDaytime;
 	public int waitTime;
 	public int gracePeriod;
 	public int borderCollapseDelay;
+	public int lootDropDelay;
+	public int lootDropTriggerWithin;
+	public float lootDropTriggerProbability;
+	public float lootDropTriggerProbabilityIncrement;
+	public boolean daylightCycle;
 	public boolean preFillChests;
 	public boolean spawnFireworkOnKill;
 	public boolean spawnFireworkOnDeath;
 	public boolean lightningOnDeath;
 	public boolean isWIP;
 	
-	public List<ChestObject> chestLocations;
+	public List<ChestConfiguration> chestLocations;
+	public List<LootDropConfiguration> lootDropLocations;
 	public List<ItemSet> itemSets;
 	
 	public static GameConfiguration createEmptyConfiguration(File configFile) {
@@ -118,10 +122,10 @@ public class GameConfiguration implements IConfigurable {
 	
 	@Override
 	public void configure() {
-		if (chestLocations == null || itemSets == null || strSpawns == null || rewards == null) {
+		if (chestLocations == null || itemSets == null || strSpawns == null || rewards == null || lootDropLocations == null) {
 			throw new GameConfigurationException("Missing configuration entries");
 		}
-		chestLocations.forEach(ChestObject::configure);
+		chestLocations.forEach(ChestConfiguration::configure);
 		spawnLocs = new ArrayList<>();
 		for (String strSpawn : strSpawns) {
 			spawnLocs.add(Utils.locationFromString(strSpawn, false));
@@ -132,12 +136,13 @@ public class GameConfiguration implements IConfigurable {
 				break;
 			}
 		}
+		lootDropLocations.forEach(LootDropConfiguration::configure);
 		border.configure();
 	}
 
 	public List<Location> checkChests() {
 		List<Location> invalidLocations = new ArrayList<>();
-		for (ChestObject co : chestLocations) {
+		for (ChestConfiguration co : chestLocations) {
 			if (co.location.getBlock().getType() != Material.CHEST) {
 				invalidLocations.add(co.location);
 			}

@@ -19,9 +19,23 @@ package com.backwardsnode.survivalgames.message;
 
 public class Messages {
 
-    public static final class COMMAND {
+    public static final class Command {
 
-        public static final class SG_CANCEL {
+        public static final class SGAuto {
+
+            public static final PluginMessage DESC = new PluginMessage("command.sgauto.description", false);
+            public static final PluginMessage USAGE = new PluginMessage("command.sgauto.usage", false);
+            public static final PluginMessage PERMISSION_SUGGEST = new PluginMessage("command.sgauto.permissionsuggest", false);
+            public static final PluginMessage USER_VOTE_PLACEHOLD = new PluginMessage("command.sgauto.uservote", false);
+            public static final PluginMessage IS_ENABLED = new PluginMessage("command.sgauto.isenabled");
+            public static final PluginMessage IS_INVITE = new PluginMessage("command.sgauto.isinvite");
+            public static final PluginMessage IS_DISABLED = new PluginMessage("command.sgauto.isdisabled");
+            public static final PluginMessage SKIPPED = new PluginMessage("command.sgauto.skipped");
+            public static final PluginMessage UPDATED = new PluginMessage("command.sgauto.updated");
+
+        }
+
+        public static final class SGCancel {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgcancel.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgcancel.usage", false);
@@ -31,14 +45,14 @@ public class Messages {
 
         }
 
-        public static final class SG_CHECK {
+        public static final class SGCheck {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgcheck.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgcheck.usage", false);
 
         }
 
-        public static final class SG_DEATHMATCH {
+        public static final class SGDeathmatch {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgdeathmatch.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgdeathmatch.usage", false);
@@ -46,7 +60,7 @@ public class Messages {
 
         }
 
-        public static final class SG_DELETE {
+        public static final class SGDelete {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgdelete.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgdelete.usage", false);
@@ -54,7 +68,7 @@ public class Messages {
 
         }
 
-        public static final class SG_DISCARD {
+        public static final class SGDiscard {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgdiscard.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgdiscard.usage", false);
@@ -62,7 +76,7 @@ public class Messages {
 
         }
 
-        public static final class SG_EDIT {
+        public static final class SGEdit {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgedit.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgedit.usage", false);
@@ -74,7 +88,7 @@ public class Messages {
 
         }
 
-        public static final class SG_JOIN {
+        public static final class SGJoin {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgjoin.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgjoin.usage", false);
@@ -85,7 +99,7 @@ public class Messages {
 
         }
 
-        public static final class SG_LIST {
+        public static final class SGList {
 
             public static final PluginMessage DESC = new PluginMessage("command.sglist.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sglist.usage", false);
@@ -97,7 +111,7 @@ public class Messages {
 
         }
 
-        public static final class SG_MIGRATE {
+        public static final class SGMigrate {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgmigrate.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgmigrate.usage", false);
@@ -108,7 +122,7 @@ public class Messages {
 
         }
 
-        public static final class SG_RELOAD_LANG {
+        public static final class SGReloadLang {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgreloadlang.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgreloadlang.usage", false);
@@ -117,7 +131,7 @@ public class Messages {
 
         }
 
-        public static final class SG_START {
+        public static final class SGStart {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgstart.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgstart.usage", false);
@@ -125,11 +139,25 @@ public class Messages {
 
         }
 
-        public static final class SG_STOP {
+        public static final class SGStop {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgstop.description", false);
             public static final PluginMessage USAGE = new PluginMessage("command.sgstop.usage", false);
             public static final PluginMessage STOPPED = new PluginMessage("command.sgstop.stopped");
+
+        }
+
+        public static final class SGVote {
+
+            public static final PluginMessage DESC = new PluginMessage("command.sgvote.description", false);
+            public static final PluginMessage USAGE = new PluginMessage("command.sgvote.usage", false);
+
+        }
+
+        public static final class TestCommand {
+
+            public static final PluginMessage DESC = new PluginMessage("command.test.description", false);
+            public static final PluginMessage USAGE = new PluginMessage("command.test.usage", false);
 
         }
 
@@ -141,7 +169,7 @@ public class Messages {
 
     }
 
-    public static final class CONFIG {
+    public static final class Config {
 
         public static final PluginMessage CHEST_BAD_ITEMS = new PluginMessage("config.chests.baditems");
         public static final PluginMessage CHEST_IGNORE_MISSING = new PluginMessage("config.chests.ignoremissing");
@@ -154,9 +182,9 @@ public class Messages {
         
     }
 
-    public static final class EDITOR {
+    public static final class Editor {
 
-        public static final class INVENTORY {
+        public static final class Inventory {
 
             public static final PluginMessage ALL_ITEM_SETS_TITLE = new PluginMessage("editor.inventory.allitemsetstitle");
             public static final PluginMessage ITEM_SET_TITLE = new PluginMessage("editor.inventory.itemsettitle");
@@ -218,13 +246,16 @@ public class Messages {
 
     }
 
-    public static final class GAME {
+    public static final class Game {
 
         public static final PluginMessage AS_SPECTATOR = new PluginMessage("game.asspectator");
         public static final PluginMessage BORDER_SHRINKING = new PluginMessage("game.bordershrinking");
         public static final PluginMessage DEATH_GENERIC = new PluginMessage("game.death.generic");
         public static final PluginMessage DEATH_KILLED = new PluginMessage("game.death.killed");
         public static final PluginMessage DEATHMATCH = new PluginMessage("game.deathmatch");
+        public static final PluginMessage FREE_ENTRY = new PluginMessage("game.freeentry");
+        public static final PluginMessage INSUFFICIENT_FUNDS = new PluginMessage("game.insufficientfunds");
+        public static final PluginMessage INSUFFICIENT_FUNDS_SPECTATING_INSTEAD = new PluginMessage("game.insufficientfundsspectating");
         public static final PluginMessage INSUFFICIENT_PLAYERS = new PluginMessage("game.fewplayers");
         public static final PluginMessage INVITE_OPEN = new PluginMessage("invite.open");
         public static final PluginMessage INVITE_DURATION = new PluginMessage("invite.duration");
@@ -248,60 +279,13 @@ public class Messages {
 
     }
 
-    public static final class ITEM {
-//
-//        public static final PluginMessage ADD_ITEM_SET_LORE = new PluginMessage("item.additemset.lore", false);
-//        public static final PluginMessage ADD_ITEM_SET_NAME = new PluginMessage("item.additemset.name", false);
-//        public static final PluginMessage BORDER_DPS_LORE = new PluginMessage("item.borderdps.lore", false);
-//        public static final PluginMessage BORDER_DPS_NAME = new PluginMessage("item.borderdps.name", false);
-//        public static final PluginMessage BORDER_ITEM_LORE = new PluginMessage("item.borderitem.lore", false);
-//        public static final PluginMessage BORDER_ITEM_NAME = new PluginMessage("item.borderitem.name", false);
+    public static final class Misc {
+
         public static final PluginMessage BORDER_SELECT_LORE = new PluginMessage("item.borderselect.lore", false);
-//        public static final PluginMessage BORDER_SELECT_NAME = new PluginMessage("item.borderselect.name", false);
-//        public static final PluginMessage BORDER_START_LORE = new PluginMessage("item.borderstart.lore", false);
-//        public static final PluginMessage BORDER_START_NAME = new PluginMessage("item.borderstart.name", false);
-//        public static final PluginMessage CHEST_LORE = new PluginMessage("item.chest.lore", false);
-//        public static final PluginMessage CHEST_NAME = new PluginMessage("item.chest.name", false);
-//        public static final PluginMessage CHEST_ITEMS_LORE = new PluginMessage("item.chestitems.lore", false);
-//        public static final PluginMessage CHEST_ITEMS_NAME = new PluginMessage("item.chestitems.name", false);
-//        public static final PluginMessage DEATH_FIREWORK_LORE = new PluginMessage("item.deathfirework.lore", false);
-//        public static final PluginMessage DEATH_FIREWORK_NAME = new PluginMessage("item.deathfirework.name", false);
-//        public static final PluginMessage DEATHMATCH_LORE = new PluginMessage("item.deathmatch.lore", false);
-//        public static final PluginMessage DEATHMATCH_NAME = new PluginMessage("item.deathmatch.name", false);
-//        public static final PluginMessage DEATHMATCH_BORDER_LORE = new PluginMessage("item.deathmatchborder.lore", false);
-//        public static final PluginMessage DEATHMATCH_BORDER_NAME = new PluginMessage("item.deathmatchborder.name", false);
-//        public static final PluginMessage HIDE_BORDER_LORE = new PluginMessage("item.hideborder.lore", false);
-//        public static final PluginMessage HIDE_BORDER_NAME = new PluginMessage("item.hideborder.name", false);
-//        public static final PluginMessage IMPLEMENTS_LORE = new PluginMessage("item.implements.lore", false);
-//        public static final PluginMessage IMPLEMENTS_NAME = new PluginMessage("item.implements.name", false);
-//        public static final PluginMessage INITIAL_BORDER_LORE = new PluginMessage("item.initialborder.lore", false);
-//        public static final PluginMessage INITIAL_BORDER_NAME = new PluginMessage("item.initialborder.name", false);
-//        public static final PluginMessage INV_SWITCH_LORE = new PluginMessage("item.invswitch.lore", false);
-//        public static final PluginMessage INV_SWITCH_NAME = new PluginMessage("item.invswitch.name", false);
-//        public static final PluginMessage ISWIP_LORE = new PluginMessage("item.iswip.lore", false);
-//        public static final PluginMessage ISWIP_NAME = new PluginMessage("item.iswip.name", false);
-//        public static final PluginMessage ITEMSET_LORE = new PluginMessage("item.itemset.lore", false);
-//        public static final PluginMessage ITEMSET_NAME = new PluginMessage("item.itemset.name", false);
-//        public static final PluginMessage KILL_FIREWORK_LORE = new PluginMessage("item.killfirework.lore", false);
-//        public static final PluginMessage KILL_FIREWORK_NAME = new PluginMessage("item.killfirework.name", false);
-//        public static final PluginMessage MAP_NAME_LORE = new PluginMessage("item.mapname.lore", false);
-//        public static final PluginMessage MAP_NAME_NAME = new PluginMessage("item.mapname.name", false);
-//        public static final PluginMessage NO_PVP_TIME_LORE = new PluginMessage("item.nopvptime.lore", false);
-//        public static final PluginMessage NO_PVP_TIME_NAME = new PluginMessage("item.nopvptime.name", false);
-//        public static final PluginMessage PLATE_LORE = new PluginMessage("item.plate.lore", false);
-//        public static final PluginMessage PLATE_NAME = new PluginMessage("item.plate.name", false);
-//        public static final PluginMessage PREFILL_LORE = new PluginMessage("item.prefill.lore", false);
-//        public static final PluginMessage PREFILL_NAME = new PluginMessage("item.prefill.name", false);
-//        public static final PluginMessage SETTINGS_LORE = new PluginMessage("item.settings.lore", false);
-//        public static final PluginMessage SETTINGS_NAME = new PluginMessage("item.settings.name", false);
-//        public static final PluginMessage SHRINK_TIME_LORE = new PluginMessage("item.shrinktime.lore", false);
-//        public static final PluginMessage SHRINK_TIME_NAME = new PluginMessage("item.shrinktime.name", false);
-//        public static final PluginMessage WAIT_TIME_LORE = new PluginMessage("item.waittime.lore", false);
-//        public static final PluginMessage WAIT_TIME_NAME = new PluginMessage("item.waittime.name", false);
-//
+
     }
 
-    public static final class PLUGIN {
+    public static final class Plugin {
 
         public static final PluginMessage PREFIX = new PluginMessage("_prefix", false);
 

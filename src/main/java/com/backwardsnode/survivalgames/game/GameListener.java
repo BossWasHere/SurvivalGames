@@ -19,7 +19,8 @@ package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.PluginConfigKeys;
-import com.backwardsnode.survivalgames.item.ChestObject;
+import com.backwardsnode.survivalgames.config.ChestConfiguration;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
@@ -65,8 +66,12 @@ public class GameListener implements Listener {
 			return;
 		}
 		if (instance.isActive()) {
-			if (!instance.doChestPrefill() && clicked.getState() instanceof Chest) {
-				ChestObject co = instance.getChestData(clicked.getLocation());
+			if (clicked.getType() == Material.ENDER_CHEST) {
+				instance.tryUnpackLootDrop(clicked);
+				e.setCancelled(true);
+
+			} else if (!instance.doChestPrefill() && clicked.getState() instanceof Chest) {
+				ChestConfiguration co = instance.getChestData(clicked.getLocation());
 				if (co != null) {
 					HashSet<String> openedChests = instance.getOpenedChests();
 					if (!openedChests.contains(co.loc)) {

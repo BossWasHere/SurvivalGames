@@ -18,17 +18,14 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.config.*;
 import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
 import com.backwardsnode.survivalgames.api.event.*;
-import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.config.RewardConfiguration;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.controller.BossBarController;
 import com.backwardsnode.survivalgames.controller.ScoreboardController;
 import com.backwardsnode.survivalgames.controller.ScoreboardElement;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
-import com.backwardsnode.survivalgames.item.ChestObject;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -89,8 +86,11 @@ public class GameInstance {
 	protected void begin(Player initiator, List<Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
 		initialPlayers = players.size();
 
+		// filter players already in-game
 		boolean acceptsSpectators = selectorMode.allowSpectators();
 		players.removeIf(MANAGER::isPlayerIngame);
+
+		// halt if this is "bad"
 		if (!ignoreIngamePlayers) {
 			if (players.size() != initialPlayers) {
 				currentStatus = GameStatus.START_ERR_PLAYER_IN_GAME;
@@ -98,13 +98,30 @@ public class GameInstance {
 			}
 		}
 
-		initialPlayers = players.size();
+		// check at least 2 candidates
+		if (players.size() < 2) {
+			currentStatus = GameStatus.START_ERR_FEW_PLAYERS;
+			return;
+		}
 
+		// check sufficient player funds
+		initialPlayers = 0;
+		VaultConnector vault = MANAGER.getPlugin().getDependencyManager().getVaultConnector();
+		if (vault != null && CONFIG.entryFee > 0) {
+			for (Player pl : players) {
+				if (pl.hasPermission("survivalgames.freeentry") || vault.getBalance(pl) >= CONFIG.entryFee){
+					initialPlayers++;
+				}
+			}
+		}
+
+		// check at least 2 candidates again
 		if (initialPlayers < 2) {
 			currentStatus = GameStatus.START_ERR_FEW_PLAYERS;
 			return;
 		}
 
+		// check if we have too many candidates
 		if (initialPlayers > CONFIG.spawnLocs.size()) {
 			if (acceptsSpectators) {
 				currentStatus = GameStatus.START_SUCCESS_WITH_SPECTATORS;
@@ -120,24 +137,51 @@ public class GameInstance {
 		flagDeathmatchStarted = false;
 
 		int spawnLocationCount = CONFIG.spawnLocs.size();
-		Player pl;
 		if (selectorMode.shouldShuffle()) {
 			Collections.shuffle(players);
 		}
 
-		for (int i = 0; i < players.size(); i++) {
-			pl = players.get(i);
-			if (i < spawnLocationCount) {
-				PlayerState ps = new PlayerState(pl, false);
-				ps.cache.cacheCurrent(CACHE_SETTINGS);
-				INGAME_PLAYERS.put(pl.getUniqueId(), ps);
-			} else if (acceptsSpectators) {
+		boolean allowSpectateWithoutFunds = PluginConfigKeys.PERMIT_SPECTATE_WITHOUT_FUNDS.get(MANAGER.getPlugin().getConfig());
+
+		// process players
+		int addedPlayers = 0;
+		for (Player pl : players) {
+			if (addedPlayers < spawnLocationCount) {
+				boolean gotEntry = true;
+
+				if (vault != null && CONFIG.entryFee > 0) {
+					if (pl.hasPermission("survivalgames.freeentry")){
+						MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.FREE_ENTRY);
+					} else if (!vault.withdrawPlayer(pl, CONFIG.entryFee)) {
+						if (allowSpectateWithoutFunds && acceptsSpectators) {
+							MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS_SPECTATING_INSTEAD);
+							gotEntry = false;
+						} else {
+							MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS);
+							continue;
+						}
+					}
+				}
+
+				if (gotEntry) {
+					PlayerState ps = new PlayerState(pl, false);
+					ps.cache.cacheCurrent(CACHE_SETTINGS);
+					INGAME_PLAYERS.put(pl.getUniqueId(), ps);
+					updatePlayerTime(pl, false);
+					addedPlayers++;
+
+					continue;
+				}
+			}
+			if (acceptsSpectators) {
 				PlayerState ps = new PlayerState(pl, true);
 				ps.cache.cacheCurrentGamemode();
 				INGAME_PLAYERS.put(pl.getUniqueId(), ps);
+				updatePlayerTime(pl, false);
 			}
 		}
 
+		// game init
 		initialPlayers = Math.min(spawnLocationCount, initialPlayers);
 		preparePlayers();
 
@@ -149,6 +193,8 @@ public class GameInstance {
 		if (CONFIG.preFillChests) {
 			fillChests(initiator);
 		}
+
+		// game start
 		startCountdownTimer(CONFIG.waitTime, GameStatus.RELEASE_PLAYERS);
 
 		startedAt = new Date();
@@ -236,16 +282,29 @@ public class GameInstance {
 		int i = 0;
 		for (PlayerState player : INGAME_PLAYERS.values()) {
 			Player p = player.cache.getPlayer();
-			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.GAME.PLAYING_ON, CONFIG.mapName);
+			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, CONFIG.mapName);
 
 			if (player.spectating) {
 				p.teleport(CONFIG.spawnLocs.get(0).add(0.5, 0, 0.5));
 				p.setGameMode(GameMode.SPECTATOR);
-				MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.GAME.AS_SPECTATOR);
+				MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.AS_SPECTATOR);
 			} else {
 				p.teleport(CONFIG.spawnLocs.get(i).add(0.5, 0, 0.5));
 				p.setGameMode(GameMode.ADVENTURE);
 				i++;
+			}
+		}
+	}
+
+	private void updatePlayerTime(Player player, boolean reset) {
+		if (MANAGER.timeControlEnabled()) {
+			if (reset) {
+				player.resetPlayerTime();
+			} else {
+				int time = CONFIG.startingDaytime;
+				if (time >= 0) {
+					player.setPlayerTime(time, CONFIG.daylightCycle);
+				}
 			}
 		}
 	}
@@ -257,7 +316,7 @@ public class GameInstance {
 			enablePVP(false);
 		} else {
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "PvP Off");
-			announce(Messages.GAME.PVP_OFF_TIME, CONFIG.gracePeriod);
+			announce(Messages.Game.PVP_OFF_TIME, CONFIG.gracePeriod);
 			bossbar.resetHealth(CONFIG.gracePeriod);
 			bossbar.setOptions("PvP Disabled", BarColor.YELLOW);
 			timerInstance.setOperation(GameStatus.ENABLE_PVP, CONFIG.gracePeriod);
@@ -269,7 +328,7 @@ public class GameInstance {
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "PvP On");
 		if (shouldAnnounce) {
 			playGlobalPingSound();
-			announce(Messages.GAME.PVP_ENABLED);
+			announce(Messages.Game.PVP_ENABLED);
 		}
 		bossbar.resetHealth(CONFIG.borderCollapseDelay);
 		bossbar.setOptions("PvP Enabled", BarColor.PURPLE);
@@ -279,7 +338,7 @@ public class GameInstance {
 	private void shrinkPlayArea() {
 		playGlobalPingSound();
 		if (deathmatchConfig != null) {
-			announce(Messages.GAME.BORDER_SHRINKING);
+			announce(Messages.Game.BORDER_SHRINKING);
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Border Shrinking");
 			border.setTarget(deathmatchConfig.centerX, deathmatchConfig.centerZ, deathmatchConfig.borderRadius, deathmatchConfig.shrinkTime);
 			bossbar.resetHealth(deathmatchConfig.shrinkTime);
@@ -306,7 +365,7 @@ public class GameInstance {
 	private void startDeathmatch() {
 		playGlobalPingSound();
 		flagDeathmatchStarted = true;
-		announce(Messages.GAME.DEATHMATCH);
+		announce(Messages.Game.DEATHMATCH);
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Deathmatch");
 		bossbar.resetHealth(deathmatchConfig.deathmatchDuration);
 		bossbar.setOptions("Deathmatch", BarColor.RED);
@@ -317,7 +376,7 @@ public class GameInstance {
 	
 	private void closeBorder() {
 		playGlobalPingSound();
-		announce(Messages.GAME.BORDER_SHRINKING);
+		announce(Messages.Game.BORDER_SHRINKING);
 		border.setTarget(1, deathmatchConfig.collapseTime);
 		timerInstance.setOperation(GameStatus.FINISH_GAME, deathmatchConfig.collapseTime);
 	}
@@ -325,11 +384,11 @@ public class GameInstance {
 	private void fillChests(Player initiator) {
 		int missingChests = 0;
 		boolean foundBadItem = false;
-		for (ChestObject co : CONFIG.chestLocations) {
+		for (ChestConfiguration co : CONFIG.chestLocations) {
 			Block b = co.location.getBlock();
 			if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest chest)) {
 				if (missingChests < 5) {
-					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.CONFIG.CHEST_IGNORE_MISSING, co.loc);
+					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.loc);
 				}
 				missingChests++;
 				continue;
@@ -340,10 +399,10 @@ public class GameInstance {
 			}
 		}
 		if (missingChests > 0) {
-			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.CONFIG.CHEST_MISSING_SIMPLE, missingChests);
+			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_MISSING_SIMPLE, missingChests);
 		}
 		if (foundBadItem) {
-			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.CONFIG.CHEST_BAD_ITEMS);
+			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_BAD_ITEMS);
 		}
 	}
 	
@@ -392,12 +451,12 @@ public class GameInstance {
 	protected boolean processDeath(Player player, Player killer) {
 		if (removePlayer(player, false)) {
 			if (killer == null) {
-				announce(Messages.GAME.DEATH_GENERIC, player.getDisplayName());
+				announce(Messages.Game.DEATH_GENERIC, player.getDisplayName());
 				if (CONFIG.spawnFireworkOnDeath) {
 					Utils.spawnRandomFirework(player.getLocation());
 				}
 			} else {
-				announce(Messages.GAME.DEATH_KILLED, player.getDisplayName(), killer.getDisplayName());
+				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), killer.getDisplayName());
 				if (CONFIG.spawnFireworkOnKill) {
 					Utils.spawnRandomFirework(player.getLocation());
 				}
@@ -421,7 +480,7 @@ public class GameInstance {
 
 	protected boolean processDeathByEntity(Player player, String entity) {
 		if (removePlayer(player, false)) {
-			announce(Messages.GAME.DEATH_KILLED, player.getDisplayName(), entity);
+			announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), entity);
 			if (CONFIG.spawnFireworkOnDeath) {
 				Utils.spawnRandomFirework(player.getLocation());
 			}
@@ -436,18 +495,18 @@ public class GameInstance {
 	public void endGame(String victor) {
 		OPENED_CHESTS.clear();
 		if (victor != null) {
-			announce(Messages.GAME.WON, victor);
+			announce(Messages.Game.WON, victor);
 		}
 		ArrayList<PlayerState> listPlayerState = new ArrayList<>(INGAME_PLAYERS.values());
 		listPlayerState.sort((p1, p2) -> Integer.compare(p2.kills, p1.kills));
-		announce(Messages.GAME.KILLSTATS);
+		announce(Messages.Game.KILLSTATS);
 
 		int i = 0;
 		for (PlayerState state : listPlayerState) {
 			switch (i) {
-				case 0 -> announce(Messages.GAME.KILLSTAT_1, state.cache.getPlayer().getDisplayName(), state.kills);
-				case 1 -> announce(Messages.GAME.KILLSTAT_2, state.cache.getPlayer().getDisplayName(), state.kills);
-				case 2 -> announce(Messages.GAME.KILLSTAT_3, state.cache.getPlayer().getDisplayName(), state.kills);
+				case 0 -> announce(Messages.Game.KILLSTAT_1, state.cache.getPlayer().getDisplayName(), state.kills);
+				case 1 -> announce(Messages.Game.KILLSTAT_2, state.cache.getPlayer().getDisplayName(), state.kills);
+				case 2 -> announce(Messages.Game.KILLSTAT_3, state.cache.getPlayer().getDisplayName(), state.kills);
 			}
 
 			i++;
@@ -472,7 +531,7 @@ public class GameInstance {
 		if (!gameRewardEvent.isCancelled()) {
 			Location location = player.getLocation();
 			VaultConnector vault = MANAGER.getPlugin().getDependencyManager().getVaultConnector();
-			if (vault != null) {
+			if (vault != null && rewards.cash != 0) {
 				vault.depositPlayer(player, rewards.cash);
 			}
 
@@ -489,7 +548,7 @@ public class GameInstance {
 			}
 
 			if (hadOverflow) {
-				MANAGER.getPlugin().getMessageProvider().sendMessage(player, Messages.GAME.REWARDS_OVERFLOW);
+				MANAGER.getPlugin().getMessageProvider().sendMessage(player, Messages.Game.REWARDS_OVERFLOW);
 			}
 		}
 	}
@@ -556,6 +615,8 @@ public class GameInstance {
 			ps.cache.restoreGamemode();
 		}
 
+		updatePlayerTime(ps.cache.getPlayer(), true);
+
 		MANAGER.getPlugin().getDefaultListener().cleanupPlayer(ps.cache.getPlayer());
 	}
 	
@@ -577,9 +638,13 @@ public class GameInstance {
 		return INGAME_PLAYERS.get(player.getUniqueId());
 	}
 
-	public ChestObject getChestData(Location location) {
-		Optional<ChestObject> oco = CONFIG.chestLocations.stream().filter(co -> co.location.equals(location)).findFirst();
+	public ChestConfiguration getChestData(Location location) {
+		Optional<ChestConfiguration> oco = CONFIG.chestLocations.stream().filter(co -> co.location.equals(location)).findFirst();
 		return oco.orElse(null);
+	}
+
+	public void tryUnpackLootDrop(Block clicked) {
+		// TODO summon loot drops
 	}
 
 	public int getInitialPlayerCount() {

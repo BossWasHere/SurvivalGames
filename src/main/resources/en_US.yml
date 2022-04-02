@@ -6,6 +6,16 @@ command:
     incooldown: "&cThis command is still in cooldown"
     noperm: "&cYou do not have permission to use this command"
     playernotfound: "&cCould not find player %s"
+  sgauto:
+    description: "Manage automated game start settings"
+    usage: "/sgauto <status/skip/set> [enabled/disabled/invite]"
+    permissionsuggest: "&a&l[ If you wish to skip this game, run /sgauto skip ]"
+    uservote: "(user vote)"
+    isenabled: "&5Currently set to begin game on %s on start-up"
+    isinvite: "&5Currently set to begin invitational game on %s at start-up"
+    isdisabled: "&5Auto-start is currently disabled"
+    skipped: "&aSkipped auto-start"
+    updated: "&aUpdated auto-start settings successfully!"
   sgcancel:
     description: "Cancel an incoming or outgoing invitation"
     usage: "/sgcancel"
@@ -70,6 +80,9 @@ command:
     description: "Stops a specific active game or your current game"
     usage: "/sgstop [map]"
     stopped: "&aStopped game on %s"
+  sgvote:
+    description: "Vote for a map or something while in-game"
+    usage: "/sgvote"
 config:
   chests:
     baditems: "&4Bad item type(s) found! Check the server log"
@@ -139,6 +152,9 @@ game:
     killed: "%s&r&3 was killed by %s&r&3!"
   deathmatch: "Deathmatch started!"
   fewplayers: "There are not enough players to begin"
+  freeentry: "&aYou got free entry!"
+  insufficientfunds: "&cSorry, but you don't have the funds to join this game!"
+  insufficientfundsspectating: "&cSorry, but you don't have the funds to join this game! You will be able to spectate this match, or you can leave this game."
   killstat:
     1: "&91st - %s&r&9: %d kills"
     2: "&92nd - %s&r&9: %d kills"

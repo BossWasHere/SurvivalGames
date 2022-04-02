@@ -55,7 +55,7 @@ public class SGDeathmatch extends BaseCommand {
 				if (i != null) {
 					startDeathmatch(player, i);
 				} else {
-					sendMessage(sender, Messages.GAME.NOT_PLAYING);
+					sendMessage(sender, Messages.Game.NOT_PLAYING);
 				}
 			} else {
 				return ExecutionStatus.NOT_PLAYER;
@@ -68,11 +68,11 @@ public class SGDeathmatch extends BaseCommand {
 	// TODO why is this here and not somewhere else
 	private void startDeathmatch(CommandSender sender, GameInstance i) {
 		if (!i.isActive()) {
-			sendMessage(sender, Messages.GAME.NOT_RUNNING);
+			sendMessage(sender, Messages.Game.NOT_RUNNING);
 			return;
 		}
 		if (i.hasDeathmatchStarted()) {
-			sendMessage(sender, Messages.COMMAND.SG_DEATHMATCH.ALREADY_STARTED);
+			sendMessage(sender, Messages.Command.SGDeathmatch.ALREADY_STARTED);
 		} else {
 			i.forceDeathmatch();
 		}

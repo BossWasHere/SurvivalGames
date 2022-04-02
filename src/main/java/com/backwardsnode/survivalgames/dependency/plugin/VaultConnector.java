@@ -47,21 +47,21 @@ public class VaultConnector {
         depositPlayer(player, balance - current);
     }
 
-    public double depositPlayer(OfflinePlayer player, double amount) {
+    public boolean depositPlayer(OfflinePlayer player, double amount) {
         if (ECONOMY == null) {
-            return 0;
+            return false;
         }
 
         EconomyResponse response = ECONOMY.depositPlayer(player, amount);
-        return response.type == EconomyResponse.ResponseType.SUCCESS ? response.balance : 0;
+        return response.transactionSuccess();
     }
 
-    public double withdrawPlayer(OfflinePlayer player, double amount) {
+    public boolean withdrawPlayer(OfflinePlayer player, double amount) {
         if (ECONOMY == null) {
-            return 0;
+            return false;
         }
 
         EconomyResponse response = ECONOMY.withdrawPlayer(player, amount);
-        return response.type == EconomyResponse.ResponseType.SUCCESS ? response.balance : 0;
+        return response.transactionSuccess();
     }
 }

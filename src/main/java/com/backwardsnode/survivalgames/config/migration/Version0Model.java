@@ -21,7 +21,7 @@ package com.backwardsnode.survivalgames.config.migration;
 import com.backwardsnode.survivalgames.config.BorderConfiguration;
 import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
 import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.item.ChestObject;
+import com.backwardsnode.survivalgames.config.ChestConfiguration;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -33,15 +33,13 @@ public class Version0Model {
 
 	public String mapName;
 	public List<String> spawnLocations;
-	@SerializedName("implements")
-	public List<String> implementList;
 	public Version0Border border;
 	
 	public int waitTime;
 	public int gracePeriod;
 	public boolean preFillChests;
 	
-	public List<ChestObject> chestLocations;
+	public List<ChestConfiguration> chestLocations;
 	public List<Version1Model.Version1ItemSet> itemSets;
 	
 	public static class Version0Border {
@@ -66,7 +64,6 @@ public class Version0Model {
 		gc.entryFee = 0;
 		gc.rewards = new HashMap<>();
 		gc.strSpawns = spawnLocations;
-		gc.implementList = implementList;
 		
 		BorderConfiguration bc = new BorderConfiguration();
 		bc.borderStartRadius = border.borderStartRadius;

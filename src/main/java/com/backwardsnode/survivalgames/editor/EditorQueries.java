@@ -22,14 +22,14 @@ import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.message.PluginMessage;
 
 public enum EditorQueries {
-	NEW_ITEMSET_NAME(Messages.EDITOR.NAME_ITEM_SET_REQUEST),
-	RENAME_ITEMSET_NAME(Messages.EDITOR.RENAME_ITEM_SET_REQUEST),
-	MAP_NAME(Messages.EDITOR.RENAME_MAP_REQUEST),
-	BORDER_DPS(Messages.EDITOR.BORDER_DPS_REQUEST, ResolvingPredicate.DOUBLE_PREDICATE),
-	TIME_TO_SHRINK(Messages.EDITOR.PRE_SHRINK_DURATION_REQUEST, ResolvingPredicate.INTEGER_PREDICATE),
-	BORDER_START_RADIUS(Messages.EDITOR.BORDER_RADIUS_REQUEST, ResolvingPredicate.DOUBLE_PREDICATE),
-	WAIT_PERIOD(Messages.EDITOR.WAIT_PERIOD_REQUEST, ResolvingPredicate.INTEGER_PREDICATE),
-	GRACE_PERIOD(Messages.EDITOR.PVP_OFF_TIME_REQUEST, ResolvingPredicate.INTEGER_PREDICATE);
+	NEW_ITEMSET_NAME(Messages.Editor.NAME_ITEM_SET_REQUEST),
+	RENAME_ITEMSET_NAME(Messages.Editor.RENAME_ITEM_SET_REQUEST),
+	MAP_NAME(Messages.Editor.RENAME_MAP_REQUEST),
+	BORDER_DPS(Messages.Editor.BORDER_DPS_REQUEST, ResolvingPredicate.DOUBLE_PREDICATE),
+	TIME_TO_SHRINK(Messages.Editor.PRE_SHRINK_DURATION_REQUEST, ResolvingPredicate.INTEGER_PREDICATE),
+	BORDER_START_RADIUS(Messages.Editor.BORDER_RADIUS_REQUEST, ResolvingPredicate.DOUBLE_PREDICATE),
+	WAIT_PERIOD(Messages.Editor.WAIT_PERIOD_REQUEST, ResolvingPredicate.INTEGER_PREDICATE),
+	GRACE_PERIOD(Messages.Editor.PVP_OFF_TIME_REQUEST, ResolvingPredicate.INTEGER_PREDICATE);
 
 	private final PluginMessage message;
 	private final ResolvingPredicate<String, ?> predicate;

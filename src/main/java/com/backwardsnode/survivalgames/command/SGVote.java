@@ -16,22 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.backwardsnode.survivalgames.command.args.type;
+package com.backwardsnode.survivalgames.command;
 
-public interface IArgumentType<T> {
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.base.CommandType;
+import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import org.bukkit.command.CommandSender;
 
-    public ArgumentResult<T> read(String[] args, int index);
-    public boolean isOptional();
+public class SGVote extends BaseCommand {
 
-    public static class ArgumentResult<T> {
+    public SGVote(Plugin plugin) {
+        super(plugin, CommandType.SG_VOTE);
+    }
 
-        public final int LENGTH;
-        public final T VALUE;
-
-        public ArgumentResult(int length, T value) {
-            LENGTH = length;
-            VALUE = value;
-        }
+    @Override
+    public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+        return null;
     }
 }
-

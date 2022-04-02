@@ -38,9 +38,9 @@ public class SGJoin extends BaseCommand {
 		if (args.length > 0) {
 			if (PLUGIN.getHost().mapHasPendingInvitation(args[0])) {
 				PLUGIN.getHost().signUpInvitation(player, args[0]);
-				sendMessage(sender, Messages.COMMAND.SG_JOIN.JOINED);
+				sendMessage(sender, Messages.Command.SGJoin.JOINED);
 			} else {
-				sendMessage(sender, Messages.COMMAND.SG_JOIN.NO_INVITE, args[0]);
+				sendMessage(sender, Messages.Command.SGJoin.NO_INVITE, args[0]);
 			}
 			return ExecutionStatus.SUCCESS;
 		}

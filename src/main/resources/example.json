@@ -1,5 +1,5 @@
 {
-    "configVersion": 2,
+    "configVersion": 3,
     "isWIP": true,
     "mapName": "Example Small",
     "entryFee": 0.0,
@@ -27,7 +27,6 @@
             "items": []
         }
     },
-    "implements": [],
     "spawnLocations": [
         "0,58,12,survivalgames",
         "-6,58,10,survivalgames",
@@ -58,9 +57,14 @@
     "waitTime": 20,
     "gracePeriod": 10,
     "borderCollapseDelay": 900,
+    "lootDropDelay": 90,
+    "lootDropTriggerWithin": 30,
+    "lootDropTriggerProbability": 0.5,
+    "lootDropTriggerProbabilityIncrement": 0.2,
     "preFillChests": false,
     "spawnFireworkOnKill": true,
     "spawnFireworkOnDeath": false,
+    "lightningOnDeath": true,
     "chestLocations": [
         {
             "itemSets": ["Rare"],
@@ -85,6 +89,14 @@
         {
             "itemSets": ["common"],
             "loc": "2,57,1,survivalgames"
+        }
+    ],
+    "lootDropLocations": [
+        {
+            "loc": "0,58,1,survivalgames",
+            "itemSets": ["Rare"],
+            "canDropAutomatically": true,
+            "canDropOnDemand": false
         }
     ],
     "itemSets": [

@@ -16,20 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.backwardsnode.survivalgames.command.args;
+package com.backwardsnode.survivalgames.command;
 
-import com.backwardsnode.survivalgames.command.args.type.IArgumentType;
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.base.CommandType;
+import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import org.bukkit.command.CommandSender;
 
-public class ArgumentSelector1<T> extends BaseArgumentSelector {
+public class SGAuto extends BaseCommand {
 
-    private final T ARG_RESULT_1;
-
-    public ArgumentSelector1(String[] args, IArgumentType<T> argType1) {
-        super(args);
-        ARG_RESULT_1 = readNextArg(argType1);
+    public SGAuto(Plugin plugin) {
+        super(plugin, CommandType.SG_AUTO);
     }
 
-    public T getFirstArgument() {
-        return ARG_RESULT_1;
+    @Override
+    public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+        return null;
     }
 }

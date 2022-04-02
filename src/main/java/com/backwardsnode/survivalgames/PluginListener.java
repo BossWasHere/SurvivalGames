@@ -18,17 +18,21 @@
 package com.backwardsnode.survivalgames;
 
 import com.backwardsnode.survivalgames.world.AnvilState;
+import com.backwardsnode.survivalgames.world.LootDrop;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Directional;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -162,6 +166,38 @@ public class PluginListener implements Listener {
 			}
 
 			playersUsingAnvils.remove(uuid);
+		}
+	}
+
+	@EventHandler
+	public void onEntityChangeBlock(EntityChangeBlockEvent e) {
+		if (e.getEntity() instanceof FallingBlock fallingBlock) {
+
+			LootDrop drop = PLUGIN.getHost().getLootDropManager().getAndRemoveAssociatedDrop(fallingBlock.getUniqueId());
+
+			if (drop != null) {
+				e.setCancelled(true);
+				fallingBlock.remove();
+				if (!drop.isClosed()) {
+					drop.placeChest();
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onEntityDropItem(EntityDropItemEvent e) {
+		if (e.getEntity() instanceof FallingBlock fallingBlock) {
+
+			LootDrop drop = PLUGIN.getHost().getLootDropManager().getAndRemoveAssociatedDrop(fallingBlock.getUniqueId());
+
+			if (drop != null) {
+				e.setCancelled(true);
+				fallingBlock.remove();
+				if (!drop.isClosed()) {
+					drop.placeChest();
+				}
+			}
 		}
 	}
 }

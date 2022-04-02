@@ -60,10 +60,10 @@ public class EditorListener implements Listener {
 
 		if (EditorItems.LOOT_CHEST.isSimilar(handler.getHandler(), locale, item)) {
 			scene.addItemChest(e.getBlock().getLocation());
-			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.EDITOR.ADDED_CHEST);
+			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.Editor.ADDED_CHEST);
 		} else if (EditorItems.SPAWN_PLATE.isSimilar(handler.getHandler(), locale, item)) {
 			scene.addSpawnPlate(e.getBlock().getLocation());
-			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.EDITOR.ADDED_SPAWN_POS);
+			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.Editor.ADDED_SPAWN_POS);
 		}
 	}
 	
@@ -89,21 +89,21 @@ public class EditorListener implements Listener {
 					if (scene.isItemChest(target.getLocation())) {
 						if (item == null) {
 							scene.removeItemChest(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.REMOVED_CHEST);
+							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
 						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
 							handler.openChestItemSetInventory(player, target.getLocation());
 						}
 					} else {
 						if (item == null) {
 							scene.addItemChest(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ADDED_CHEST);
+							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADDED_CHEST);
 						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ADD_CHEST_FIRST);
+							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADD_CHEST_FIRST);
 						}
 					}
 				} else {
 					if (scene.removeItemChest(target.getLocation())) {
-						handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.REMOVED_CHEST);
+						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
 					}
 					// don't cancel
 					return;
@@ -113,17 +113,17 @@ public class EditorListener implements Listener {
 					if (scene.isSpawnPlate(target.getLocation())) {
 						if (item == null) {
 							scene.removeSpawnPlate(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.REMOVED_SPAWN_POS);
+							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
 						}
 					} else {
 						if (item == null) {
 							scene.addSpawnPlate(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ADDED_SPAWN_POS);
+							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADDED_SPAWN_POS);
 						}
 					}
 				} else {
 					if (scene.removeSpawnPlate(target.getLocation())) {
-						handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.REMOVED_SPAWN_POS);
+						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
 					}
 					// don't cancel
 					return;
@@ -173,7 +173,7 @@ public class EditorListener implements Listener {
 			return;
 		}
 
-		if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.ALL_ITEM_SETS_TITLE, locale))) {
+		if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale))) {
 			if (EditorItems.NEW_ITEMSET_CONCRETE.isSimilar(handler.getHandler(), locale, item)) {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.NEW_ITEMSET_NAME);
@@ -185,7 +185,7 @@ public class EditorListener implements Listener {
 				}
 			}
 			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.CHOOSE_SET_TITLE, locale))) {
+		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.CHOOSE_SET_TITLE, locale))) {
 			ItemStack chestBlockData = i.getItem(i.getSize() - 1);
 			if (chestBlockData != null) {
 				Location loc = Utils.locationFromString(chestBlockData.getItemMeta().getLore().get(0), false);
@@ -221,14 +221,14 @@ public class EditorListener implements Listener {
 					}
 				}
 				if (scene.updateAllChestItemSets(loc, selected)) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.MODIFIED_ITEMS);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFIED_ITEMS);
 				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.MODIFY_ITEMS_ERR);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFY_ITEMS_ERR);
 					player.closeInventory();
 				}
 			}
 			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.SETTINGS_TITLE, locale))) {
+		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.SETTINGS_TITLE, locale))) {
 			if (EditorItems.RENAME_MAP_NAMETAG.isSimilar(handler.getHandler(), locale, item)) {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.MAP_NAME);
@@ -254,34 +254,34 @@ public class EditorListener implements Listener {
 			} else if (EditorItems.PREFILL_CHESTMINECART.isSimilar(handler.getHandler(), locale, item)) {
 				scene.setPreFillChest(!scene.getPreFillChests());
 				if (scene.getPreFillChests()) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ENABLED_AUTOFILL);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_AUTOFILL);
 				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.DISABLED_AUTOFILL);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_AUTOFILL);
 				}
 			} else if (EditorItems.DEATH_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
 				scene.setDeathFirework(!scene.getDeathFirework());
 				if (scene.getDeathFirework()) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ENABLED_DEATH_FIREWORK);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_DEATH_FIREWORK);
 				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.DISABLED_DEATH_FIREWORK);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_DEATH_FIREWORK);
 				}
 			} else if (EditorItems.KILL_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
 				scene.setKillFirework(!scene.getKillFirework());
 				if (scene.getKillFirework()) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ENABLED_KILL_FIREWORK);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_KILL_FIREWORK);
 				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.DISABLED_KILL_FIREWORK);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_KILL_FIREWORK);
 				}
 			} else if (EditorItems.ISWIP_BRICKS.isSimilar(handler.getHandler(), locale, item)) {
 				scene.setWIP(!scene.isWIP());
 				if (scene.isWIP()) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.ENABLED_WIP);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_WIP);
 				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.DISABLED_WIP);
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_WIP);
 				}
 			}
 			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.BORDER_TITLE, locale))) {
+		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.BORDER_TITLE, locale))) {
 			if (EditorItems.INITIAL_BORDER_MAP.isSimilar(handler.getHandler(), locale, item)) {
 				scene.setBorderTargetType(false);
 			} else if (EditorItems.DEATHMATCH_BORDER_SWORD.isSimilar(handler.getHandler(), locale, item)) {
@@ -313,13 +313,13 @@ public class EditorListener implements Listener {
 		}
 
 		Inventory i = e.getInventory();
-		String expectedTitleSubstr = handler.getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.ITEM_SET_TITLE, player.getLocale(), "");
+		String expectedTitleSubstr = handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), "");
 		if (e.getView().getTitle().startsWith(expectedTitleSubstr)) {
 			String set = e.getView().getTitle().substring(expectedTitleSubstr.length());
 			if (scene.replaceItemSet(i.getContents(), set)) {
-				handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.UPDATED_ITEM_SET, set);
+				handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.UPDATED_ITEM_SET, set);
 			} else {
-				handler.getHandler().getMessageProvider().sendMessage(player, Messages.EDITOR.UPDATE_ITEM_SET_ERR, set);
+				handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.UPDATE_ITEM_SET_ERR, set);
 			}
 		}
 	}

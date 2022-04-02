@@ -54,9 +54,9 @@ public abstract class BaseCommand extends Command {
     private void sendStatusMessage(CommandSender sender, ExecutionStatus status) {
         switch (status) {
             case BAD_USAGE -> PLUGIN.getMessageProvider().sendMessage(sender, TYPE.getUsageMessage());
-            case NO_PERMISSION -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.COMMAND.NO_PERM);
-            case NOT_PLAYER -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.COMMAND.ONLY_PLAYERS);
-            case NOT_CONSOLE -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.COMMAND.ONLY_CONSOLE);
+            case NO_PERMISSION -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.NO_PERM);
+            case NOT_PLAYER -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_PLAYERS);
+            case NOT_CONSOLE -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_CONSOLE);
         }
     }
 

@@ -46,14 +46,16 @@ public final class PluginConfigKeys<T> {
     public static final PluginConfigKeys<Boolean> ENABLE_COSMETICS = new PluginConfigKeys<>(true, "enable-cosmetics");
 
     public static final PluginConfigKeys<List<String>> DISABLE_ITEMS = new PluginConfigKeys<>(null, "globalSettings", "disable-items");
+    public static final PluginConfigKeys<Boolean> OUTSIDE_SPECTATORS_PAY = new PluginConfigKeys<>(false, "globalSettings", "outside-spectators-must-pay");
     public static final PluginConfigKeys<Boolean> PERMIT_BOUNTIES = new PluginConfigKeys<>(true, "globalSettings", "permit-bounties");
     public static final PluginConfigKeys<Boolean> PERMIT_CHEST_REFILL = new PluginConfigKeys<>(true, "globalSettings", "permit-chest-refill");
     public static final PluginConfigKeys<Boolean> PERMIT_CALLABLE_LOOT_DROPS = new PluginConfigKeys<>(true, "globalSettings", "permit-callable-loot-drops");
     public static final PluginConfigKeys<Boolean> PERMIT_LOOT_DROPS = new PluginConfigKeys<>(true, "globalSettings", "permit-loot-drops");
     public static final PluginConfigKeys<Boolean> PERMIT_MAP_LOBBY_OVERRIDE = new PluginConfigKeys<>(true, "globalSettings", "permit-map-lobby-override");
+    public static final PluginConfigKeys<Boolean> PERMIT_SPECTATE_WITHOUT_FUNDS = new PluginConfigKeys<>(true, "globalSettings", "permit-spectate-without-funds");
     public static final PluginConfigKeys<Boolean> PERMIT_SURVIVAL_MODE = new PluginConfigKeys<>(true, "globalSettings", "permit-survival-mode");
     public static final PluginConfigKeys<Boolean> PERMIT_TRACKING_COMPASS = new PluginConfigKeys<>(true, "globalSettings", "permit-tracking-compass");
-    public static final PluginConfigKeys<String> TIME_CONTROL_MODE = new PluginConfigKeys<>("protocol", "globalSettings", "time-control-mode");
+    public static final PluginConfigKeys<Boolean> PERMIT_TIME_CONTROL = new PluginConfigKeys<>(true, "globalSettings", "permit-time-control");
 
     public static final PluginConfigKeys<String> MAP_VOTING_MODE = new PluginConfigKeys<>("vote", "map-voting", "mode");
     public static final PluginConfigKeys<Integer> MAP_VOTING_SELECTION = new PluginConfigKeys<>(3, "map-voting", "voting-selection");

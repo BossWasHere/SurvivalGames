@@ -19,6 +19,7 @@ package com.backwardsnode.survivalgames;
 
 import com.backwardsnode.survivalgames.command.*;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
+import com.backwardsnode.survivalgames.command.debug.TestLootDrop;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.SimplePluginManager;
@@ -33,6 +34,7 @@ public final class CommandRegistry {
 
     private boolean registered = false;
 
+    private final BaseCommand SG_AUTO_COMMAND;
     private final BaseCommand SG_CANCEL_COMMAND;
     private final BaseCommand SG_CHECK_COMMAND;
     private final BaseCommand SG_DEATHMATCH_COMMAND;
@@ -45,10 +47,14 @@ public final class CommandRegistry {
     private final BaseCommand SG_RELOAD_LANG;
     private final BaseCommand SG_START_COMMAND;
     private final BaseCommand SG_STOP_COMMAND;
+    private final BaseCommand SG_VOTE_COMMAND;
+
+    private final BaseCommand TEST_LOOT_DROP_COMMAND;
 
     public CommandRegistry(Plugin plugin) {
         PLUGIN = plugin;
 
+        SG_AUTO_COMMAND = new SGAuto(plugin);
         SG_CANCEL_COMMAND = new SGCancel(plugin);
         SG_CHECK_COMMAND = new SGCheck(plugin);
         SG_DEATHMATCH_COMMAND = new SGDeathmatch(plugin);
@@ -61,7 +67,9 @@ public final class CommandRegistry {
         SG_RELOAD_LANG = new SGReloadLang(plugin);
         SG_START_COMMAND = new SGStart(plugin);
         SG_STOP_COMMAND = new SGStop(plugin);
+        SG_VOTE_COMMAND = new SGVote(plugin);
 
+        TEST_LOOT_DROP_COMMAND = new TestLootDrop(plugin);
     }
 
     public void registerCommands() {
@@ -73,6 +81,7 @@ public final class CommandRegistry {
             field.setAccessible(true);
             CommandMap commandMap = (CommandMap) field.get(Bukkit.getServer().getPluginManager());
 
+            commandMap.register(SG_AUTO_COMMAND.getName(), NAMESPACE, SG_AUTO_COMMAND);
             commandMap.register(SG_CANCEL_COMMAND.getName(), NAMESPACE, SG_CANCEL_COMMAND);
             commandMap.register(SG_CHECK_COMMAND.getName(), NAMESPACE, SG_CHECK_COMMAND);
             commandMap.register(SG_DEATHMATCH_COMMAND.getName(), NAMESPACE, SG_DEATHMATCH_COMMAND);
@@ -85,6 +94,11 @@ public final class CommandRegistry {
             commandMap.register(SG_RELOAD_LANG.getName(), NAMESPACE, SG_RELOAD_LANG);
             commandMap.register(SG_START_COMMAND.getName(), NAMESPACE, SG_START_COMMAND);
             commandMap.register(SG_STOP_COMMAND.getName(), NAMESPACE, SG_STOP_COMMAND);
+            commandMap.register(SG_VOTE_COMMAND.getName(), NAMESPACE, SG_VOTE_COMMAND);
+
+            if (Plugin.TEST) {
+                commandMap.register(TEST_LOOT_DROP_COMMAND.getName(), NAMESPACE, TEST_LOOT_DROP_COMMAND);
+            }
 
         } catch (IllegalAccessException | NoSuchFieldException e) {
             PLUGIN.getLogger().severe("An error occured while building the CommandMap for " + PLUGIN.getName());

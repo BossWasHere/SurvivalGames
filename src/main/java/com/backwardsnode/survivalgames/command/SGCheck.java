@@ -53,11 +53,11 @@ public class SGCheck extends BaseCommand {
 					target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
 				}
 				if (!target.isFile()) {
-					sendMessage(sender, Messages.PLUGIN.IO_FILE_MISSING, args[0]);
+					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
 				} else {
-					sendMessage(sender, Messages.PLUGIN.IO_FILE_FOUND, target.getName());
+					sendMessage(sender, Messages.Plugin.IO_FILE_FOUND, target.getName());
 					GameConfiguration c = GameConfiguration.loadGameConfiguration(target);
-					sendMessage(sender, Messages.PLUGIN.IO_FILE_LOADED);
+					sendMessage(sender, Messages.Plugin.IO_FILE_LOADED);
 					List<Location> invalidLocations = c.checkChests();
 					if (invalidLocations.size() > 0) {
 						StringBuilder builder = new StringBuilder();
@@ -73,20 +73,20 @@ public class SGCheck extends BaseCommand {
 						if (sender instanceof Player) {
 							Player player = (Player) sender;
 							JsonMessage msg = new JsonMessage().setColor(ChatColor.RED)
-							.setText(PLUGIN.getMessageProvider().compileMessage(Messages.CONFIG.CHEST_MISSING, player.getLocale(), invalidLocations.size(), c.chestLocations.size()))
+							.setText(PLUGIN.getMessageProvider().compileMessage(Messages.Config.CHEST_MISSING, player.getLocale(), invalidLocations.size(), c.chestLocations.size()))
 							.setHoverEvent(JsonTextEvent.showText(builder.toString()));
 							Utils.sendJsonMessage(player, msg);
 						} else {
-							sendMessage(sender, Messages.CONFIG.CHEST_MISSING_CONSOLE, invalidLocations.size(), c.chestLocations.size(), builder.toString());
+							sendMessage(sender, Messages.Config.CHEST_MISSING_CONSOLE, invalidLocations.size(), c.chestLocations.size(), builder.toString());
 						}
 					} else {
-						sendMessage(sender, Messages.CONFIG.CHEST_LOCATED, c.chestLocations.size());
+						sendMessage(sender, Messages.Config.CHEST_LOCATED, c.chestLocations.size());
 					}
 				}
 			} catch (FileNotFoundException | JsonIOException e) {
-				sendMessage(sender, Messages.PLUGIN.IO_EXCEPTION);
+				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
 			} catch (JsonSyntaxException e) {
-				sendMessage(sender, Messages.CONFIG.SYNTAX);
+				sendMessage(sender, Messages.Config.SYNTAX);
 				e.printStackTrace();
 			}
 		} else {

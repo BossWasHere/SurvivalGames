@@ -42,7 +42,7 @@ public class SGEdit extends BaseCommand {
 		if (args.length > 0) {
 			try {
 				if (PLUGIN.getHost().getEditorManager().closeEditor(player, true)) {
-					sendMessage(sender, Messages.COMMAND.SG_EDIT.CLOSING);
+					sendMessage(sender, Messages.Command.SGEdit.CLOSING);
 				} else {
 					File target;
 					if (args[0].toLowerCase().endsWith(".json")) {
@@ -54,26 +54,26 @@ public class SGEdit extends BaseCommand {
 					if (!target.exists()) {
 						target.createNewFile();
 						gc = GameConfiguration.createEmptyConfiguration(target);
-						sendMessage(sender, Messages.COMMAND.SG_EDIT.CREATED);
+						sendMessage(sender, Messages.Command.SGEdit.CREATED);
 					} else {
 						gc = GameConfiguration.loadGameConfiguration(target);
-						sendMessage(sender, Messages.COMMAND.SG_EDIT.LOADED, target.getName());
+						sendMessage(sender, Messages.Command.SGEdit.LOADED, target.getName());
 					}
 
 					if (gc == null) {
-						sendMessage(sender, Messages.CONFIG.OUTDATED);
+						sendMessage(sender, Messages.Config.OUTDATED);
 					} else {
 						PLUGIN.getHost().getEditorManager().addEditor(player, gc);
-						sendMessage(sender, Messages.COMMAND.SG_EDIT.OPENING);
+						sendMessage(sender, Messages.Command.SGEdit.OPENING);
 					}
 				}
 			} catch (IOException e) {
-				sendMessage(sender, Messages.PLUGIN.IO_EXCEPTION);
+				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
 			}
 		} else {
 			if (PLUGIN.getHost().getEditorManager().isEditor(player)) {
 				PLUGIN.getHost().getEditorManager().closeEditor(player, true);
-				sendMessage(sender, Messages.COMMAND.SG_EDIT.CLOSING);
+				sendMessage(sender, Messages.Command.SGEdit.CLOSING);
 			} else {
 				return ExecutionStatus.BAD_USAGE;
 			}

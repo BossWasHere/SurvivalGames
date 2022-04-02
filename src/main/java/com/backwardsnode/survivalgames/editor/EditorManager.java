@@ -107,7 +107,7 @@ public class EditorManager {
 		}
 
 		String locale = player.getLocale();
-		String itemSetTitle = PLUGIN.getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.ALL_ITEM_SETS_TITLE, locale);
+		String itemSetTitle = PLUGIN.getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale);
 		int invSize = getAugmentedInventorySize(scene.getItemSets().size());
 
 
@@ -131,7 +131,7 @@ public class EditorManager {
 			return false;
 		}
 
-		Inventory inv = Bukkit.createInventory(player, 54, PLUGIN.getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.ITEM_SET_TITLE, player.getLocale(), itemSet));
+		Inventory inv = Bukkit.createInventory(player, 54, PLUGIN.getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), itemSet));
 		if (target.items != null) {
 			List<ItemModel> items = target.items;
 			for (int j = 0; j < items.size() && j < 54; j++) {
@@ -151,7 +151,7 @@ public class EditorManager {
 		Scene scene = getEditor(player);
 		int invSize = getAugmentedInventorySize(scene.getItemSets().size());
 
-		Inventory inv = Bukkit.createInventory(null, invSize, getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.CHOOSE_SET_TITLE, player.getLocale()));
+		Inventory inv = Bukkit.createInventory(null, invSize, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.CHOOSE_SET_TITLE, player.getLocale()));
 		List<String> enabledItemSets = scene.getChestItemSets(location);
 		for (ItemSet set : scene.getItemSets()) {
 			if (enabledItemSets.stream().anyMatch(str -> str != null && str.equals(set.name))) {
@@ -175,7 +175,7 @@ public class EditorManager {
 	
 	public boolean openSettingInventory(Player player) {
 		String locale = player.getLocale();
-		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.SETTINGS_TITLE, locale));
+		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.SETTINGS_TITLE, locale));
 		i.addItem(EditorItems.RENAME_MAP_NAMETAG.getItem(PLUGIN, locale), EditorItems.IMPLEMENTS_BOOK.getItem(PLUGIN, locale),
 				EditorItems.BORDER_DPS_CACTUS.getItem(PLUGIN, locale), EditorItems.DEATHMATCH_CONFIG_FISHINGROD.getItem(PLUGIN, locale),
 				EditorItems.SHRINK_TIME_AXE.getItem(PLUGIN, locale), EditorItems.BORDER_START_MAP.getItem(PLUGIN, locale),
@@ -187,7 +187,7 @@ public class EditorManager {
 	}
 	
 	public boolean openDeathmatchInventory(Player player) {
-		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.DEATHMATCH_TITLE, player.getLocale()));
+		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.DEATHMATCH_TITLE, player.getLocale()));
 		player.openInventory(i);
 		return true;
 	}
@@ -197,8 +197,8 @@ public class EditorManager {
 		List<String> locations = scene.getDeathmatchLocations();
 		int size = Utils.getPreferredSize(locations.size() + 9);
 		String locale = player.getLocale();
-		Inventory i = Bukkit.createInventory(null, size, getHandler().getMessageProvider().compileMessage(Messages.EDITOR.INVENTORY.BORDER_TITLE, locale));
-		String[] itemLore = PLUGIN.getMessageProvider().compileMessage(Messages.ITEM.BORDER_SELECT_LORE, locale).split("\\\\n");
+		Inventory i = Bukkit.createInventory(null, size, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.BORDER_TITLE, locale));
+		String[] itemLore = PLUGIN.getMessageProvider().compileMessage(Messages.Misc.BORDER_SELECT_LORE, locale).split("\\\\n");
 		for (String location : locations) {
 			if (scene.getTargetedBorder() != null) {
 				if (location.equals(scene.getTargetedBorder())) {

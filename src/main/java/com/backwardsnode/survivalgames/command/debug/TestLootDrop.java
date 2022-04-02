@@ -16,42 +16,49 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.backwardsnode.survivalgames.command;
+package com.backwardsnode.survivalgames.command.debug;
 
 import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
-import com.backwardsnode.survivalgames.message.Messages;
+import com.backwardsnode.survivalgames.config.LootDropConfiguration;
+import com.backwardsnode.survivalgames.world.LootDrop;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-import java.io.File;
+public class TestLootDrop extends BaseCommand {
 
-public class SGReloadLang extends BaseCommand {
-
-    public SGReloadLang(Plugin plugin) {
-        super(plugin, CommandType.SG_RELOAD_LANG);
+    public TestLootDrop(Plugin plugin) {
+        super(plugin, CommandType.TEST_LOOT_DROP);
     }
 
     @Override
     public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
-        if (args.length > 0) {
-            boolean success = true;
-            if (args[0].contentEquals("*")) {
-                for (File file : PLUGIN.getLanguageFolder().listFiles()) {
-                    String name = file.getName();
-                    if (!name.endsWith(".yml")) {
-                        continue;
-                    }
-                    PLUGIN.getMessageProvider().reExtractLanguage(name.substring(0, name.length() - 4));
-                }
-            } else {
-                success = PLUGIN.getMessageProvider().reExtractLanguage(args[0]);
-            }
+        Player player = (Player) sender;
 
-            sendMessage(sender, success ? Messages.Command.SGReloadLang.SUCCESS : Messages.Command.SGReloadLang.NO_SUCH_LANG);
-            return ExecutionStatus.SUCCESS;
+        if (args.length >= 3) {
+            try {
+                int blockX = Integer.parseInt(args[0]);
+                int blockY = Integer.parseInt(args[1]);
+                int blockZ = Integer.parseInt(args[2]);
+
+                LootDropConfiguration ldc = new LootDropConfiguration();
+                ldc.location = new Location(player.getWorld(), blockX, blockY, blockZ);
+
+                LootDrop lootDrop = PLUGIN.getHost().getLootDropManager().summonLootDrop(ldc, true);
+
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, lootDrop::close, 200);
+                return ExecutionStatus.SUCCESS;
+
+            } catch (NumberFormatException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
         return ExecutionStatus.BAD_USAGE;
     }
 }

@@ -69,9 +69,9 @@ public class InvitedGameConfiguration {
 		for (Player p : players) {
 			if (p.isOnline()) {
 				if (hostLeft) {
-					PLUGIN.getMessageProvider().sendMessage(p, Messages.COMMAND.SG_JOIN.HOST_LEFT);
+					PLUGIN.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.HOST_LEFT);
 				} else {
-					PLUGIN.getMessageProvider().sendMessage(p, Messages.COMMAND.SG_JOIN.CANCELLED);
+					PLUGIN.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.CANCELLED);
 				}
 			}
 		}

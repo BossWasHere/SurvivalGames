@@ -42,12 +42,12 @@ public class SGDelete extends BaseCommand {
 				}
 				if (target.isFile()) {
 					target.delete();
-					sendMessage(sender, Messages.COMMAND.SG_DELETE.SUCCESS, target.getName());
+					sendMessage(sender, Messages.Command.SGDelete.SUCCESS, target.getName());
 				} else {
-					sendMessage(sender, Messages.PLUGIN.IO_FILE_MISSING, args[0]);
+					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
 				}
 			} catch (Exception e) {
-				sendMessage(sender, Messages.PLUGIN.IO_EXCEPTION);
+				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
 			}
 			return ExecutionStatus.SUCCESS;
 		}

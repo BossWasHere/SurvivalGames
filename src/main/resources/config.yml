@@ -54,6 +54,8 @@ enable-cosmetics: true
 globalSettings:
   # list of ids of items which should be prohibited while in-game
   disable-items: []
+  # force any spectator who joins late to pay, if the map requires payment
+  outside-spectators-must-pay: false
   # allow killstreak bounties
   permit-bounties: true
   # allow chests to be refilled after some time
@@ -64,15 +66,14 @@ globalSettings:
   permit-loot-drops: true
   # allow the current map to specify the lobby settings
   permit-map-lobby-override: true
+  # allow match spectating instead of playing, if the player has insufficient funds to join
+  permit-spectate-without-funds: true
   # allow maps to use survival mode instead of adventure mode
   permit-survival-mode: false
   # allow maps to use a special item to track the nearest player
   permit-tracking-compass: true
-  # how daytime should be controlled for maps that support it
-  # off - disable all time controls
-  # world - set the time in the world
-  # protocol - use ProtocolLib to send fake time data (recommended)
-  time-control-mode: protocol
+  # allow maps to set the time of day for players
+  permit-time-control: true
 
 # settings for map voting
 map-voting:

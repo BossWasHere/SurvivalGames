@@ -188,7 +188,7 @@ public class MessageProvider {
                 }
             }
             if (prefixString == null) {
-                prefixString = languageConfig.getString(Messages.PLUGIN.PREFIX.getTarget(), "[err]");
+                prefixString = languageConfig.getString(Messages.Plugin.PREFIX.getTarget(), "[err]");
             }
             localizedMessage = prefixString + localizedMessage;
         }

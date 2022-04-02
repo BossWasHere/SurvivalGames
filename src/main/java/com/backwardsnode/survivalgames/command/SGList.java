@@ -50,11 +50,11 @@ public class SGList extends BaseCommand {
 
 			// TODO check colors as JSON messages work (or implement a JSON message factory inside/with MessageProvider)
 
-			cmsg.messages.add(new JsonMessage().setText(PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.TITLE, locale)));
-			String loadCmd = "\n" + PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.LOAD_INVITE, locale);
-			String loadCmdAll = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.LOAD_ALL, locale);
-			String edit = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.EDIT, locale);
-			String checkconfig = PLUGIN.getMessageProvider().compileMessage(Messages.COMMAND.SG_LIST.CHECK_CONFIG, locale);
+			cmsg.messages.add(new JsonMessage().setText(PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.TITLE, locale)));
+			String loadCmd = "\n" + PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_INVITE, locale);
+			String loadCmdAll = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_ALL, locale);
+			String edit = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.EDIT, locale);
+			String checkconfig = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.CHECK_CONFIG, locale);
 
 			String sgStartCommand = '/' + CommandType.SG_START.getCommand() + " ";
 			String sgEditCommand = '/' + CommandType.SG_EDIT.getCommand() + " ";
@@ -77,7 +77,7 @@ public class SGList extends BaseCommand {
 
 			Utils.sendJsonMessage(player, cmsg);
 		} else {
-			sendMessage(sender, Messages.COMMAND.SG_LIST.TITLE);
+			sendMessage(sender, Messages.Command.SGList.TITLE);
 			for (File json : getJsons(PLUGIN.getMapFolder())) {
 				sender.sendMessage(ChatColor.GRAY + json.getName());
 			}
