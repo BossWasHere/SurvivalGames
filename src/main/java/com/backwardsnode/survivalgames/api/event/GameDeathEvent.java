@@ -21,8 +21,8 @@ package com.backwardsnode.survivalgames.api.event;
 import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Event called when a player dies in a game
@@ -34,7 +34,7 @@ public class GameDeathEvent extends GameEvent {
     private final Player WHO_DIED;
     private final Player KILLED_BY;
 
-    public GameDeathEvent(GameInstance gameInstance, Player whoDied, Player killedBy) {
+    public GameDeathEvent(@NotNull GameInstance gameInstance, @NotNull Player whoDied, @Nullable Player killedBy) {
         super(gameInstance);
         WHO_DIED = whoDied;
         KILLED_BY = killedBy;
@@ -44,7 +44,7 @@ public class GameDeathEvent extends GameEvent {
      * Gets the player who died
      * @return The {@link Player} who died
      */
-    public Player getWhoDied() {
+    public @NotNull Player getWhoDied() {
         return WHO_DIED;
     }
 
@@ -60,17 +60,16 @@ public class GameDeathEvent extends GameEvent {
      * Gets the player who killed the player who died, or null if wasn't killed
      * @return The {@link Player} who killed
      */
-    @Nullable
-    public Player getKiller() {
+    public @Nullable Player getKiller() {
         return KILLED_BY;
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 }

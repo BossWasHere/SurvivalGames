@@ -18,33 +18,22 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-import com.backwardsnode.survivalgames.game.GameInstance;
-import com.backwardsnode.survivalgames.game.GameStatus;
+import com.backwardsnode.survivalgames.editor.Scene;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Event called when a game changes its status (phase)
+ * Event called when a player starts editing a map
  */
-public class GameStatusChangeEvent extends GameEvent implements Cancellable {
+public class EditorStartEvent extends EditorEvent implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final GameStatus STATUS;
     private boolean cancelled = false;
 
-    public GameStatusChangeEvent(@NotNull GameInstance gameInstance, @NotNull GameStatus status) {
-        super(gameInstance);
-        STATUS = status;
-    }
-
-    /**
-     * Gets the new status of the game
-     * @return The {@link GameStatus}
-     */
-    public @NotNull GameStatus getStatus() {
-        return STATUS;
+    public EditorStartEvent(@NotNull Scene scene) {
+        super(scene);
     }
 
     @Override

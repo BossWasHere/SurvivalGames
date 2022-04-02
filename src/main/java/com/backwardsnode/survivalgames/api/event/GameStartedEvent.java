@@ -20,6 +20,7 @@ package com.backwardsnode.survivalgames.api.event;
 
 import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when a new game has started
@@ -28,16 +29,16 @@ public class GameStartedEvent extends GameEvent {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public GameStartedEvent(GameInstance gameInstance) {
+    public GameStartedEvent(@NotNull GameInstance gameInstance) {
         super(gameInstance);
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 

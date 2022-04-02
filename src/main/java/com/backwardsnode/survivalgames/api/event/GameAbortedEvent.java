@@ -23,8 +23,8 @@ import com.backwardsnode.survivalgames.game.GameStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Event called when a game is about to start but was aborted instead
@@ -37,7 +37,7 @@ public class GameAbortedEvent extends Event {
     private final GameConfiguration GAME_CONFIGURATION;
     private final Player INITIATOR;
 
-    public GameAbortedEvent(GameStatus reason, GameConfiguration gameConfiguration, Player initiator) {
+    public GameAbortedEvent(@NotNull GameStatus reason, @NotNull GameConfiguration gameConfiguration, @Nullable Player initiator) {
         REASON = reason;
         GAME_CONFIGURATION = gameConfiguration;
         INITIATOR = initiator;
@@ -47,7 +47,7 @@ public class GameAbortedEvent extends Event {
      * Gets the reason for the abort
      * @return The {@link GameStatus} reason
      */
-    public GameStatus getReason() {
+    public @NotNull GameStatus getReason() {
         return REASON;
     }
 
@@ -55,7 +55,7 @@ public class GameAbortedEvent extends Event {
      * Gets the configuration of the aborted game
      * @return The {@link GameConfiguration}
      */
-    public GameConfiguration getGameConfiguration() {
+    public @NotNull GameConfiguration getGameConfiguration() {
         return GAME_CONFIGURATION;
     }
 
@@ -63,17 +63,16 @@ public class GameAbortedEvent extends Event {
      * Gets the player who originally tried to start the game, or null if started by the server
      * @return The {@link Player}
      */
-    @Nullable
-    public Player getInitiator() {
+    public @Nullable Player getInitiator() {
         return INITIATOR;
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 

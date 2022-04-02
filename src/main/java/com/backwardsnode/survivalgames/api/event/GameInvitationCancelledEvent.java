@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when an invitation is left or cancelled
@@ -36,7 +37,7 @@ public class GameInvitationCancelledEvent extends GameInvitationEvent {
     private final Player PLAYER;
     private final InvitationCancelType CANCEL_TYPE;
 
-    public GameInvitationCancelledEvent(Player player, InvitedGameConfiguration gameConfiguration, InvitationCancelType cancelType) {
+    public GameInvitationCancelledEvent(@NotNull Player player, @NotNull InvitedGameConfiguration gameConfiguration, @NotNull InvitationCancelType cancelType) {
         super(gameConfiguration);
         PLAYER = player;
         CANCEL_TYPE = cancelType;
@@ -46,7 +47,7 @@ public class GameInvitationCancelledEvent extends GameInvitationEvent {
      * Gets the player who is no longer playing
      * @return The {@link Player}
      */
-    public Player getWhoCancelled() {
+    public @NotNull Player getWhoCancelled() {
         return PLAYER;
     }
 
@@ -54,16 +55,16 @@ public class GameInvitationCancelledEvent extends GameInvitationEvent {
      * Gets the reason for leaving the invitation
      * @return The {@link InvitationCancelType}
      */
-    public InvitationCancelType getCancelType() {
+    public @NotNull InvitationCancelType getCancelType() {
         return CANCEL_TYPE;
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 }

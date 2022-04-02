@@ -18,18 +18,26 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
+import com.backwardsnode.survivalgames.game.GameInstance;
 import com.backwardsnode.survivalgames.game.InvitedGameConfiguration;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Base class for all events involving game invitations
+ */
 public abstract class GameInvitationEvent extends Event {
 
     private final InvitedGameConfiguration INVITED_GAME_CONFIGURATION;
 
-    protected GameInvitationEvent(InvitedGameConfiguration gameConfiguration) {
+    protected GameInvitationEvent(@NotNull InvitedGameConfiguration gameConfiguration) {
         INVITED_GAME_CONFIGURATION = gameConfiguration;
     }
-
-    public InvitedGameConfiguration getGameConfiguration() {
+    /**
+     * Gets the current invitation
+     * @return The {@link InvitedGameConfiguration}
+     */
+    public @NotNull InvitedGameConfiguration getGameConfiguration() {
         return INVITED_GAME_CONFIGURATION;
     }
 

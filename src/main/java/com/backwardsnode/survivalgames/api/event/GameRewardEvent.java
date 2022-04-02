@@ -23,6 +23,8 @@ import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Event called when a player is about to receive a reward for their placement at the end of a game
@@ -36,7 +38,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
 
     private boolean cancelled = false;
 
-    public GameRewardEvent(GameInstance gameInstance, Player player, int placement, RewardConfiguration rewards) {
+    public GameRewardEvent(@NotNull GameInstance gameInstance, @NotNull Player player, int placement, @Nullable RewardConfiguration rewards) {
         super(gameInstance);
         PLAYER = player;
         PLACEMENT = placement;
@@ -47,7 +49,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
      * Gets the player receiving rewards
      * @return The {@link Player}
      */
-    public Player getPlayer() {
+    public @NotNull Player getPlayer() {
         return PLAYER;
     }
 
@@ -64,7 +66,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
      * @return The {@link RewardConfiguration}
      * @apiNote this object will respect changes to rewards
      */
-    public RewardConfiguration getRewards() {
+    public @Nullable RewardConfiguration getRewards() {
         return REWARDS;
     }
 
@@ -79,11 +81,11 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 }

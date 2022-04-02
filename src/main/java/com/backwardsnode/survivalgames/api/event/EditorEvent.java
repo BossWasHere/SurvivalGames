@@ -18,5 +18,27 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-public abstract class EditorEvent {
+import com.backwardsnode.survivalgames.editor.Scene;
+import com.backwardsnode.survivalgames.game.GameInstance;
+import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Base class for all events relating to an editor session.
+ */
+public abstract class EditorEvent extends Event {
+
+    private final Scene SCENE;
+
+    public EditorEvent(@NotNull Scene scene) {
+        SCENE = scene;
+    }
+
+    /**
+     * Gets the current editor scene associated with this event
+     * @return The {@link Scene}
+     */
+    public @NotNull Scene getScene() {
+        return SCENE;
+    }
 }

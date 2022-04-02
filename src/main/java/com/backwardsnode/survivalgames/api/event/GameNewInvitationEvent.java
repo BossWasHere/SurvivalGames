@@ -22,6 +22,7 @@ import com.backwardsnode.survivalgames.game.InvitedGameConfiguration;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when a new invitation is about to be sent out
@@ -32,7 +33,7 @@ public class GameNewInvitationEvent extends GameInvitationEvent implements Cance
 
     private boolean cancelled = false;
 
-    public GameNewInvitationEvent(InvitedGameConfiguration gameConfiguration) {
+    public GameNewInvitationEvent(@NotNull InvitedGameConfiguration gameConfiguration) {
         super(gameConfiguration);
     }
 
@@ -47,11 +48,11 @@ public class GameNewInvitationEvent extends GameInvitationEvent implements Cance
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 }

@@ -22,6 +22,7 @@ import com.backwardsnode.survivalgames.config.LootDropConfiguration;
 import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when a loot drop is about to be dispatched
@@ -35,7 +36,7 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
 
     private boolean cancelled = false;
 
-    public GameLootDropEvent(GameInstance gameInstance, LootDropConfiguration toDrop, boolean wasCalledIn) {
+    public GameLootDropEvent(@NotNull GameInstance gameInstance, @NotNull LootDropConfiguration toDrop, boolean wasCalledIn) {
         super(gameInstance);
         TO_DROP = toDrop;
         WAS_CALLED_IN = wasCalledIn;
@@ -45,7 +46,7 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
      * Gets the data associated with this current loot drop
      * @return the {@link LootDropConfiguration}
      */
-    public LootDropConfiguration getLootDropConfiguration() {
+    public @NotNull LootDropConfiguration getLootDropConfiguration() {
         return TO_DROP;
     }
 
@@ -58,15 +59,6 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
     }
 
     @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
-    @Override
     public boolean isCancelled() {
         return cancelled;
     }
@@ -74,6 +66,15 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
     @Override
     public void setCancelled(boolean b) {
         cancelled = b;
+    }
+
+    @Override
+    public @NotNull HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
 }

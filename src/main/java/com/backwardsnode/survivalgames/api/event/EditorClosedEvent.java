@@ -18,5 +18,46 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-public class EditorClosedEvent {
+import com.backwardsnode.survivalgames.editor.Scene;
+import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Event called when a player closes an editor session
+ */
+public class EditorClosedEvent extends EditorEvent {
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    private boolean saved;
+
+    public EditorClosedEvent(@NotNull Scene scene, boolean saved) {
+        super(scene);
+        this.saved = saved;
+    }
+
+    /**
+     * Gets if changes to this scene will be saved to its configuration file
+     * @return True if changes are about to be saved
+     */
+    public boolean getSaved() {
+        return saved;
+    }
+
+    /**
+     * Sets if the file will be saved
+     * @param saved true to save the file
+     */
+    public void setSaved(boolean saved) {
+        this.saved = saved;
+    }
+
+    @Override
+    public @NotNull HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return HANDLERS;
+    }
 }

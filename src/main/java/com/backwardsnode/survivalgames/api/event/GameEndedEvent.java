@@ -20,6 +20,7 @@ package com.backwardsnode.survivalgames.api.event;
 
 import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when a game ends
@@ -33,13 +34,12 @@ public class GameEndedEvent extends GameEvent {
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 
-    //TODO on game finish, remove player(s) from anvil checks
 }

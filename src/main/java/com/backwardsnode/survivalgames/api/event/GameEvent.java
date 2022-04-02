@@ -20,6 +20,7 @@ package com.backwardsnode.survivalgames.api.event;
 
 import com.backwardsnode.survivalgames.game.GameInstance;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Base class for all events relating to a running or previously running game.
@@ -28,15 +29,15 @@ public abstract class GameEvent extends Event {
 
     protected final GameInstance GAME_INSTANCE;
 
-    protected GameEvent(GameInstance gameInstance) {
+    protected GameEvent(@NotNull GameInstance gameInstance) {
         GAME_INSTANCE = gameInstance;
     }
 
     /**
      * Gets the current game associated with this event
-     * @return The {{@link GameInstance}
+     * @return The {@link GameInstance}
      */
-    public GameInstance getGame() {
+    public @NotNull GameInstance getGame() {
         return GAME_INSTANCE;
     }
 }

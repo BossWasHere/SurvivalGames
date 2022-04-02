@@ -18,11 +18,11 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-import com.backwardsnode.survivalgames.game.GameStatus;
 import com.backwardsnode.survivalgames.game.InvitedGameConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event called when a player accepts a game invitation
@@ -35,7 +35,7 @@ public class GameInvitationAcceptEvent extends GameInvitationEvent implements Ca
 
     private boolean cancelled = false;
 
-    public GameInvitationAcceptEvent(Player player, InvitedGameConfiguration gameConfiguration) {
+    public GameInvitationAcceptEvent(@NotNull Player player, @NotNull InvitedGameConfiguration gameConfiguration) {
         super(gameConfiguration);
         PLAYER = player;
     }
@@ -44,7 +44,7 @@ public class GameInvitationAcceptEvent extends GameInvitationEvent implements Ca
      * Gets the player who accepted the invitation
      * @return The {@link Player}
      */
-    public Player getInvitee() {
+    public @NotNull Player getInvitee() {
         return PLAYER;
     }
 
@@ -59,11 +59,11 @@ public class GameInvitationAcceptEvent extends GameInvitationEvent implements Ca
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public static HandlerList getHandlerList() {
+    public static @NotNull HandlerList getHandlerList() {
         return HANDLERS;
     }
 
