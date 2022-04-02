@@ -112,7 +112,7 @@ public class CSVStore implements DataStoreImplementation {
 
         DeathmatchConfiguration dc = instance.getDeathmatchConfig();
         if (dc != null) {
-            entryBuilder.append(dc.loc.replace(',', ';'));
+            entryBuilder.append(dc.getLocationAsString().replace(',', ';'));
         }
         entryBuilder.append(',');
         entryBuilder.append(instance.getStatus() == GameStatus.FINISH_GAME ? '1' : '0').append(',');

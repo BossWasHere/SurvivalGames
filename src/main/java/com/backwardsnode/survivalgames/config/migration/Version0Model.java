@@ -18,18 +18,15 @@
 
 package com.backwardsnode.survivalgames.config.migration;
 
-import com.backwardsnode.survivalgames.config.BorderConfiguration;
-import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.config.ChestConfiguration;
-import com.google.gson.annotations.SerializedName;
+import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.config.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Version0Model {
+public class Version0Model implements Migration {
 
 	public String mapName;
 	public List<String> spawnLocations;
@@ -55,39 +52,47 @@ public class Version0Model {
 		public int shrinkTime;
 		public int deathmatchTime;
 	}
-	
+
+	@Override
 	public GameConfiguration migrate() {
 		GameConfiguration gc = new GameConfiguration();
-		gc.configVersion = GameConfiguration.SUPPORTED_CONFIG;
+		gc.configVersion = GameConfigurationWrapper.SUPPORTED_CONFIG;
 		gc.mapName = mapName;
-		gc.isWIP = false;
 		gc.entryFee = 0;
-		gc.rewards = new HashMap<>();
-		gc.strSpawns = spawnLocations;
+		gc.rewards = new HashMap<>(0);
+		gc.spawnLocations = spawnLocations;
 		
 		BorderConfiguration bc = new BorderConfiguration();
-		bc.borderStartRadius = border.borderStartRadius;
+		bc.borderStartDiameter = border.borderStartRadius;
 		bc.damagePerSecond = border.damagePerSecond;
 		bc.deathmatchLocations = border.deathmatchLocations.stream().map(x -> {
 			DeathmatchConfiguration dc = new DeathmatchConfiguration();
-			dc.loc = x.loc;
-			dc.borderRadius = x.borderRadius;
+			dc.location = Utils.locationFromString(x.loc, true);
+			dc.borderDiameter = x.borderRadius;
 			dc.shrinkTime = x.shrinkTime;
 			dc.deathmatchDuration = x.deathmatchTime;
 			dc.collapseTime = 60;
 			return dc;
 		}).collect(Collectors.toList());
 		gc.border = bc;
-		
-		gc.waitTime = waitTime;
+
+		gc.startingDaytime = -1;
+		gc.waitPeriod = waitTime;
 		gc.gracePeriod = gracePeriod;
 		gc.preFillChests = preFillChests;
-		gc.borderCollapseDelay = border.deathmatchTime;
+		gc.preShrinkPeriod = border.deathmatchTime;
+		gc.lootDropDelay = -1;
+		gc.lootDropTriggerWithin = -1;
+		gc.lootDropTriggerProbability = 0;
+		gc.lootDropTriggerProbabilityIncrement = 0;
+		gc.daylightCycle = true;
 		gc.spawnFireworkOnDeath = true;
 		gc.spawnFireworkOnKill = true;
 		gc.lightningOnDeath = true;
+		gc.isWIP = false;
 		gc.chestLocations = chestLocations;
 
+		gc.lootDropLocations = new ArrayList<>(0);
 		gc.itemSets = new ArrayList<>(itemSets.size());
 		for (Version1Model.Version1ItemSet is : itemSets) {
 			gc.itemSets.add(is.migrate());

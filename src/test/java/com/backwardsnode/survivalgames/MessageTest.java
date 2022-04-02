@@ -29,5 +29,7 @@ public class MessageTest {
         jsm.text = "hello";
         jsm.bold = true;
         jsm.underlined = false;
+
+        jsm.toString();
     }
 }

@@ -16,28 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.backwardsnode.survivalgames.api.event;
+package com.backwardsnode.survivalgames.config.serialization;
 
-import com.backwardsnode.survivalgames.editor.Scene;
-import org.bukkit.event.Event;
-import org.jetbrains.annotations.NotNull;
+import java.io.Serializable;
 
-/**
- * Base class for all events relating to an editor session.
- */
-public abstract class EditorEvent extends Event {
+public interface SerializableLocation extends Serializable {
 
-    private final Scene SCENE;
+    String getLocationAsString();
 
-    public EditorEvent(@NotNull Scene scene) {
-        SCENE = scene;
-    }
-
-    /**
-     * Gets the current editor scene associated with this event
-     * @return The {@link Scene}
-     */
-    public @NotNull Scene getScene() {
-        return SCENE;
-    }
 }

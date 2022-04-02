@@ -20,19 +20,22 @@ package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.item.ItemModel;
 
-public class RewardConfiguration {
+import java.io.Serializable;
+
+public class RewardConfiguration implements Copyable<RewardConfiguration>, Serializable {
 
     public float cash;
     public ItemModel[] items;
 
-    public RewardConfiguration copy() {
+    @Override
+    public RewardConfiguration deepCopy() {
         RewardConfiguration rewardConfiguration = new RewardConfiguration();
 
         rewardConfiguration.cash = cash;
         rewardConfiguration.items = new ItemModel[items.length];
 
         for (int i = 0; i < items.length; i++) {
-            rewardConfiguration.items[i] = items[i].copy();
+            rewardConfiguration.items[i] = items[i].deepCopy();
         }
 
         return rewardConfiguration;

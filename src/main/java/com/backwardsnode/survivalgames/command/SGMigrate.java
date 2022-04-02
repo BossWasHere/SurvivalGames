@@ -24,6 +24,7 @@ import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
 import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.config.migration.Version0Model;
 import com.backwardsnode.survivalgames.config.migration.Version1Model;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -83,7 +84,8 @@ public class SGMigrate extends BaseCommand {
 							return ExecutionStatus.SUCCESS;
 					}
 					Files.copy(target, new File(PLUGIN.getBackupFolder(), Utils.timestamp(target.getName())));
-					gc.copyConfiguration(target);
+
+					new GameConfigurationWrapper(gc).saveCopyTo(target);
 					sendMessage(sender, Messages.Command.SGMigrate.SUCCESS, target.getName());
 				}
 			} catch (IOException e) {

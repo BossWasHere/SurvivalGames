@@ -19,7 +19,7 @@ package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.api.event.GameAbortedEvent;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.config.PluginConfigKeys;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -53,10 +53,10 @@ public class GameManager {
 		return PLUGIN;
 	}
 
-	public boolean startGame(GameConfiguration config, PlayerCacheSettings cacheSettings, Player initiator, Collection<? extends Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
+	public boolean startGame(GameConfigurationWrapper gcw, PlayerCacheSettings cacheSettings, Player initiator, Collection<? extends Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
 
-		if (isMapInUse(config.getFileName())) {
-			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_MAP_IN_USE, config, initiator));
+		if (isMapInUse(gcw.getFileName())) {
+			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_MAP_IN_USE, gcw, initiator));
 
 			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.MAP_IN_USE);
 			return false;
@@ -64,9 +64,9 @@ public class GameManager {
 
 		GameInstance instance;
 		try {
-			instance = new GameInstance(this, config, cacheSettings);
+			instance = new GameInstance(this, gcw, cacheSettings);
 		} catch (GameConfigurationException e) {
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Config.SYNTAX, config.getFileName());
+			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Config.SYNTAX, gcw.getFileName());
 			e.printStackTrace();
 			return false;
 		}
@@ -75,11 +75,11 @@ public class GameManager {
 		instance.begin(initiator, listPlayers, ignoreIngamePlayers, selectorMode);
 		switch (instance.getStatus()) {
 		case START_ERR_FEW_PLAYERS:
-			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_FEW_PLAYERS, config, initiator));
+			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_FEW_PLAYERS, gcw, initiator));
 			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.INSUFFICIENT_PLAYERS);
 			return false;
 		case START_ERR_PLAYER_IN_GAME:
-			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_PLAYER_IN_GAME, config, initiator));
+			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_PLAYER_IN_GAME, gcw, initiator));
 			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.PLAYER_IN_GAME);
 			return false;
 		case START_SUCCESS_WITH_SPECTATORS:

@@ -18,7 +18,7 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.game.GameStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -34,10 +34,10 @@ public class GameAbortedEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final GameStatus REASON;
-    private final GameConfiguration GAME_CONFIGURATION;
+    private final GameConfigurationWrapper GAME_CONFIGURATION;
     private final Player INITIATOR;
 
-    public GameAbortedEvent(@NotNull GameStatus reason, @NotNull GameConfiguration gameConfiguration, @Nullable Player initiator) {
+    public GameAbortedEvent(@NotNull GameStatus reason, @NotNull GameConfigurationWrapper gameConfiguration, @Nullable Player initiator) {
         REASON = reason;
         GAME_CONFIGURATION = gameConfiguration;
         INITIATOR = initiator;
@@ -53,9 +53,9 @@ public class GameAbortedEvent extends Event {
 
     /**
      * Gets the configuration of the aborted game
-     * @return The {@link GameConfiguration}
+     * @return The {@link GameConfigurationWrapper}
      */
-    public @NotNull GameConfiguration getGameConfiguration() {
+    public @NotNull GameConfigurationWrapper getGameConfiguration() {
         return GAME_CONFIGURATION;
     }
 

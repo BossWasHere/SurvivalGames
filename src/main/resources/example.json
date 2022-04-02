@@ -43,20 +43,20 @@
     ],
     "border": {
         "damagePerSecond": 1.0,
-        "borderStartRadius": 300.0,
+        "borderStartDiameter": 300.0,
         "deathmatchLocations": [
             {
                 "loc": "0,0,survivalgames",
-                "borderRadius": 25.0,
+                "borderDiameter": 25.0,
                 "shrinkTime": 120,
                 "deathmatchDuration": 200,
                 "collapseTime": 60
             }
         ]
     },
-    "waitTime": 20,
+    "waitPeriod": 20,
     "gracePeriod": 10,
-    "borderCollapseDelay": 900,
+    "preShrinkPeriod": 900,
     "lootDropDelay": 90,
     "lootDropTriggerWithin": 30,
     "lootDropTriggerProbability": 0.5,

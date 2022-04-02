@@ -19,7 +19,7 @@ package com.backwardsnode.survivalgames.editor;
 
 import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
@@ -55,7 +55,7 @@ public class EditorManager {
 		return PLUGIN;
 	}
 	
-	public boolean addEditor(Player player, GameConfiguration config) {
+	public boolean addEditor(Player player, GameConfigurationWrapper config) {
 		if (editorsActive.containsKey(player.getUniqueId())) {
 			return false;
 		}
@@ -74,7 +74,7 @@ public class EditorManager {
 		}
 
 		if (save) {
-			scene.save();
+			scene.getGameConfiguration().save();
 		}
 		scene.restoreInventory();
 		scene.disposeBorder();
@@ -84,7 +84,7 @@ public class EditorManager {
 	public void closeAllEditors(boolean save) {
 		for (Scene scene : editorsActive.values()) {
 			if (save) {
-				scene.save();
+				scene.getGameConfiguration().save();
 			}
 			scene.restoreInventory();
 			scene.disposeBorder();
@@ -108,12 +108,15 @@ public class EditorManager {
 
 		String locale = player.getLocale();
 		String itemSetTitle = PLUGIN.getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale);
-		int invSize = getAugmentedInventorySize(scene.getItemSets().size());
 
+		List<ItemSet> itemSets = scene.getGameConfiguration().getItemSets();
+		int itemSetCount = itemSets.size();
+
+		int invSize = getAugmentedInventorySize(itemSetCount);
 
 		Inventory i = Bukkit.createInventory(null, invSize, itemSetTitle);
-		for (int j = 0; j < scene.getItemSets().size(); j++) {
-			i.addItem(Utils.addNameAndLore(new ItemStack(Material.IRON_SWORD), scene.getItemSets().get(j).name, "ItemSet #" + j));
+		for (int j = 0; j < itemSetCount; j++) {
+			i.addItem(Utils.addNameAndLore(new ItemStack(Material.IRON_SWORD), itemSets.get(j).name, "ItemSet #" + j));
 		}
 		i.setItem(invSize - 1, EditorItems.NEW_ITEMSET_CONCRETE.getItem(PLUGIN, locale));
 		player.openInventory(i);
@@ -149,11 +152,13 @@ public class EditorManager {
 	
 	public boolean openChestItemSetInventory(Player player, Location location) {
 		Scene scene = getEditor(player);
-		int invSize = getAugmentedInventorySize(scene.getItemSets().size());
+
+		List<ItemSet> itemSets = scene.getGameConfiguration().getItemSets();
+		int invSize = getAugmentedInventorySize(itemSets.size());
 
 		Inventory inv = Bukkit.createInventory(null, invSize, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.CHOOSE_SET_TITLE, player.getLocale()));
 		List<String> enabledItemSets = scene.getChestItemSets(location);
-		for (ItemSet set : scene.getItemSets()) {
+		for (ItemSet set : itemSets) {
 			if (enabledItemSets.stream().anyMatch(str -> str != null && str.equals(set.name))) {
 				if (set.isDefault) {
 					inv.addItem(Utils.addNameAndLore(new ItemStack(Material.LIME_STAINED_GLASS), set.name, "Default itemset", "Click me to disable", "this item set for chest"));

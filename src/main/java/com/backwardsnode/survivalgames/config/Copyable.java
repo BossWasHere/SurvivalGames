@@ -18,28 +18,8 @@
 
 package com.backwardsnode.survivalgames.config;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+public interface Copyable<T> {
 
-public class BorderConfiguration implements Copyable<BorderConfiguration>, Serializable {
+    T deepCopy();
 
-	public double damagePerSecond;
-	public double borderStartDiameter;
-	public List<DeathmatchConfiguration> deathmatchLocations;
-
-	@Override
-	public BorderConfiguration deepCopy() {
-		BorderConfiguration borderConfiguration = new BorderConfiguration();
-
-		borderConfiguration.damagePerSecond = damagePerSecond;
-		borderConfiguration.borderStartDiameter = borderStartDiameter;
-		borderConfiguration.deathmatchLocations = new ArrayList<>();
-
-		for (DeathmatchConfiguration deathmatchConfiguration : deathmatchLocations) {
-			borderConfiguration.deathmatchLocations.add(deathmatchConfiguration.deepCopy());
-		}
-
-		return borderConfiguration;
-	}
 }

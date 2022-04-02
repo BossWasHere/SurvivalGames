@@ -20,7 +20,7 @@ package com.backwardsnode.survivalgames;
 import com.backwardsnode.survivalgames.api.event.GameInvitationAcceptEvent;
 import com.backwardsnode.survivalgames.api.event.GameInvitationCancelledEvent;
 import com.backwardsnode.survivalgames.api.event.GameNewInvitationEvent;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.editor.EditorManager;
 import com.backwardsnode.survivalgames.editor.Scene;
@@ -97,7 +97,7 @@ public class SGHost {
         return GAME_MANAGER.isPlayerIngame(player);
     }
 
-    public GameConfiguration getCurrentEditorOrGameConfiguration(Player player) {
+    public GameConfigurationWrapper getCurrentEditorOrGameConfiguration(Player player) {
         if (closed) return null;
 
         Scene scene = EDITOR_MANAGER.getEditor(player);
@@ -138,7 +138,7 @@ public class SGHost {
      * @param mapName the name of the map to put the invitation under
      * @return True if the invitation was successfully added
      */
-    public boolean addInvitation(Player initiator, GameConfiguration configuration, String mapName) {
+    public boolean addInvitation(Player initiator, GameConfigurationWrapper configuration, String mapName) {
         if (closed) return false;
 
         for (InvitedGameConfiguration game : INVITATIONS.values()) {
@@ -159,7 +159,7 @@ public class SGHost {
 
         INVITATIONS.put(mapName.toLowerCase(), igc);
 
-        PLUGIN.getLogger().info(igc.getInviter().getName() + " started an invitational game on " + igc.getGameConfiguration().mapName);
+        PLUGIN.getLogger().info(initiator.getName() + " started an invitational game on " + configuration.getMapName());
         PLUGIN.getServer().getScheduler().scheduleSyncDelayedTask(PLUGIN, () -> startInvitationalGame(igc), 1200);
 
 
@@ -187,7 +187,7 @@ public class SGHost {
             if (igc.getInviter().equals(player)) {
                 igc.announceCancelled(disconnected);
                 INVITATIONS.remove(entry.getKey());
-                PLUGIN.getLogger().info("Cancelled game - Host: " + player.getName() + ", Map: " + igc.getGameConfiguration().mapName + ", Disconnected: " + disconnected);
+                PLUGIN.getLogger().info("Cancelled game - Host: " + player.getName() + ", Map: " + igc.getGameConfiguration().getMapName() + ", Disconnected: " + disconnected);
                 ct = InvitationCancelType.DELETE_INVITATION;
             }
 
@@ -230,7 +230,7 @@ public class SGHost {
     public void startInvitationalGame(InvitedGameConfiguration igc) {
         if (closed) return;
 
-        if (INVITATIONS.remove(igc.getGameConfiguration().mapName.toLowerCase()) != null) {
+        if (INVITATIONS.remove(igc.getGameConfiguration().getMapName().toLowerCase()) != null) {
             igc.start();
         }
     }

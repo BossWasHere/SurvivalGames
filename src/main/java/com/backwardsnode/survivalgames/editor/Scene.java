@@ -17,15 +17,12 @@
  */
 package com.backwardsnode.survivalgames.editor;
 
-import com.backwardsnode.survivalgames.dependency.plugin.ProtocolConnector;
-import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.BorderConfiguration;
-import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.config.IConfigurable;
-import com.backwardsnode.survivalgames.controller.BorderController;
-import com.backwardsnode.survivalgames.game.PlayerStorageCache;
 import com.backwardsnode.survivalgames.config.ChestConfiguration;
+import com.backwardsnode.survivalgames.config.DeathmatchConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
+import com.backwardsnode.survivalgames.controller.BorderController;
+import com.backwardsnode.survivalgames.dependency.plugin.ProtocolConnector;
+import com.backwardsnode.survivalgames.game.PlayerStorageCache;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -43,11 +40,11 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Scene implements IConfigurable {
+public class Scene {
 
 	private final Player editor;
 	private final EditorManager manager;
-	private final GameConfiguration gameConfig;
+	private final GameConfigurationWrapper gameConfig;
 	private final PlayerStorageCache playerCache;
 	private final PlayerStorageCache togglingCache;
 	
@@ -62,7 +59,7 @@ public class Scene implements IConfigurable {
 	private String associatedKey = null;
 	private EditorQueries currentQuery;
 
-	public Scene(Player editor, EditorManager manager, GameConfiguration gameConfig) {
+	public Scene(Player editor, EditorManager manager, GameConfigurationWrapper gameConfig) {
 		checkNotNull(editor);
 		checkNotNull(manager);
 		checkNotNull(gameConfig);
@@ -72,8 +69,9 @@ public class Scene implements IConfigurable {
 		playerCache = new PlayerStorageCache(editor, true);
 		playerCache.cacheCurrentInventory();
 		togglingCache = new PlayerStorageCache(editor, true);
-		configure();
-		if (gameConfig.itemSets.size() < 1) {
+		setDefaults();
+
+		if (gameConfig.hasNoItemSets()) {
 			createItemSet("common", true);
 		}
 	}
@@ -81,38 +79,27 @@ public class Scene implements IConfigurable {
 	public void restoreInventory() {
 		playerCache.restoreInventory();
 	}
-	
-	@Override
-	public void configure() {
-		if (gameConfig.mapName == null) {
-			gameConfig.mapName = "Untitled";
+
+	public void setDefaults() {
+		if (gameConfig.hasMapName()) {
+			gameConfig.setMapName("Untitled");
 		}
-		if (gameConfig.spawnLocs == null) {
-			gameConfig.spawnLocs = new ArrayList<>();
-		}
-		if (gameConfig.chestLocations == null) {
-			gameConfig.chestLocations = new ArrayList<>();
-		}
-		if (gameConfig.itemSets == null) {
-			gameConfig.itemSets = new ArrayList<>();
-		}
-		if (gameConfig.border == null) {
-			gameConfig.border = new BorderConfiguration();
-		}
-		if (gameConfig.border.deathmatchLocations == null) {
-			gameConfig.border.deathmatchLocations = new ArrayList<>();
-		}
-	}
-	
-	public boolean save() {
-		gameConfig.strSpawns = new ArrayList<>();
-		for (Location spawnpoint : gameConfig.spawnLocs) {
-			gameConfig.strSpawns.add(Utils.stringFromLocation(spawnpoint, false, true));
-		}
-		for (ChestConfiguration co : gameConfig.chestLocations) {
-			co.loc = Utils.stringFromLocation(co.location, false, true);
-		}
-		return gameConfig.saveConfiguration();
+		// TODO these shouldn't be true?
+//		if (gameConfig.getSpawnLocations() == null) {
+//			gameConfig.spawnLocs = new ArrayList<>();
+//		}
+//		if (gameConfig.getChests() == null) {
+//			gameConfig.chestLocations = new ArrayList<>();
+//		}
+//		if (gameConfig.getItemSets() == null) {
+//			gameConfig.itemSets = new ArrayList<>();
+//		}
+//		if (gameConfig.getBorder() == null) {
+//			gameConfig.border = new BorderConfiguration();
+//		}
+//		if (gameConfig.getDeathmatchConfigs() == null) {
+//			gameConfig.border.deathmatchLocations = new ArrayList<>();
+//		}
 	}
 	
 	public void showToolkit() {
@@ -182,7 +169,7 @@ public class Scene implements IConfigurable {
 			if (connector != null) {
 				borderController = new BorderController(connector, editor.getWorld());
 				borderController.setDefaultWarning(1, 1);
-				borderController.setTarget(selectedData.centerX, selectedData.centerZ, gameConfig.border.borderStartRadius, 0);
+				borderController.setTarget(selectedData.getCenterX(), selectedData.getCenterZ(), gameConfig.getBorderStartDiameter(), 0);
 				borderController.setVisibleTo(editor);
 				borderController.updatePlayers();
 				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ENABLED_BORDER);
@@ -197,7 +184,7 @@ public class Scene implements IConfigurable {
 		if (selectedData == null) {
 			return null;
 		}
-		return selectedData.loc;
+		return selectedData.getLocationAsString();
 	}
 	
 	public void setBorderTargetType(boolean toDeathmatch) {
@@ -211,10 +198,10 @@ public class Scene implements IConfigurable {
 				isBorderVisible = true;
 			}
 			if (toDeathmatch) {
-				borderController.setTarget(selectedData.centerX, selectedData.centerZ, selectedData.borderRadius, 0);
+				borderController.setTarget(selectedData.getCenterX(), selectedData.getCenterZ(), selectedData.borderDiameter, 0);
 				isBorderTargetDeathmatch = true;
 			} else {
-				borderController.setTarget(selectedData.centerX, selectedData.centerZ, gameConfig.border.borderStartRadius, 0);
+				borderController.setTarget(selectedData.getCenterX(), selectedData.getCenterZ(), gameConfig.getBorderStartDiameter(), 0);
 				isBorderTargetDeathmatch = false;
 			}
 		}
@@ -231,8 +218,8 @@ public class Scene implements IConfigurable {
 	}
 	
 	public void setBorderDeathmatchTarget(String target) {
-		for (DeathmatchConfiguration dc : gameConfig.border.deathmatchLocations) {
-			if (dc.loc.contentEquals(target)) {
+		for (DeathmatchConfiguration dc : gameConfig.getDeathmatchConfigs()) {
+			if (dc.getLocationAsString().equals(target)) {
 				selectedData = dc;
 				setBorderTargetType(isBorderTargetDeathmatch);
 				break;
@@ -245,121 +232,39 @@ public class Scene implements IConfigurable {
 			borderController.close();
 		}
 	}
-	
-	public void setMapName(String name) {
-		gameConfig.mapName = name;
-	}
-	
-	public void setWaitPeriod(int period) {
-		gameConfig.waitTime = period;
-	}
-	
-	public void setGracePeriod(int period) {
-		gameConfig.gracePeriod = period;
-	}
-	
-	public void setTimeToShrink(int period) {
-		gameConfig.borderCollapseDelay = period;
-	}
-	
-	public void setBorderDps(double damage) {
-		gameConfig.border.damagePerSecond = damage;
-	}
-	
-	public void setBorderStartDiameter(double diameter) {
-		gameConfig.border.borderStartRadius = diameter;
-	}
-	
-	public void setPreFillChest(boolean prefill) {
-		gameConfig.preFillChests = prefill;
-	}
-	
-	public void setDeathFirework(boolean spawn) {
-		gameConfig.spawnFireworkOnDeath = spawn;
-	}
-	
-	public void setKillFirework(boolean spawn) {
-		gameConfig.spawnFireworkOnKill = spawn;
-	}
-	
-	public void setWIP(boolean wip) {
-		gameConfig.isWIP = wip;
-	}
-
-	public String getMapName() {
-		return gameConfig.mapName;
-	}
-	
-	public int getWaitPeriod() {
-		return gameConfig.waitTime;
-	}
-	
-	public int getGracePeriod() {
-		return gameConfig.gracePeriod;
-	}
-	
-	public int getTimeToDeathmatch() {
-		return gameConfig.borderCollapseDelay;
-	}
-	
-	public double getBorderDps() {
-		return gameConfig.border.damagePerSecond;
-	}
-	
-	public double borderStartDiameter() {
-		return gameConfig.border.borderStartRadius;
-	}
 
 	public ItemSet getItemSet(String name) {
 		// TODO extract to HashMap?
 
-		for (ItemSet is : gameConfig.itemSets) {
+		for (ItemSet is : gameConfig.getItemSets()) {
 			if (is.name.contentEquals(name)) {
 				return is;
 			}
 		}
 		return null;
 	}
-
-	public List<ItemSet> getItemSets() {
-		return gameConfig.itemSets;
-	}
-	
-	public boolean getPreFillChests() {
-		return gameConfig.preFillChests;
-	}
-	
-	public boolean getDeathFirework() {
-		return gameConfig.spawnFireworkOnDeath;
-	}
-	
-	public boolean getKillFirework() {
-		return gameConfig.spawnFireworkOnKill;
-	}
-
-	public boolean isWIP() {
-		return gameConfig.isWIP;
-	}
 	
 	public boolean isItemChest(Location l) {
-		return gameConfig.chestLocations.stream().anyMatch(co -> co.loc.contentEquals(Utils.stringFromLocation(l, false, true)));
+		// TODO check
+		//return gameConfig.chestLocations.stream().anyMatch(co -> co.loc.contentEquals(Utils.stringFromLocation(l, false, true)));
+		return gameConfig.getChests().stream().anyMatch(co -> co.location == l);
 	}
 
 	public boolean addItemChest(Location l) {
 		ChestConfiguration co = new ChestConfiguration();
-		co.loc = Utils.stringFromLocation(l, false, true);
 		co.location = l;
 		co.itemSets = new ArrayList<>();
-		co.itemSets.add(gameConfig.itemSets.get(gameConfig.defaultSetIndex).name);
-		return gameConfig.chestLocations.add(co);
+		co.itemSets.add(gameConfig.getDefaultItemSet().name);
+
+		return gameConfig.getChests().add(co);
 	}
 	
 	public boolean removeItemChest(Location l) {
-		return gameConfig.chestLocations.removeIf(co -> l.equals(co.location));
+		return gameConfig.getChests().removeIf(co -> l.equals(co.location));
 	}
 	
 	public boolean addChestItemSet(Location l, String item) {
-		for (ChestConfiguration co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.getChests()) {
 			if (l.equals(co.location)) {
 				co.itemSets.add(item);
 				return true;
@@ -369,10 +274,10 @@ public class Scene implements IConfigurable {
 	}
 	
 	public boolean updateAllChestItemSets(Location l, List<String> itemSets) {
-		for (ChestConfiguration co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.getChests()) {
 			if (l.equals(co.location)) {
 				co.itemSets.clear();
-				itemSets.forEach(itemSet -> co.itemSets.add(itemSet));
+				co.itemSets.addAll(itemSets);
 				return true;
 			}
 		}
@@ -380,7 +285,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public List<String> getChestItemSets(Location l) {
-		for (ChestConfiguration co : gameConfig.chestLocations) {
+		for (ChestConfiguration co : gameConfig.getChests()) {
 			if (l.equals(co.location)) {
 				return co.itemSets;
 			}
@@ -392,35 +297,32 @@ public class Scene implements IConfigurable {
 	}
 	
 	public boolean isSpawnPlate(Location l) {
-		return gameConfig.spawnLocs.stream().anyMatch(loc -> loc.equals(l));
+		return gameConfig.getSpawnLocations().stream().anyMatch(loc -> loc.equals(l));
 	}
 	
 	public boolean addSpawnPlate(Location l) {
-		return gameConfig.spawnLocs.add(l);
+		return gameConfig.getSpawnLocations().add(l);
 	}
 	
 	public boolean removeSpawnPlate(Location l) {
-		return gameConfig.spawnLocs.removeIf(loc -> loc.equals(l));
+		return gameConfig.getSpawnLocations().removeIf(loc -> loc.equals(l));
 	}
 	
-	public boolean createItemSet(String name, boolean isDefault) {
-		for (ItemSet set : gameConfig.itemSets) {
-			if (set.name.equals(name)) {
-				return false;
-			}
+	public boolean createItemSet(String name, boolean makeDefault) {
+		if (gameConfig.getItemSetByName(name) != null) {
+			return false;
 		}
+
 		ItemSet set = new ItemSet();
 		set.name = name;
-		set.isDefault = isDefault;
-		gameConfig.itemSets.add(set);
-		if (isDefault) {
-			gameConfig.defaultSetIndex = gameConfig.itemSets.indexOf(set);
-		}
+		set.isDefault = makeDefault;
+
+		gameConfig.addItemSet(set, makeDefault);
 		return true;
 	}
 	
 	public boolean renameItemSet(String itemSet, String newName) {
-		for (ItemSet set : gameConfig.itemSets) {
+		for (ItemSet set : gameConfig.getItemSets()) {
 			if (set.name.equals(itemSet)) {
 				set.name = newName;
 				return true;
@@ -430,7 +332,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public boolean replaceItemSet(ItemStack[] items, String itemSet) {
-		for (ItemSet set : gameConfig.itemSets) {
+		for (ItemSet set : gameConfig.getItemSets()) {
 			if (set.name.equals(itemSet)) {
 				if (set.items == null) {
 					set.items = new ArrayList<>();
@@ -448,7 +350,7 @@ public class Scene implements IConfigurable {
 	}
 	
 	public List<String> getDeathmatchLocations() {
-		return gameConfig.getDeathmatchConfigs().stream().map(x -> x.loc).collect(Collectors.toList());
+		return gameConfig.getDeathmatchConfigs().stream().map(x -> x.getLocationAsString()).collect(Collectors.toList());
 	}
 	
 	public void queryInput(EditorQueries query) {
@@ -487,27 +389,27 @@ public class Scene implements IConfigurable {
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.RENAMED_ITEM_SET);
 			break;
 		case MAP_NAME:
-			setMapName(strOutput);
+			gameConfig.setMapName(strOutput);
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.RENAMED_MAP);
 			break;
 		case TIME_TO_SHRINK:
-			setTimeToShrink(pr.wrapOutput(Integer.class));
+			gameConfig.setPreShrinkPeriod(pr.wrapOutput(Integer.class));
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_PRE_SHRINK_DURATION);
 			break;
 		case BORDER_DPS:
-			setBorderDps(pr.wrapOutput(Double.class));
+			gameConfig.setBorderDPS(pr.wrapOutput(Double.class));
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_BORDER_DPS);
 			break;
 		case BORDER_START_RADIUS:
-			setBorderStartDiameter(pr.wrapOutput(Double.class));
+			gameConfig.setBorderStartDiameter(pr.wrapOutput(Double.class));
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_BORDER_RADIUS);
 			break;
 		case GRACE_PERIOD:
-			setGracePeriod(pr.wrapOutput(Integer.class));
+			gameConfig.setGracePeriod(pr.wrapOutput(Integer.class));
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_PVP_OFF_TIME);
 			break;
 		case WAIT_PERIOD:
-			setWaitPeriod(pr.wrapOutput(Integer.class));
+			gameConfig.setWaitPeriod(pr.wrapOutput(Integer.class));
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.UPDATED_WAIT_PERIOD);
 		default:
 			break;
@@ -516,7 +418,7 @@ public class Scene implements IConfigurable {
 		return true;
 	}
 
-	public GameConfiguration getGameConfiguration() {
+	public GameConfigurationWrapper getGameConfiguration() {
 		return gameConfig;
 	}
 }

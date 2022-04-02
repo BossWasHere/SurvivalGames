@@ -17,10 +17,13 @@
  */
 package com.backwardsnode.survivalgames.item;
 
+import com.backwardsnode.survivalgames.config.Copyable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentWrapper;
 
-public class EnchantmentModel {
+import java.io.Serializable;
+
+public class EnchantmentModel implements Copyable<EnchantmentModel>, Serializable {
 
 	public String id;
 	public int level;
@@ -29,12 +32,13 @@ public class EnchantmentModel {
 		return new EnchantmentWrapper(id);
 	}
 
-	public EnchantmentModel copy() {
+	@Override
+	public EnchantmentModel deepCopy() {
 		EnchantmentModel enchantmentModel = new EnchantmentModel();
 
 		enchantmentModel.id = id;
 		enchantmentModel.level = level;
 
-		return  enchantmentModel;
+		return enchantmentModel;
 	}
 }

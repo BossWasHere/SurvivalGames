@@ -17,6 +17,7 @@
  */
 package com.backwardsnode.survivalgames.message;
 
+import com.backwardsnode.survivalgames.config.serialization.FalseBooleanAdapter;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.JsonAdapter;
 import net.md_5.bungee.api.chat.ClickEvent;

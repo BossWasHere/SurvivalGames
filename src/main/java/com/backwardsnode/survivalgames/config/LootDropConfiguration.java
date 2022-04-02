@@ -19,25 +19,25 @@
 package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.Utils;
-import org.bukkit.Bukkit;
+import com.backwardsnode.survivalgames.config.serialization.BlockLocationAdapter;
+import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import org.bukkit.Location;
 
 import java.util.List;
 
-public class LootDropConfiguration implements IConfigurable {
+public class LootDropConfiguration implements SerializableLocation {
 
-    public String loc;
+    @JsonAdapter(BlockLocationAdapter.class)
+    @SerializedName("loc")
+    public Location location;
     public List<String> itemSets;
     public boolean canDropAutomatically;
     public boolean canDropOnDemand;
 
-    public transient Location location;
-
-    public void configure() {
-        location = Utils.locationFromString(loc, false);
-        if (location == null) {
-            // TODO bring inside plugin logger
-            Bukkit.getLogger().warning("Invalid loot drop configuration @ " + loc);
-        }
+    @Override
+    public String getLocationAsString() {
+        return Utils.stringFromLocation(location, false, true);
     }
 }

@@ -18,8 +18,8 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.PluginConfigKeys;
 import com.backwardsnode.survivalgames.config.ChestConfiguration;
+import com.backwardsnode.survivalgames.config.PluginConfigKeys;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -34,12 +34,17 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryInteractEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class GameListener implements Listener {
 
@@ -70,14 +75,12 @@ public class GameListener implements Listener {
 				instance.tryUnpackLootDrop(clicked);
 				e.setCancelled(true);
 
-			} else if (!instance.doChestPrefill() && clicked.getState() instanceof Chest) {
+			} else if (!instance.getGameConfiguration().getDoChestPrefilling() && clicked.getState() instanceof Chest) {
 				ChestConfiguration co = instance.getChestData(clicked.getLocation());
 				if (co != null) {
-					HashSet<String> openedChests = instance.getOpenedChests();
-					if (!openedChests.contains(co.loc)) {
-						openedChests.add(co.loc);
+					if (!instance.getOpenedChests().add(co.location)) {
 						Chest chest = (Chest) clicked.getState();
-						co.fill(chest, instance.getItemSets());
+						Utils.fillChest(chest, instance.getItemSets(), co.itemSets);
 					}
 				}
 			}

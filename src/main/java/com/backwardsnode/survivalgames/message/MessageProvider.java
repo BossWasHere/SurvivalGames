@@ -25,9 +25,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.util.HashMap;
-
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 
 public class MessageProvider {
 

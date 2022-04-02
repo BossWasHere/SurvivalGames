@@ -15,29 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package com.backwardsnode.survivalgames.config.serialization;
 
-package com.backwardsnode.survivalgames.api.event;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
-import com.backwardsnode.survivalgames.editor.Scene;
-import org.bukkit.event.Event;
-import org.jetbrains.annotations.NotNull;
+import java.io.IOException;
 
-/**
- * Base class for all events relating to an editor session.
- */
-public abstract class EditorEvent extends Event {
+public class FalseBooleanAdapter extends TypeAdapter<Boolean> {
 
-    private final Scene SCENE;
-
-    public EditorEvent(@NotNull Scene scene) {
-        SCENE = scene;
+    @Override
+    public void write(JsonWriter jsonWriter, Boolean value) throws IOException {
+        if (value) {
+            jsonWriter.value(true);
+        } else {
+            jsonWriter.jsonValue(null);
+        }
     }
 
-    /**
-     * Gets the current editor scene associated with this event
-     * @return The {@link Scene}
-     */
-    public @NotNull Scene getScene() {
-        return SCENE;
+    @Override
+    public Boolean read(JsonReader jsonReader) throws IOException {
+        return jsonReader.nextBoolean();
     }
+
 }

@@ -22,7 +22,7 @@ import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.game.PlayerSelectionMethod;
 import com.backwardsnode.survivalgames.message.JsonMessage;
@@ -78,7 +78,7 @@ public class SGStart extends BaseCommand {
 	}
 	
 	private void start(Player initiator, String mapName, Collection<? extends Player> players) {
-		GameConfiguration config = tryLoad(initiator, mapName);
+		GameConfigurationWrapper config = tryLoad(initiator, mapName);
 		
 		if (config != null) {
 			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
@@ -90,7 +90,7 @@ public class SGStart extends BaseCommand {
 	}
 	
 	private void startInvite(Player initiator, String mapName) {
-		GameConfiguration config = tryLoad(initiator, mapName);
+		GameConfigurationWrapper config = tryLoad(initiator, mapName);
 		
 		if (config != null) {
 			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
@@ -98,7 +98,7 @@ public class SGStart extends BaseCommand {
 				return;
 			}
 
-			String indexName = config.mapName.replace(' ', '-');
+			String indexName = config.getMapName().replace(' ', '-');
 			if (PLUGIN.getHost().mapHasPendingInvitation(indexName)) {
 				sendMessage(initiator, Messages.Command.SGStart.EXISTING_INVITE);
 				return;
@@ -108,7 +108,7 @@ public class SGStart extends BaseCommand {
 			JsonMessage message = new JsonMessage().setText("[Click here to join]").setItalic(true).setColor(ChatColor.GOLD).setClickEvent(JsonTextEvent.runCommand("/sgj " + indexName));
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				if (p.hasPermission(CommandType.SG_JOIN.getBasicPermission())) {
-					sendMessage(p, Messages.Game.INVITE_OPEN, pName, config.mapName);
+					sendMessage(p, Messages.Game.INVITE_OPEN, pName, config.getMapName());
 					Utils.sendJsonMessage(p, message);
 					sendMessage(p, Messages.Game.INVITE_DURATION);
 				}
@@ -117,7 +117,7 @@ public class SGStart extends BaseCommand {
 		}
 	}
 	
-	private GameConfiguration tryLoad(Player player, String mapName) {
+	private GameConfigurationWrapper tryLoad(Player player, String mapName) {
 		try {
 			File target = new File(PLUGIN.getMapFolder(), mapName);
 			if (!target.isFile()) {
@@ -127,9 +127,7 @@ public class SGStart extends BaseCommand {
 				sendMessage(player, Messages.Plugin.IO_FILE_MISSING, mapName);
 				return null;
 			}
-			mapName = target.getPath();
-			GameConfiguration c = GameConfiguration.loadGameConfiguration(target);
-			return c;
+			return new GameConfigurationWrapper(target, true);
 			
 		} catch (FileNotFoundException e) {
 			sendMessage(player, Messages.Plugin.IO_EXCEPTION);

@@ -18,7 +18,7 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.message.Messages;
 import org.bukkit.entity.Player;
 
@@ -28,11 +28,11 @@ public class InvitedGameConfiguration {
 
 	private final Plugin PLUGIN;
 	private final Player PLAYER;
-	private final GameConfiguration CONFIGURATION;
+	private final GameConfigurationWrapper CONFIGURATION;
 	
 	private HashSet<Player> players;
 	
-	public InvitedGameConfiguration(Plugin plugin, Player player, GameConfiguration configuration) {
+	public InvitedGameConfiguration(Plugin plugin, Player player, GameConfigurationWrapper configuration) {
 		PLUGIN = plugin;
 		PLAYER = player;
 		CONFIGURATION = configuration;
@@ -45,7 +45,7 @@ public class InvitedGameConfiguration {
 		return PLAYER;
 	}
 
-	public GameConfiguration getGameConfiguration() {
+	public GameConfigurationWrapper getGameConfiguration() {
 		return CONFIGURATION;
 	}
 	

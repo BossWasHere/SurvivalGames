@@ -22,7 +22,7 @@ import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.message.JsonMessage;
 import com.backwardsnode.survivalgames.message.JsonTextEvent;
 import com.backwardsnode.survivalgames.message.Messages;
@@ -35,7 +35,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
+import java.util.Set;
 
 public class SGCheck extends BaseCommand {
 
@@ -56,31 +56,36 @@ public class SGCheck extends BaseCommand {
 					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
 				} else {
 					sendMessage(sender, Messages.Plugin.IO_FILE_FOUND, target.getName());
-					GameConfiguration c = GameConfiguration.loadGameConfiguration(target);
+					GameConfigurationWrapper gcw = new GameConfigurationWrapper(target, true);
 					sendMessage(sender, Messages.Plugin.IO_FILE_LOADED);
-					List<Location> invalidLocations = c.checkChests();
+					Set<Location> invalidLocations = gcw.checkChests();
 					if (invalidLocations.size() > 0) {
 						StringBuilder builder = new StringBuilder();
 						builder.append("At: ");
-						for (int i = 0; i < invalidLocations.size(); i++) {
-							builder.append("[").append(Utils.stringFromLocation(invalidLocations.get(i), false, true) + "], " + (i % 3 == 0 ? "\n" : ""));
+						int i = 0;
+						for (Location location : invalidLocations) {
+							builder.append("[").append(Utils.stringFromLocation(location, false, true)).append("], ");
+							if (i++ % 3 == 0) {
+								builder.append('\n');
+							}
 							if (i > 9) {
 								builder.append(" + ").append(invalidLocations.size() - 10).append(" more  ");
 								break;
 							}
 						}
+
 						builder.substring(0, builder.length() - 2);
 						if (sender instanceof Player) {
 							Player player = (Player) sender;
 							JsonMessage msg = new JsonMessage().setColor(ChatColor.RED)
-							.setText(PLUGIN.getMessageProvider().compileMessage(Messages.Config.CHEST_MISSING, player.getLocale(), invalidLocations.size(), c.chestLocations.size()))
+							.setText(PLUGIN.getMessageProvider().compileMessage(Messages.Config.CHEST_MISSING, player.getLocale(), invalidLocations.size(), gcw.getChests().size()))
 							.setHoverEvent(JsonTextEvent.showText(builder.toString()));
 							Utils.sendJsonMessage(player, msg);
 						} else {
-							sendMessage(sender, Messages.Config.CHEST_MISSING_CONSOLE, invalidLocations.size(), c.chestLocations.size(), builder.toString());
+							sendMessage(sender, Messages.Config.CHEST_MISSING_CONSOLE, invalidLocations.size(), gcw.getChests().size(), builder.toString());
 						}
 					} else {
-						sendMessage(sender, Messages.Config.CHEST_LOCATED, c.chestLocations.size());
+						sendMessage(sender, Messages.Config.CHEST_LOCATED, gcw.getChests().size());
 					}
 				}
 			} catch (FileNotFoundException | JsonIOException e) {

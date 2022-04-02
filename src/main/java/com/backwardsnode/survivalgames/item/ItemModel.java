@@ -17,6 +17,7 @@
  */
 package com.backwardsnode.survivalgames.item;
 
+import com.backwardsnode.survivalgames.config.Copyable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -28,13 +29,14 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class ItemModel {
+public class ItemModel implements Copyable<ItemModel>, Serializable {
 
 	public String id;
 	public int count;
@@ -45,11 +47,11 @@ public class ItemModel {
 	public ItemStack getEquivalent() {
 		try {
 			int ind = id.indexOf('#');
-			ItemStack item = null;
+			ItemStack item;
 			ItemMeta meta;
 			if (ind > 0) {
 				String matId = id.substring(0, ind);
-				String special = id.substring(ind + 1, id.length());
+				String special = id.substring(ind + 1);
 				
 				item = new ItemStack(Material.matchMaterial(matId), count);
 				meta = item.getItemMeta();
@@ -126,8 +128,8 @@ public class ItemModel {
 		}
 		String[] parts = data.split("\\.");
 		String name = parts[0].toUpperCase();
-		boolean extended = parts.length > 1 && parts[1] == "1";
-		boolean upgraded = parts.length > 2 && parts[2] == "1";
+		boolean extended = parts.length > 1 && "1".equals(parts[1]);
+		boolean upgraded = parts.length > 2 && "1".equals(parts[2]);
 		try {
 			return new PotionData(PotionType.valueOf(name), extended, upgraded);
 		} catch (Exception e) {
@@ -139,7 +141,6 @@ public class ItemModel {
 		checkNotNull(potion);
 		PotionData pd = potion.getBasePotionData();
 		return pd.getType().name() + "." + (pd.isExtended() ? 1 : 0) + "." + (pd.isUpgraded() ? 1 : 0);
-		//return eff.getType().getName() + "." + eff.getDuration() + "." + eff.getAmplifier();
 	}
 	
 	private static boolean addStoredEnchant(EnchantmentStorageMeta meta, String data) {
@@ -161,7 +162,8 @@ public class ItemModel {
 		return "";
 	}
 
-    public ItemModel copy() {
+	@Override
+    public ItemModel deepCopy() {
 		ItemModel itemModel = new ItemModel();
 
 		itemModel.id = id;
@@ -171,7 +173,7 @@ public class ItemModel {
 		itemModel.enchantments = new ArrayList<>(enchantments.size());
 
 		for (EnchantmentModel model : enchantments) {
-			itemModel.enchantments.add(model.copy());
+			itemModel.enchantments.add(model.deepCopy());
 		}
 
 		return itemModel;

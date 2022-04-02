@@ -16,9 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.backwardsnode.survivalgames.config;
+package com.backwardsnode.survivalgames.config.migration;
 
-public interface IConfigurable {
+import com.backwardsnode.survivalgames.config.GameConfiguration;
 
-	void configure();
+public interface Migration {
+
+    GameConfiguration migrate();
+
 }

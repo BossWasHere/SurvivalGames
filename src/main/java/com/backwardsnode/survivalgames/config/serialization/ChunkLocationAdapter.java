@@ -15,27 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.backwardsnode.survivalgames.message;
 
+package com.backwardsnode.survivalgames.config.serialization;
+
+import com.backwardsnode.survivalgames.Utils;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 
 import java.io.IOException;
 
-public class FalseBooleanAdapter extends TypeAdapter<Boolean> {
+public class ChunkLocationAdapter extends TypeAdapter<Location> {
 
     @Override
-    public void write(JsonWriter out, Boolean value) throws IOException {
-        if (value) {
-            out.value(true);
+    public void write(JsonWriter jsonWriter, Location location) throws IOException {
+        if (location != null) {
+            jsonWriter.value(Utils.stringFromLocation(location, true, true));
         } else {
-            out.jsonValue(null);
+            jsonWriter.jsonValue(null);
         }
     }
 
     @Override
-    public Boolean read(JsonReader in) throws IOException {
-        return in.nextBoolean();
+    public Location read(JsonReader jsonReader) throws IOException {
+        String locationAsString = jsonReader.nextString();
+
+        Location location = Utils.locationFromString(locationAsString, true);
+
+        if (location == null) {
+            Bukkit.getLogger().warning("Invalid location string " + locationAsString);
+        }
+
+        return location;
     }
+
 }

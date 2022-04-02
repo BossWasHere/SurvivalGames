@@ -17,11 +17,11 @@
  */
 package com.backwardsnode.survivalgames.command;
 
-import com.backwardsnode.survivalgames.game.InvitationCancelType;
 import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import com.backwardsnode.survivalgames.game.InvitationCancelType;
 import com.backwardsnode.survivalgames.message.Messages;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

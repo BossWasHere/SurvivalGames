@@ -19,7 +19,7 @@
 package com.backwardsnode.survivalgames.dependency.plugin;
 
 import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.game.GameInstance;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -68,12 +68,12 @@ public class PlaceholderAPIConnector extends PlaceholderExpansion {
                 return gameInstance == null ? "0" : String.valueOf(gameInstance.getPlayerState(player).kills);
             }
             case "sg_current_map" -> {
-                GameConfiguration gameConfiguration = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
-                return gameConfiguration == null ? "none" : gameConfiguration.mapName;
+                GameConfigurationWrapper gcw = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
+                return gcw == null ? "none" : gcw.getMapName();
             }
             case "sg_current_map_file" -> {
-                GameConfiguration gameConfiguration = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
-                return gameConfiguration == null ? "none" : gameConfiguration.getFileName();
+                GameConfigurationWrapper gcw = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
+                return gcw == null ? "none" : gcw.getFileName();
             }
         }
 

@@ -17,26 +17,31 @@
  */
 package com.backwardsnode.survivalgames;
 
+import com.backwardsnode.survivalgames.item.ItemModel;
+import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.JsonMessage;
 import com.google.common.base.Preconditions;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.*;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -228,6 +233,41 @@ public class Utils {
         return a;
     }
 
+    public static boolean fillChest(Chest chest, Collection<ItemSet> allItemSets, Collection<String> permittedItemSets) {
+        Set<ItemSet> selector = allItemSets.stream().filter(x -> permittedItemSets.equals(x.name)).collect(Collectors.toSet());
+
+        List<ItemModel> assorted = new ArrayList<>();
+        for (ItemSet select : selector) {
+            assorted.addAll(select.items);
+        }
+
+        chest.setCustomName("Loot Chest");
+        chest.update(true, false);
+        Inventory blockInv = chest.getBlockInventory();
+        blockInv.clear();
+
+        Random r = new Random();
+        int availableItems = assorted.size();
+        int m = Math.min(availableItems, r.nextInt(4) + 2);
+        int[] slots = getRandomSlots(m, 27);
+
+        boolean isOkay = true;
+        for (int i = 0; i < m && availableItems > 0; i++) {
+            ItemModel model = assorted.remove(r.nextInt(availableItems--));
+            ItemStack item = model.getEquivalent();
+            if (item == null) {
+                Bukkit.getLogger().warning("Unknown item [" + model.id + "], you should check the config file");
+                isOkay = false;
+                m++;
+                continue;
+            }
+            item.setAmount(r.nextInt(model.count) + 1);
+            blockInv.setItem(slots[i], item);
+        }
+
+        return isOkay;
+    }
+
     /**
      * Reads the entire contents from a file
      * @param file The file to read from
@@ -238,22 +278,6 @@ public class Utils {
     public static String readFile(File file, Charset encoding) throws IOException {
         byte[] encoded = Files.readAllBytes(file.toPath());
         return new String(encoded, encoding);
-    }
-
-    /**
-     * Writes or overwrites a file with a given string input using default encoding
-     * @param file The file to write to
-     * @param content The content to write to the file
-     * @return True if the file was successfully written to, false if not
-     */
-    public static boolean writeFile(File file, String content) {
-        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
-            out.print(content);
-            return true;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     /**

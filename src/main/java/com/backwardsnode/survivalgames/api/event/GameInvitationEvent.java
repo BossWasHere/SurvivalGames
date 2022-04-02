@@ -18,7 +18,6 @@
 
 package com.backwardsnode.survivalgames.api.event;
 
-import com.backwardsnode.survivalgames.game.GameInstance;
 import com.backwardsnode.survivalgames.game.InvitedGameConfiguration;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;

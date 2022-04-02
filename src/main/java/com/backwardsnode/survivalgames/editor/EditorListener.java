@@ -252,29 +252,33 @@ public class EditorListener implements Listener {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.GRACE_PERIOD);
 			} else if (EditorItems.PREFILL_CHESTMINECART.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setPreFillChest(!scene.getPreFillChests());
-				if (scene.getPreFillChests()) {
+				boolean doChestPrefilling = !scene.getGameConfiguration().getDoChestPrefilling();
+				scene.getGameConfiguration().setDoChestPrefilling(doChestPrefilling);
+				if (doChestPrefilling) {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_AUTOFILL);
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_AUTOFILL);
 				}
 			} else if (EditorItems.DEATH_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setDeathFirework(!scene.getDeathFirework());
-				if (scene.getDeathFirework()) {
+				boolean deathFirework = !scene.getGameConfiguration().getSpawnFireworkOnDeath();
+				scene.getGameConfiguration().setSpawnFireworkOnDeath(deathFirework);
+				if (deathFirework) {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_DEATH_FIREWORK);
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_DEATH_FIREWORK);
 				}
 			} else if (EditorItems.KILL_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setKillFirework(!scene.getKillFirework());
-				if (scene.getKillFirework()) {
+				boolean killFirework = !scene.getGameConfiguration().getSpawnFireworkOnKill();
+				scene.getGameConfiguration().setSpawnFireworkOnKill(killFirework);
+				if (killFirework) {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_KILL_FIREWORK);
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_KILL_FIREWORK);
 				}
 			} else if (EditorItems.ISWIP_BRICKS.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setWIP(!scene.isWIP());
-				if (scene.isWIP()) {
+				boolean wip = !scene.getGameConfiguration().getIsWIP();
+				scene.getGameConfiguration().setIsWIP(wip);
+				if (wip) {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_WIP);
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_WIP);

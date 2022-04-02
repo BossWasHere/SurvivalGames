@@ -18,13 +18,13 @@
 package com.backwardsnode.survivalgames.game;
 
 import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.*;
-import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
 import com.backwardsnode.survivalgames.api.event.*;
+import com.backwardsnode.survivalgames.config.*;
 import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.controller.BossBarController;
 import com.backwardsnode.survivalgames.controller.ScoreboardController;
 import com.backwardsnode.survivalgames.controller.ScoreboardElement;
+import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
@@ -44,10 +44,10 @@ import java.util.*;
 public class GameInstance {
 
 	private final GameManager MANAGER;
-	private final GameConfiguration CONFIG;
+	private final GameConfigurationWrapper CONFIG;
 	private final PlayerCacheSettings CACHE_SETTINGS;
 	private final Map<UUID, PlayerState> INGAME_PLAYERS;
-	private final HashSet<String> OPENED_CHESTS;
+	private final HashSet<Location> OPENED_CHESTS;
 
 	private ScoreboardController scoreboard;
 	private BossBarController bossbar;
@@ -68,12 +68,12 @@ public class GameInstance {
 	private boolean flagPVPEnabled;
 	private boolean flagDeathmatchStarted;
 	
-	protected GameInstance(GameManager manager, GameConfiguration config, PlayerCacheSettings cacheSettings) throws GameConfigurationException {
+	protected GameInstance(GameManager manager, GameConfigurationWrapper gcw, PlayerCacheSettings cacheSettings) throws GameConfigurationException {
 		MANAGER = manager;
-		CONFIG = config;
+		CONFIG = gcw;
 		CACHE_SETTINGS = cacheSettings;
 
-		if (config.spawnLocs.size() < 2) {
+		if (gcw.getSpawnLocations().size() < 2) {
 			throw new GameConfigurationException("Not enough spawn locations");
 		}
 
@@ -106,10 +106,11 @@ public class GameInstance {
 
 		// check sufficient player funds
 		initialPlayers = 0;
+		float entryFee = CONFIG.getEntryFee();
 		VaultConnector vault = MANAGER.getPlugin().getDependencyManager().getVaultConnector();
-		if (vault != null && CONFIG.entryFee > 0) {
+		if (vault != null && entryFee > 0) {
 			for (Player pl : players) {
-				if (pl.hasPermission("survivalgames.freeentry") || vault.getBalance(pl) >= CONFIG.entryFee){
+				if (pl.hasPermission("survivalgames.freeentry") || vault.getBalance(pl) >= entryFee){
 					initialPlayers++;
 				}
 			}
@@ -122,7 +123,8 @@ public class GameInstance {
 		}
 
 		// check if we have too many candidates
-		if (initialPlayers > CONFIG.spawnLocs.size()) {
+		int spawnLocationCount = CONFIG.getSpawnLocations().size();
+		if (initialPlayers > spawnLocationCount) {
 			if (acceptsSpectators) {
 				currentStatus = GameStatus.START_SUCCESS_WITH_SPECTATORS;
 			} else {
@@ -136,7 +138,6 @@ public class GameInstance {
 		flagIsActive = true;
 		flagDeathmatchStarted = false;
 
-		int spawnLocationCount = CONFIG.spawnLocs.size();
 		if (selectorMode.shouldShuffle()) {
 			Collections.shuffle(players);
 		}
@@ -149,10 +150,10 @@ public class GameInstance {
 			if (addedPlayers < spawnLocationCount) {
 				boolean gotEntry = true;
 
-				if (vault != null && CONFIG.entryFee > 0) {
+				if (vault != null && entryFee > 0) {
 					if (pl.hasPermission("survivalgames.freeentry")){
 						MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.FREE_ENTRY);
-					} else if (!vault.withdrawPlayer(pl, CONFIG.entryFee)) {
+					} else if (!vault.withdrawPlayer(pl, entryFee)) {
 						if (allowSpectateWithoutFunds && acceptsSpectators) {
 							MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS_SPECTATING_INSTEAD);
 							gotEntry = false;
@@ -190,12 +191,12 @@ public class GameInstance {
 		setupBossbar();
 		deathmatchConfig = CONFIG.selectDeathmatch();
 
-		if (CONFIG.preFillChests) {
+		if (CONFIG.getDoChestPrefilling()) {
 			fillChests(initiator);
 		}
 
 		// game start
-		startCountdownTimer(CONFIG.waitTime, GameStatus.RELEASE_PLAYERS);
+		startCountdownTimer(CONFIG.getWaitPeriod(), GameStatus.RELEASE_PLAYERS);
 
 		startedAt = new Date();
 
@@ -207,21 +208,21 @@ public class GameInstance {
 	private void setupScoreboard(int playersAlive) {
 		scoreboard = new ScoreboardController(ChatColor.DARK_AQUA + "[Survival Games]");
 		scoreboard.initialize();
-		scoreboard.updateScoreboardElement(ScoreboardElement.MAP_NAME, (CONFIG.mapName == null ? "unknown" : CONFIG.mapName));
+		scoreboard.updateScoreboardElement(ScoreboardElement.MAP_NAME, (CONFIG.getMapName()));
 		scoreboard.updateScoreboardElement(ScoreboardElement.PLAYERS_LEFT, String.valueOf(playersAlive));
-		String dim = String.valueOf(Math.floor(border.getRadius()));
+		String dim = String.valueOf(Math.floor(border.getDiameter()));
 		scoreboard.updateScoreboardElement(ScoreboardElement.ZONE_SIZE, dim + "," + dim + " blocks");
 		scoreboard.setVisibleTo(INGAME_PLAYERS.values());
 	}
 
 	private void setupBossbar() {
-		bossbar = new BossBarController("Game Starting...", BarColor.BLUE, CONFIG.waitTime);
+		bossbar = new BossBarController("Game Starting...", BarColor.BLUE, CONFIG.getWaitPeriod());
 		bossbar.setVisibleTo(INGAME_PLAYERS.values());
 	}
 
 	private void setupBorder(World defaultWorld) {
 		border = new BorderController(MANAGER.getPlugin().getDependencyManager().getProtocolConnector(), defaultWorld);
-		border.setTarget(CONFIG.border.borderStartRadius, 0);
+		border.setTarget(CONFIG.getBorderStartDiameter(), 0);
 		border.setVisibleTo(INGAME_PLAYERS.values());
 	}
 	
@@ -273,7 +274,7 @@ public class GameInstance {
 		bossbar.setHealth(remaining);
 
 		if (nextOperation == GameStatus.CLOSE_PLAY_AREA && remaining % 2 == 0) {
-			String dim = String.valueOf(Math.floor(border.getRadius()));
+			String dim = String.valueOf(Math.floor(border.getDiameter()));
 			scoreboard.updateScoreboardElement(ScoreboardElement.ZONE_SIZE, dim + "," + dim + " blocks");
 		}
 	}
@@ -282,14 +283,16 @@ public class GameInstance {
 		int i = 0;
 		for (PlayerState player : INGAME_PLAYERS.values()) {
 			Player p = player.cache.getPlayer();
-			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, CONFIG.mapName);
+			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, CONFIG.getMapName());
 
+			List<Location> spawnLocations = CONFIG.getSpawnLocations();
+			Location commonSpawnLocation = spawnLocations.get(0).clone().add(0.5, 0, 0.5);
 			if (player.spectating) {
-				p.teleport(CONFIG.spawnLocs.get(0).add(0.5, 0, 0.5));
+				p.teleport(commonSpawnLocation);
 				p.setGameMode(GameMode.SPECTATOR);
 				MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.AS_SPECTATOR);
 			} else {
-				p.teleport(CONFIG.spawnLocs.get(i).add(0.5, 0, 0.5));
+				p.teleport(spawnLocations.get(i).clone().add(0.5, 0, 0.5));
 				p.setGameMode(GameMode.ADVENTURE);
 				i++;
 			}
@@ -301,9 +304,9 @@ public class GameInstance {
 			if (reset) {
 				player.resetPlayerTime();
 			} else {
-				int time = CONFIG.startingDaytime;
+				int time = CONFIG.getStartingDaytime();
 				if (time >= 0) {
-					player.setPlayerTime(time, CONFIG.daylightCycle);
+					player.setPlayerTime(time, CONFIG.getDoDaylightCycle());
 				}
 			}
 		}
@@ -312,14 +315,16 @@ public class GameInstance {
 	private void releasePlayers() {
 		flagDisableMovement = false;
 		playGlobalPingSound();
-		if (CONFIG.gracePeriod < 1) {
+
+		int gracePeriod = CONFIG.getGracePeriod();
+		if (gracePeriod <= 0) {
 			enablePVP(false);
 		} else {
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "PvP Off");
-			announce(Messages.Game.PVP_OFF_TIME, CONFIG.gracePeriod);
-			bossbar.resetHealth(CONFIG.gracePeriod);
+			announce(Messages.Game.PVP_OFF_TIME, gracePeriod);
+			bossbar.resetHealth(gracePeriod);
 			bossbar.setOptions("PvP Disabled", BarColor.YELLOW);
-			timerInstance.setOperation(GameStatus.ENABLE_PVP, CONFIG.gracePeriod);
+			timerInstance.setOperation(GameStatus.ENABLE_PVP, gracePeriod);
 		}
 	}
 	
@@ -330,9 +335,9 @@ public class GameInstance {
 			playGlobalPingSound();
 			announce(Messages.Game.PVP_ENABLED);
 		}
-		bossbar.resetHealth(CONFIG.borderCollapseDelay);
+		bossbar.resetHealth(CONFIG.getPreShrinkPeriod());
 		bossbar.setOptions("PvP Enabled", BarColor.PURPLE);
-		timerInstance.setOperation(GameStatus.SHRINK_PLAY_AREA, CONFIG.borderCollapseDelay);
+		timerInstance.setOperation(GameStatus.SHRINK_PLAY_AREA, CONFIG.getPreShrinkPeriod());
 	}
 	
 	private void shrinkPlayArea() {
@@ -340,7 +345,7 @@ public class GameInstance {
 		if (deathmatchConfig != null) {
 			announce(Messages.Game.BORDER_SHRINKING);
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Border Shrinking");
-			border.setTarget(deathmatchConfig.centerX, deathmatchConfig.centerZ, deathmatchConfig.borderRadius, deathmatchConfig.shrinkTime);
+			border.setTarget(deathmatchConfig.getCenterX(), deathmatchConfig.getCenterZ(), deathmatchConfig.borderDiameter, deathmatchConfig.shrinkTime);
 			bossbar.resetHealth(deathmatchConfig.shrinkTime);
 			bossbar.setOptions("Stay in the zone!", BarColor.PINK);
 			timerInstance.setOperation(GameStatus.START_DEATHMATCH, deathmatchConfig.shrinkTime);
@@ -384,17 +389,17 @@ public class GameInstance {
 	private void fillChests(Player initiator) {
 		int missingChests = 0;
 		boolean foundBadItem = false;
-		for (ChestConfiguration co : CONFIG.chestLocations) {
+		for (ChestConfiguration co : CONFIG.getChests()) {
 			Block b = co.location.getBlock();
 			if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest chest)) {
 				if (missingChests < 5) {
-					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.loc);
+					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.getLocationAsString());
 				}
 				missingChests++;
 				continue;
 			}
 
-			if (!co.fill(chest, CONFIG.itemSets)) {
+			if (!Utils.fillChest(chest, CONFIG.getItemSets(), co.itemSets)) {
 				foundBadItem = true;
 			}
 		}
@@ -405,7 +410,7 @@ public class GameInstance {
 			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_BAD_ITEMS);
 		}
 	}
-	
+
 	public void updateMostKills() {
 		List<PlayerState> states = INGAME_PLAYERS.values().stream().filter(x -> !x.spectating).sorted((p1, p2) -> Integer.compare(p2.kills, p1.kills)).toList();
 		int i = 0;
@@ -452,12 +457,12 @@ public class GameInstance {
 		if (removePlayer(player, false)) {
 			if (killer == null) {
 				announce(Messages.Game.DEATH_GENERIC, player.getDisplayName());
-				if (CONFIG.spawnFireworkOnDeath) {
+				if (CONFIG.getSpawnFireworkOnDeath()) {
 					Utils.spawnRandomFirework(player.getLocation());
 				}
 			} else {
 				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), killer.getDisplayName());
-				if (CONFIG.spawnFireworkOnKill) {
+				if (CONFIG.getSpawnFireworkOnKill()) {
 					Utils.spawnRandomFirework(player.getLocation());
 				}
 				PlayerState ps = getPlayerState(killer);
@@ -467,7 +472,7 @@ public class GameInstance {
 				}
 			}
 
-			if (CONFIG.lightningOnDeath) {
+			if (CONFIG.getLightningOnDeath()) {
 				player.getWorld().strikeLightningEffect(player.getLocation());
 			}
 
@@ -481,7 +486,7 @@ public class GameInstance {
 	protected boolean processDeathByEntity(Player player, String entity) {
 		if (removePlayer(player, false)) {
 			announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), entity);
-			if (CONFIG.spawnFireworkOnDeath) {
+			if (CONFIG.getSpawnFireworkOnDeath()) {
 				Utils.spawnRandomFirework(player.getLocation());
 			}
 
@@ -516,12 +521,12 @@ public class GameInstance {
 	}
 
 	public void rewardPlayer(PlayerState state) {
-		RewardConfiguration rewards = CONFIG.rewards.get(String.valueOf(state.placement));
+		RewardConfiguration rewards = CONFIG.getReward(state.placement);
 
 		if (rewards == null) {
 			rewards = new RewardConfiguration();
 		} else {
-			rewards = rewards.copy();
+			rewards = rewards.deepCopy();
 		}
 
 		Player player = state.cache.getPlayer();
@@ -563,7 +568,7 @@ public class GameInstance {
 					player.getLocation().getWorld().dropItemNaturally(player.getLocation(), item);
 				}
 			} else {
-				player.teleport(CONFIG.spawnLocs.get(0));
+				player.teleport(CONFIG.getSpawnLocations().get(0));
 				ps.alive = false;
 			}
 		}
@@ -639,7 +644,7 @@ public class GameInstance {
 	}
 
 	public ChestConfiguration getChestData(Location location) {
-		Optional<ChestConfiguration> oco = CONFIG.chestLocations.stream().filter(co -> co.location.equals(location)).findFirst();
+		Optional<ChestConfiguration> oco = CONFIG.getChests().stream().filter(co -> co.location.equals(location)).findFirst();
 		return oco.orElse(null);
 	}
 
@@ -667,8 +672,8 @@ public class GameInstance {
 		return deathmatchConfig;
 	}
 
-	public List<ItemSet> getItemSets() {
-		return CONFIG.itemSets;
+	public Collection<ItemSet> getItemSets() {
+		return CONFIG.getItemSets();
 	}
 
 	public GameStatus getStatus() {
@@ -691,10 +696,6 @@ public class GameInstance {
 		return flagDeathmatchStarted;
 	}
 
-	public boolean doChestPrefill() {
-		return CONFIG.preFillChests;
-	}
-
 	public BorderController getBorderController() {
 		if (border != null && border.isProtocol()) {
 			return border;
@@ -706,11 +707,11 @@ public class GameInstance {
 		return CONFIG.getFileName();
 	}
 
-	public HashSet<String> getOpenedChests() {
+	public HashSet<Location> getOpenedChests() {
 		return OPENED_CHESTS;
 	}
 
-	public GameConfiguration getGameConfiguration() {
+	public GameConfigurationWrapper getGameConfiguration() {
 		return CONFIG;
 	}
 

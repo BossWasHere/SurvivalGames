@@ -176,8 +176,8 @@ public class ProtocolConnector {
 		packet.getDoubles()
 				.write(0, controller.getCenterX())
 				.write(1, controller.getCenterZ())
-				.write(2, controller.getTargetRadius())
-				.write(3, controller.getPreviousRadius());
+				.write(2, controller.getTargetDiameter())
+				.write(3, controller.getPreviousDiameter());
 
 		packet.getLongs().write(0, controller.getMillisToTarget());
 		packet.getIntegers()
@@ -199,8 +199,8 @@ public class ProtocolConnector {
 
 		//TODO: Should order be switched?
 		packet.getDoubles()
-				.write(0, controller.getPreviousRadius())
-				.write(1, controller.getTargetRadius());
+				.write(0, controller.getPreviousDiameter())
+				.write(1, controller.getTargetDiameter());
 
 		packet.getLongs().write(0, controller.getMillisToTarget());
 	}
@@ -208,7 +208,7 @@ public class ProtocolConnector {
 	public void worldBorderSizePacketOut(BorderController controller, PacketEvent event) {
 		PacketContainer packet = event.getPacket();
 
-		packet.getDoubles().write(0, controller.getRadius());
+		packet.getDoubles().write(0, controller.getDiameter());
 	}
 
 	public void worldBorderWarningDelayPacketOut(BorderController controller, PacketEvent event) {
@@ -273,8 +273,8 @@ public class ProtocolConnector {
 		PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_LERP_SIZE);
 		StructureModifier<Double> doubles = packet.getDoubles();
 
-		doubles.write(0, controller.getPreviousRadius());
-		doubles.write(1, controller.getTargetRadius());
+		doubles.write(0, controller.getPreviousDiameter());
+		doubles.write(1, controller.getTargetDiameter());
 
 		packet.getLongs().write(0, controller.getMillisToTarget());
 		
@@ -288,7 +288,7 @@ public class ProtocolConnector {
 	}
 	
 	public void worldBorderPacketReset(BorderController controller, Player updatePlayer) {
-		double d = controller.getDefaultRadius();
+		double d = controller.getDefaultDiameter();
 		try {
 			protocolManager.sendServerPacket(updatePlayer, generateInitializePacket(controller.getDefaultCenterX(), controller.getDefaultCenterZ(), d, d, 0,
 					BorderController.MAX_SIZE, controller.getDefaultWarningTime(), controller.getDefaultWarningBlocks()));
@@ -299,11 +299,11 @@ public class ProtocolConnector {
 	
 	private PacketContainer getInitPacketFromController(BorderController controller) {
 		return generateInitializePacket(controller.getCenterX(), controller.getCenterZ(),
-				controller.getPreviousRadius(), controller.getTargetRadius(), controller.getMillisToTarget(),
+				controller.getPreviousDiameter(), controller.getTargetDiameter(), controller.getMillisToTarget(),
 				controller.getPortalTeleportBoundary(), controller.getWarningTime(), controller.getWarningBlocks());
 	}
 	
-	private PacketContainer generateInitializePacket(double centerX, double centerZ, double oldRadius, double newRadius, long speed, int portalBoundary, int warningTime, int warningBlocks) {
+	private PacketContainer generateInitializePacket(double centerX, double centerZ, double oldDiameter, double newDiameter, long speed, int portalBoundary, int warningTime, int warningBlocks) {
 		PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.INITIALIZE_BORDER);
 		StructureModifier<Double> doubles = packet.getDoubles();
 		StructureModifier<Integer> ints = packet.getIntegers();
@@ -311,8 +311,8 @@ public class ProtocolConnector {
 		doubles.write(0, centerX);
 		doubles.write(1, centerZ);
 		//TODO: Should order be switched?
-		doubles.write(2, oldRadius);
-		doubles.write(3, newRadius);
+		doubles.write(2, oldDiameter);
+		doubles.write(3, newDiameter);
 		packet.getLongs().write(0, speed);
 		ints.write(0, portalBoundary);
 		ints.write(1, warningBlocks);

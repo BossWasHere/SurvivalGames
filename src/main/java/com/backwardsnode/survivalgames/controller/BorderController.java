@@ -48,15 +48,15 @@ border.setSize(borderStartRadius * 2);*/
 public class BorderController implements Controller {
 
 	private final ProtocolConnector protocolConnector;
-	private HashSet<Player> observingPlayers;
+	private final HashSet<Player> observingPlayers;
 	
 	public static final int MAX_SIZE = 29999984;
 	
-	private double lastRadius, targetRadius, centerX, centerZ;
+	private double lastDiameter, targetDiameter, centerX, centerZ;
 	private long shrinkStartedAt, millisToTake;
 	private int portalTeleportBoundary, warningTime, warningBlocks;
 	
-	private double defaultRadius, defaultCenterX, defaultCenterZ;
+	private double defaultDiameter, defaultCenterX, defaultCenterZ;
 	private int defaultWarningTime, defaultWarningBlocks;
 	
 	public BorderController(ProtocolConnector protocolConnector, World defaultWorld) {
@@ -79,8 +79,8 @@ public class BorderController implements Controller {
 	}
 	
 	public void setTarget(double radius, long closeSpeed) {
-		lastRadius = getRadius();
-		targetRadius = radius;
+		lastDiameter = getDiameter();
+		targetDiameter = radius;
 		millisToTake = closeSpeed;
 		shrinkStartedAt = new Date().getTime();
 		if (protocolConnector != null) {
@@ -91,8 +91,8 @@ public class BorderController implements Controller {
 	public void setTarget(double xPos, double zPos, double radius, long closeSpeed) {
 		centerX = xPos;
 		centerZ = zPos;
-		lastRadius = getRadius();
-		targetRadius = radius;
+		lastDiameter = getDiameter();
+		targetDiameter = radius;
 		millisToTake = closeSpeed;
 		shrinkStartedAt = new Date().getTime();
 		if (protocolConnector != null) {
@@ -138,7 +138,7 @@ public class BorderController implements Controller {
 		}
 
 		WorldBorder ingameBorder = defaultWorld.getWorldBorder();
-		defaultRadius = ingameBorder.getSize();
+		defaultDiameter = ingameBorder.getSize();
 		defaultCenterX = ingameBorder.getCenter().getX();
 		defaultCenterZ = ingameBorder.getCenter().getZ();
 		defaultWarningTime = ingameBorder.getWarningTime();
@@ -146,8 +146,8 @@ public class BorderController implements Controller {
 	}
 	
 	public void setDefaults() {
-		lastRadius = defaultRadius;
-		targetRadius = defaultRadius;
+		lastDiameter = defaultDiameter;
+		targetDiameter = defaultDiameter;
 		millisToTake = 0;
 		shrinkStartedAt = 0;
 		centerX = defaultCenterX;
@@ -174,26 +174,26 @@ public class BorderController implements Controller {
 		}
 	}
 
-	public double getRadius() {
+	public double getDiameter() {
 		if (millisToTake == 0) {
-			return targetRadius;
+			return targetDiameter;
 		}
 		long diff = new Date().getTime() - shrinkStartedAt;
 		if (diff > millisToTake) {
-			return targetRadius;
+			return targetDiameter;
 		}
-		if (targetRadius > lastRadius) {
-			return lastRadius + (diff / millisToTake) * (targetRadius - lastRadius);
+		if (targetDiameter > lastDiameter) {
+			return lastDiameter + (diff / millisToTake) * (targetDiameter - lastDiameter);
 		}
-		return targetRadius - (diff / millisToTake) * (lastRadius - targetRadius);
+		return targetDiameter - (diff / millisToTake) * (lastDiameter - targetDiameter);
 	}
 
-	public double getPreviousRadius() {
-		return lastRadius;
+	public double getPreviousDiameter() {
+		return lastDiameter;
 	}
 
-	public double getTargetRadius() {
-		return targetRadius;
+	public double getTargetDiameter() {
+		return targetDiameter;
 	}
 
 	public long getMillisToTarget() {
@@ -225,8 +225,8 @@ public class BorderController implements Controller {
 		return warningBlocks;
 	}
 	
-	public double getDefaultRadius() {
-		return defaultRadius;
+	public double getDefaultDiameter() {
+		return defaultDiameter;
 	}
 	
 	public double getDefaultCenterX() {

@@ -18,73 +18,34 @@
 package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.IConfigurable;
-import com.backwardsnode.survivalgames.item.ItemModel;
-import com.backwardsnode.survivalgames.item.ItemSet;
-import org.bukkit.Bukkit;
+import com.backwardsnode.survivalgames.config.serialization.BlockLocationAdapter;
+import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import org.bukkit.Location;
-import org.bukkit.block.Chest;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
-public class ChestConfiguration implements IConfigurable {
-	
-	public String loc;
+public class ChestConfiguration implements Copyable<ChestConfiguration>, SerializableLocation {
+
+	@JsonAdapter(BlockLocationAdapter.class)
+	@SerializedName("loc")
+	public Location location;
 	public List<String> itemSets;
-	
-	public transient Location location;
 
-	public void configure() {
-		location = Utils.locationFromString(loc, false);
-		if (location == null) {
-			// TODO bring inside plugin logger
-			Bukkit.getLogger().warning("Invalid chest configuration @ " + loc);
-		}
+	@Override
+	public String getLocationAsString() {
+		return Utils.stringFromLocation(location, false, true);
 	}
 
-    public boolean fill(Chest chest, List<ItemSet> allItemSets) {
-		List<ItemSet> selector = new ArrayList<>();
-		for (ItemSet set : allItemSets) {
-			if (itemSets.contains(set.name)) {
-				selector.add(set);
-			}
-		}
+	@Override
+	public ChestConfiguration deepCopy() {
+		ChestConfiguration chestConfiguration = new ChestConfiguration();
 
-		List<ItemModel> shuffler = new ArrayList<>();
-		for (ItemSet select : selector) {
-			shuffler.addAll(select.items);
-		}
-		Collections.shuffle(shuffler);
+		chestConfiguration.location = location == null ? null : location.clone();
+		chestConfiguration.itemSets = itemSets == null ? null : new ArrayList<>(itemSets);
 
-		Random r = new Random();
-		int m = r.nextInt(4) + 2;
-		int[] slots = Utils.getRandomSlots(m, 27);
-
-		chest.setCustomName("Loot Chest");
-		chest.update(true, false);
-
-		Inventory blockInv = chest.getBlockInventory();
-		blockInv.clear();
-
-		boolean isOkay = true;
-		for (int i = 0; i < shuffler.size() && i < m; i++) {
-			ItemModel model = shuffler.get(i);
-			ItemStack item = model.getEquivalent();
-			if (item == null) {
-				Bukkit.getLogger().warning("Unknown item [" + model.id + "], you should check the config file");
-				isOkay = false;
-				m++;
-				continue;
-			}
-			item.setAmount(r.nextInt(model.count) + 1);
-			blockInv.setItem(slots[i], item);
-		}
-
-		return isOkay;
-    }
+		return chestConfiguration;
+	}
 }

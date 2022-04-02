@@ -19,8 +19,9 @@
 package com.backwardsnode.survivalgames.config.migration;
 
 import com.backwardsnode.survivalgames.config.BorderConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
 import com.backwardsnode.survivalgames.config.ChestConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.item.EnchantmentModel;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Version1Model {
+public class Version1Model implements Migration  {
 
     public String mapName;
     @SerializedName("spawnLocations")
@@ -89,23 +90,31 @@ public class Version1Model {
         }
     }
 
+    @Override
     public GameConfiguration migrate() {
         GameConfiguration gc = new GameConfiguration();
-        gc.configVersion = GameConfiguration.SUPPORTED_CONFIG;
+        gc.configVersion = GameConfigurationWrapper.SUPPORTED_CONFIG;
         gc.mapName = mapName;
         gc.isWIP = isWIP;
         gc.entryFee = 0;
-        gc.rewards = new HashMap<>();
-        gc.strSpawns = strSpawns;
+        gc.rewards = new HashMap<>(0);
+        gc.spawnLocations = strSpawns;
         gc.border = border;
-        gc.waitTime = waitTime;
+        gc.startingDaytime = -1;
+        gc.waitPeriod = waitTime;
         gc.gracePeriod = gracePeriod;
         gc.preFillChests = preFillChests;
-        gc.borderCollapseDelay = borderCollapseDelay;
+        gc.preShrinkPeriod = borderCollapseDelay;
+        gc.lootDropDelay = -1;
+        gc.lootDropTriggerWithin = -1;
+        gc.lootDropTriggerProbability = 0;
+        gc.lootDropTriggerProbabilityIncrement = 0;
+        gc.daylightCycle = true;
         gc.spawnFireworkOnDeath = spawnFireworkOnDeath;
         gc.spawnFireworkOnKill = spawnFireworkOnKill;
         gc.lightningOnDeath = spawnFireworkOnDeath || spawnFireworkOnKill;
         gc.chestLocations = chestLocations;
+        gc.lootDropLocations = new ArrayList<>(0);
 
         gc.itemSets = new ArrayList<>(itemSets.size());
         for (Version1ItemSet is : itemSets) {

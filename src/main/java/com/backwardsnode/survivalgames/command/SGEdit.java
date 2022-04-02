@@ -21,7 +21,8 @@ import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
+import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
+import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.message.Messages;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -50,21 +51,22 @@ public class SGEdit extends BaseCommand {
 					} else {
 						target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
 					}
-					GameConfiguration gc;
-					if (!target.exists()) {
-						target.createNewFile();
-						gc = GameConfiguration.createEmptyConfiguration(target);
-						sendMessage(sender, Messages.Command.SGEdit.CREATED);
-					} else {
-						gc = GameConfiguration.loadGameConfiguration(target);
-						sendMessage(sender, Messages.Command.SGEdit.LOADED, target.getName());
-					}
+					GameConfigurationWrapper gcw = null;
+					try {
+						if (!target.exists()) {
+							target.createNewFile();
+							gcw = new GameConfigurationWrapper(target, false);
+							sendMessage(sender, Messages.Command.SGEdit.CREATED);
+						} else {
+							gcw = new GameConfigurationWrapper(target, true);
+							sendMessage(sender, Messages.Command.SGEdit.LOADED, target.getName());
+						}
 
-					if (gc == null) {
-						sendMessage(sender, Messages.Config.OUTDATED);
-					} else {
-						PLUGIN.getHost().getEditorManager().addEditor(player, gc);
+						PLUGIN.getHost().getEditorManager().addEditor(player, gcw);
 						sendMessage(sender, Messages.Command.SGEdit.OPENING);
+
+					} catch (GameConfigurationException e) {
+						sendMessage(sender, Messages.Config.OUTDATED);
 					}
 				}
 			} catch (IOException e) {

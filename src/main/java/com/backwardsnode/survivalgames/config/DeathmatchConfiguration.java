@@ -18,28 +18,45 @@
 package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.Utils;
-import org.bukkit.Bukkit;
+import com.backwardsnode.survivalgames.config.serialization.ChunkLocationAdapter;
+import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import org.bukkit.Location;
 
-public class DeathmatchConfiguration implements IConfigurable {
+public class DeathmatchConfiguration implements Copyable<DeathmatchConfiguration>, SerializableLocation {
 
-	public String loc;
-	public double borderRadius;
+	@JsonAdapter(ChunkLocationAdapter.class)
+	@SerializedName("loc")
+	public Location location;
+	public double borderDiameter;
 	public long shrinkTime;
 	public int deathmatchDuration;
 	public int collapseTime;
-	
-	public transient double centerX, centerZ;
 
 	@Override
-	public void configure() {
-		Location location = Utils.locationFromString(loc, true);
-		if (location == null) {
-			// TODO bring inside plugin logger
-			Bukkit.getLogger().warning("Invalid deathmatch location configuration @ " + loc);
-			return;
-		}
-		centerX = location.getX();
-		centerZ = location.getZ();
+	public String getLocationAsString() {
+		return Utils.stringFromLocation(location, true, true);
+	}
+
+	public double getCenterX() {
+		return location.getX();
+	}
+
+	public double getCenterZ() {
+		return location.getZ();
+	}
+
+	@Override
+	public DeathmatchConfiguration deepCopy() {
+		DeathmatchConfiguration deathmatchConfiguration = new DeathmatchConfiguration();
+
+		deathmatchConfiguration.location = location == null ? null : location.clone();
+		deathmatchConfiguration.borderDiameter = borderDiameter;
+		deathmatchConfiguration.shrinkTime = shrinkTime;
+		deathmatchConfiguration.deathmatchDuration = deathmatchDuration;
+		deathmatchConfiguration.collapseTime = collapseTime;
+
+		return deathmatchConfiguration;
 	}
 }
