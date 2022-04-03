@@ -200,6 +200,13 @@ public class Utils {
         return new Location(world, x, y, z, yaw, pitch);
     }
 
+    public static boolean isSameLocation(Location a, Location b, boolean toIntCoordinates) {
+        if (toIntCoordinates) {
+            return a.getWorld().equals(b.getWorld()) && a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b.getBlockZ();
+        }
+        return a.getWorld().equals(b.getWorld()) && a.getBlockX() == b.getX() && a.getY() == b.getY() && a.getZ() == b.getZ();
+    }
+
     /**
      * Finds the most appropriate multiple of 9 to set as the inventory size for a basic player inventory
      * The number returned will be the same or a greater multiple of 9

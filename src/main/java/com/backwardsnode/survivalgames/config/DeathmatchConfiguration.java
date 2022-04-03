@@ -17,27 +17,20 @@
  */
 package com.backwardsnode.survivalgames.config;
 
-import com.backwardsnode.survivalgames.Utils;
-import com.backwardsnode.survivalgames.config.serialization.ChunkLocationAdapter;
-import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.backwardsnode.survivalgames.config.serialization.BlockLocationAdapter;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import org.bukkit.Location;
 
-public class DeathmatchConfiguration implements Copyable<DeathmatchConfiguration>, SerializableLocation {
+public class DeathmatchConfiguration implements Copyable<DeathmatchConfiguration> {
 
-	@JsonAdapter(ChunkLocationAdapter.class)
+	@JsonAdapter(BlockLocationAdapter.class)
 	@SerializedName("loc")
-	public Location location;
+	public BlockLocation location;
 	public double borderDiameter;
 	public long shrinkTime;
 	public int deathmatchDuration;
 	public int collapseTime;
-
-	@Override
-	public String getLocationAsString() {
-		return Utils.stringFromLocation(location, true, true);
-	}
 
 	public double getCenterX() {
 		return location.getX();
@@ -51,7 +44,7 @@ public class DeathmatchConfiguration implements Copyable<DeathmatchConfiguration
 	public DeathmatchConfiguration deepCopy() {
 		DeathmatchConfiguration deathmatchConfiguration = new DeathmatchConfiguration();
 
-		deathmatchConfiguration.location = location == null ? null : location.clone();
+		deathmatchConfiguration.location = location == null ? null : location.deepCopy();
 		deathmatchConfiguration.borderDiameter = borderDiameter;
 		deathmatchConfiguration.shrinkTime = shrinkTime;
 		deathmatchConfiguration.deathmatchDuration = deathmatchDuration;

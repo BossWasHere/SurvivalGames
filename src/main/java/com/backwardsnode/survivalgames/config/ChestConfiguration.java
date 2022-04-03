@@ -17,33 +17,26 @@
  */
 package com.backwardsnode.survivalgames.config;
 
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.serialization.BlockLocationAdapter;
-import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import org.bukkit.Location;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChestConfiguration implements Copyable<ChestConfiguration>, SerializableLocation {
+public class ChestConfiguration implements Copyable<ChestConfiguration> {
 
 	@JsonAdapter(BlockLocationAdapter.class)
 	@SerializedName("loc")
-	public Location location;
+	public BlockLocation location;
 	public List<String> itemSets;
-
-	@Override
-	public String getLocationAsString() {
-		return Utils.stringFromLocation(location, false, true);
-	}
 
 	@Override
 	public ChestConfiguration deepCopy() {
 		ChestConfiguration chestConfiguration = new ChestConfiguration();
 
-		chestConfiguration.location = location == null ? null : location.clone();
+		chestConfiguration.location = location == null ? null : location.deepCopy();
 		chestConfiguration.itemSets = itemSets == null ? null : new ArrayList<>(itemSets);
 
 		return chestConfiguration;

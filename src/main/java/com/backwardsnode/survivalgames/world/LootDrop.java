@@ -20,7 +20,6 @@ package com.backwardsnode.survivalgames.world;
 
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.LootDropConfiguration;
-import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -55,7 +54,7 @@ public class LootDrop {
             return;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location;
+        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocation();
 
         World world = location.getWorld();
 
@@ -83,7 +82,7 @@ public class LootDrop {
             return;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location;
+        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocation();
         if (playEffects) {
             World world = location.getWorld();
             world.playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.1f, 1f);
@@ -108,7 +107,7 @@ public class LootDrop {
             return false;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location.clone().add(0, -1, 0);
+        Location location = LOOT_DROP_CONFIGURATION.location.copyAndAdd(0, -1, 0).toBukkitLocation();
         World world = location.getWorld();
 
         int blockY = location.getBlockY();
@@ -183,7 +182,7 @@ public class LootDrop {
 
     public void popAndClose(Collection<ItemSet> itemSets) {
         if (closed) return;
-        Location location = LOOT_DROP_CONFIGURATION.location.clone().add(0.5d, 0.5d, 0.5d);
+        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocationCentered();
         World world = location.getWorld();
 
         world.playSound(location, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6f, 1f);

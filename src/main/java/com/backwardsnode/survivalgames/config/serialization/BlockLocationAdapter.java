@@ -18,39 +18,38 @@
 
 package com.backwardsnode.survivalgames.config.serialization;
 
-import com.backwardsnode.survivalgames.Utils;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
-public class BlockLocationAdapter extends TypeAdapter<Location> {
+public class BlockLocationAdapter extends TypeAdapter<BlockLocation> {
 
     @Override
-    public void write(JsonWriter jsonWriter, Location location) throws IOException {
+    public void write(JsonWriter jsonWriter, BlockLocation location) throws IOException {
         if (location != null) {
-            jsonWriter.value(Utils.stringFromLocation(location, false, true));
+            jsonWriter.value(location.toString());
         } else {
             jsonWriter.jsonValue(null);
         }
 
-
     }
 
     @Override
-    public Location read(JsonReader jsonReader) throws IOException {
+    public BlockLocation read(JsonReader jsonReader) throws IOException {
         String locationAsString = jsonReader.nextString();
 
-        Location location = Utils.locationFromString(locationAsString, false);
-
-        if (location == null) {
-            Bukkit.getLogger().warning("Invalid location string " + locationAsString);
+        try {
+            return new BlockLocation(locationAsString);
+        } catch (IllegalArgumentException e) {
+            Bukkit.getLogger().log(Level.WARNING, "Invalid location string " + locationAsString, e);
         }
 
-        return location;
+        return null;
     }
 
 }

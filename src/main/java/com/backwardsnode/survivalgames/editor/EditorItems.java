@@ -40,7 +40,6 @@ public enum EditorItems {
 	 */
 	NEW_ITEMSET_CONCRETE(Material.GREEN_CONCRETE, "additemset"),
 	RENAME_MAP_NAMETAG(Material.NAME_TAG, "mapname"),
-	IMPLEMENTS_BOOK(Material.BOOK, "implements"),
 	BORDER_DPS_CACTUS(Material.CACTUS, "borderdps"),
 	DEATHMATCH_CONFIG_FISHINGROD(Material.FISHING_ROD, "deathmatch"),
 	SHRINK_TIME_AXE(Material.IRON_AXE, "shrinktime"),
@@ -50,6 +49,7 @@ public enum EditorItems {
 	PREFILL_CHESTMINECART(Material.CHEST_MINECART, "prefill"),
 	DEATH_FIREWORK(Material.FIREWORK_ROCKET, "deathfirework"),
 	KILL_FIREWORK(Material.FIREWORK_ROCKET, "killfirework"),
+	LIGHTNING_ROD(Material.LIGHTNING_ROD, "lightningrod"),
 	ISWIP_BRICKS(Material.BRICKS, "iswip"),
 	
 	INITIAL_BORDER_MAP(Material.MAP, "initialborder"),
@@ -59,14 +59,14 @@ public enum EditorItems {
 	private final Material MATERIAL;
 	private final String UNLOCALIZED;
 	
-	private EditorItems(Material material, String unlocalized) {
+	EditorItems(Material material, String unlocalized) {
 		this.MATERIAL = material;
 		this.UNLOCALIZED = unlocalized;
 	}
 	
 	public ItemStack getItem(Plugin plugin, String locale) {
 		String l = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + UNLOCALIZED, locale);
-		return Utils.addNameAndLore(new ItemStack(MATERIAL), plugin.getMessageProvider().compileUnregisteredMessage("item.name." + UNLOCALIZED, locale), l.split("\\\\n"));
+		return Utils.addNameAndLore(new ItemStack(MATERIAL), plugin.getMessageProvider().compileUnregisteredMessage("item.name." + UNLOCALIZED, locale), l.split("\\n"));
 	}
 	
 	public boolean isSimilar(Plugin plugin, String locale, ItemStack item) {

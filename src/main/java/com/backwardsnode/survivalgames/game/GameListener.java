@@ -44,6 +44,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 public class GameListener implements Listener {
@@ -76,11 +77,12 @@ public class GameListener implements Listener {
 				e.setCancelled(true);
 
 			} else if (!instance.getGameConfiguration().getDoChestPrefilling() && clicked.getState() instanceof Chest) {
-				ChestConfiguration co = instance.getGameConfiguration().getChestAt(clicked.getLocation());
-				if (co != null) {
-					if (!instance.getOpenedChests().add(co.location)) {
+				Optional<ChestConfiguration> co = instance.getGameConfiguration().getChestAt(clicked.getLocation());
+				if (co.isPresent()) {
+					ChestConfiguration chestConfiguration = co.get();
+					if (!instance.getOpenedChests().add(chestConfiguration.location)) {
 						Chest chest = (Chest) clicked.getState();
-						Utils.fillChest(chest, instance.getGameConfiguration().getItemSets(), co.itemSets);
+						Utils.fillChest(chest, instance.getGameConfiguration().getItemSets(), chestConfiguration.itemSets);
 					}
 				}
 			}

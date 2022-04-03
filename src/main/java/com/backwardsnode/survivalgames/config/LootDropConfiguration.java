@@ -18,28 +18,33 @@
 
 package com.backwardsnode.survivalgames.config;
 
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.serialization.BlockLocationAdapter;
-import com.backwardsnode.survivalgames.config.serialization.SerializableLocation;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import org.bukkit.Location;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class LootDropConfiguration implements SerializableLocation {
+public class LootDropConfiguration implements Copyable<LootDropConfiguration> {
 
     @JsonAdapter(BlockLocationAdapter.class)
     @SerializedName("loc")
-    public Location location;
+    public BlockLocation location;
     public List<String> itemSets;
     public boolean canDropAutomatically;
     public boolean canDropOnDemand;
     public int itemCount;
 
     @Override
-    public String getLocationAsString() {
-        return Utils.stringFromLocation(location, false, true);
-    }
+    public LootDropConfiguration deepCopy() {
+        LootDropConfiguration lootDropConfiguration = new LootDropConfiguration();
+        lootDropConfiguration.location = location.deepCopy();
+        lootDropConfiguration.itemSets = new ArrayList<>(itemSets);
+        lootDropConfiguration.canDropAutomatically = canDropAutomatically;
+        lootDropConfiguration.canDropOnDemand = canDropOnDemand;
+        lootDropConfiguration.itemCount = itemCount;
 
+        return lootDropConfiguration;
+    }
 }

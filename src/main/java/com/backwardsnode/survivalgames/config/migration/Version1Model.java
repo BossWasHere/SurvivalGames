@@ -18,13 +18,11 @@
 
 package com.backwardsnode.survivalgames.config.migration;
 
-import com.backwardsnode.survivalgames.config.BorderConfiguration;
-import com.backwardsnode.survivalgames.config.ChestConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfiguration;
-import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
+import com.backwardsnode.survivalgames.config.*;
 import com.backwardsnode.survivalgames.item.EnchantmentModel;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ public class Version1Model implements Migration  {
     public String mapName;
     @SerializedName("spawnLocations")
     public List<String> strSpawns;
-    public BorderConfiguration border;
+    public Version1Border border;
 
     public int waitTime;
     public int gracePeriod;
@@ -90,6 +88,22 @@ public class Version1Model implements Migration  {
         }
     }
 
+    public static class Version1Border {
+
+        public double damagePerSecond;
+        public double borderStartRadius;
+        public List<Version1Deathmatch> deathmatchLocations;
+
+    }
+
+    public static class Version1Deathmatch {
+        public String loc;
+        public double borderRadius;
+        public long shrinkTime;
+        public int deathmatchDuration;
+        public int collapseTime;
+    }
+
     @Override
     public GameConfiguration migrate() {
         GameConfiguration gc = new GameConfiguration();
@@ -99,7 +113,22 @@ public class Version1Model implements Migration  {
         gc.entryFee = 0;
         gc.rewards = new HashMap<>(0);
         gc.spawnLocations = strSpawns;
-        gc.border = border;
+
+        BorderConfiguration bc = new BorderConfiguration();
+        bc.damagePerSecond = border.damagePerSecond;
+        bc.borderStartDiameter = border.borderStartRadius;
+        bc.deathmatchLocations = new ArrayList<>(border.deathmatchLocations.size());
+        for (Version1Deathmatch dm : border.deathmatchLocations) {
+            DeathmatchConfiguration deathmatchConfiguration = new DeathmatchConfiguration();
+            deathmatchConfiguration.deathmatchDuration = dm.deathmatchDuration;
+            deathmatchConfiguration.location = new BlockLocation(dm.loc);
+            deathmatchConfiguration.collapseTime = dm.collapseTime;
+            deathmatchConfiguration.borderDiameter = dm.borderRadius;
+            deathmatchConfiguration.shrinkTime = dm.shrinkTime;
+            bc.deathmatchLocations.add(deathmatchConfiguration);
+        }
+        gc.border = bc;
+
         gc.startingDaytime = -1;
         gc.waitPeriod = waitTime;
         gc.gracePeriod = gracePeriod;

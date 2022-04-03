@@ -181,12 +181,12 @@ public class EditorManager {
 	public boolean openSettingInventory(Player player) {
 		String locale = player.getLocale();
 		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.SETTINGS_TITLE, locale));
-		i.addItem(EditorItems.RENAME_MAP_NAMETAG.getItem(PLUGIN, locale), EditorItems.IMPLEMENTS_BOOK.getItem(PLUGIN, locale),
-				EditorItems.BORDER_DPS_CACTUS.getItem(PLUGIN, locale), EditorItems.DEATHMATCH_CONFIG_FISHINGROD.getItem(PLUGIN, locale),
-				EditorItems.SHRINK_TIME_AXE.getItem(PLUGIN, locale), EditorItems.BORDER_START_MAP.getItem(PLUGIN, locale),
-				EditorItems.WAIT_PERIOD_CLOCK.getItem(PLUGIN, locale), EditorItems.GRACE_PERIOD_POPPY.getItem(PLUGIN, locale),
-				EditorItems.PREFILL_CHESTMINECART.getItem(PLUGIN, locale), EditorItems.DEATH_FIREWORK.getItem(PLUGIN, locale),
-				EditorItems.KILL_FIREWORK.getItem(PLUGIN, locale), EditorItems.ISWIP_BRICKS.getItem(PLUGIN, locale));
+		i.addItem(EditorItems.RENAME_MAP_NAMETAG.getItem(PLUGIN, locale), EditorItems.BORDER_DPS_CACTUS.getItem(PLUGIN, locale),
+				EditorItems.DEATHMATCH_CONFIG_FISHINGROD.getItem(PLUGIN, locale), EditorItems.SHRINK_TIME_AXE.getItem(PLUGIN, locale),
+				EditorItems.BORDER_START_MAP.getItem(PLUGIN, locale), EditorItems.WAIT_PERIOD_CLOCK.getItem(PLUGIN, locale),
+				EditorItems.GRACE_PERIOD_POPPY.getItem(PLUGIN, locale), EditorItems.PREFILL_CHESTMINECART.getItem(PLUGIN, locale),
+				EditorItems.DEATH_FIREWORK.getItem(PLUGIN, locale), EditorItems.KILL_FIREWORK.getItem(PLUGIN, locale),
+				EditorItems.LIGHTNING_ROD.getItem(PLUGIN, locale), EditorItems.ISWIP_BRICKS.getItem(PLUGIN, locale));
 		player.openInventory(i);
 		return true;
 	}

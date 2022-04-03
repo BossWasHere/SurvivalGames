@@ -26,19 +26,18 @@ import com.backwardsnode.survivalgames.game.PlayerStorageCache;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
-import com.google.common.base.Preconditions;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Scene {
 
@@ -54,22 +53,22 @@ public class Scene {
 	private boolean loadedToolkit;
 	private boolean isToolkitOpen;
 	private boolean isBorderVisible;
-	private boolean isBorderTargetDeathmatch;
-	
+	private boolean isBorderTargetDeathmatch = true;
+
 	private String associatedKey = null;
 	private EditorQueries currentQuery;
 
-	public Scene(Player editor, EditorManager manager, GameConfigurationWrapper gameConfig) {
-		checkNotNull(editor);
-		checkNotNull(manager);
-		checkNotNull(gameConfig);
+	public Scene(@NotNull Player editor, @NotNull EditorManager manager, @NotNull GameConfigurationWrapper gameConfig) {
 		this.editor = editor;
 		this.manager = manager;
 		this.gameConfig = gameConfig;
 		playerCache = new PlayerStorageCache(editor, true);
 		playerCache.cacheCurrentInventory();
 		togglingCache = new PlayerStorageCache(editor, true);
-		setDefaults();
+
+		if (!gameConfig.hasMapName()) {
+			gameConfig.setMapName("Untitled");
+		}
 
 		if (gameConfig.hasNoItemSets()) {
 			createItemSet("common", true);
@@ -78,28 +77,6 @@ public class Scene {
 	
 	public void restoreInventory() {
 		playerCache.restoreInventory();
-	}
-
-	public void setDefaults() {
-		if (gameConfig.hasMapName()) {
-			gameConfig.setMapName("Untitled");
-		}
-		// TODO these shouldn't be true?
-//		if (gameConfig.getSpawnLocations() == null) {
-//			gameConfig.spawnLocs = new ArrayList<>();
-//		}
-//		if (gameConfig.getChests() == null) {
-//			gameConfig.chestLocations = new ArrayList<>();
-//		}
-//		if (gameConfig.getItemSets() == null) {
-//			gameConfig.itemSets = new ArrayList<>();
-//		}
-//		if (gameConfig.getBorder() == null) {
-//			gameConfig.border = new BorderConfiguration();
-//		}
-//		if (gameConfig.getDeathmatchConfigs() == null) {
-//			gameConfig.border.deathmatchLocations = new ArrayList<>();
-//		}
 	}
 	
 	public void showToolkit() {
@@ -129,7 +106,6 @@ public class Scene {
 	}
 	
 	public void replaceHotbar(Player player, ItemStack... items) {
-		Preconditions.checkNotNull(items);
 		PlayerInventory inv = player.getInventory();
 		for (int i = 0; i < 9; i++) {
 			if (items.length > i) {
@@ -179,18 +155,20 @@ public class Scene {
 			}
 		}
 	}
-	
+
+	// TODO what calls this? change to return BlockLocation?
 	public String getTargetedBorder() {
 		if (selectedData == null) {
 			return null;
 		}
-		return selectedData.getLocationAsString();
+		return selectedData.location.toString();
 	}
 	
 	public void setBorderTargetType(boolean toDeathmatch) {
 		if (selectedData == null) {
 			return;
 		}
+
 		if (borderController != null) {
 			if (!isBorderVisible) {
 				manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ENABLED_BORDER);
@@ -216,10 +194,11 @@ public class Scene {
 	public BorderController getBorderController() {
 		return borderController;
 	}
-	
+
+	// TODO same thing here, can we use BlockLocation instead?
 	public void setBorderDeathmatchTarget(String target) {
 		for (DeathmatchConfiguration dc : gameConfig.getDeathmatchConfigs()) {
-			if (dc.getLocationAsString().equals(target)) {
+			if (dc.location.compareTo(target)) {
 				selectedData = dc;
 				setBorderTargetType(isBorderTargetDeathmatch);
 				break;
@@ -245,14 +224,12 @@ public class Scene {
 	}
 	
 	public boolean isItemChest(Location l) {
-		// TODO check
-		//return gameConfig.chestLocations.stream().anyMatch(co -> co.loc.contentEquals(Utils.stringFromLocation(l, false, true)));
-		return gameConfig.getChests().stream().anyMatch(co -> co.location == l);
+		return gameConfig.getChests().stream().anyMatch(co -> co.location.compareTo(l));
 	}
 
 	public boolean addItemChest(Location l) {
 		ChestConfiguration co = new ChestConfiguration();
-		co.location = l;
+		co.location = new BlockLocation(l);
 		co.itemSets = new ArrayList<>();
 		co.itemSets.add(gameConfig.getDefaultItemSet().name);
 
@@ -260,52 +237,43 @@ public class Scene {
 	}
 	
 	public boolean removeItemChest(Location l) {
-		return gameConfig.getChests().removeIf(co -> l.equals(co.location));
+		return gameConfig.getChests().removeIf(co -> co.location.compareTo(l));
 	}
 	
 	public boolean addChestItemSet(Location l, String item) {
-		for (ChestConfiguration co : gameConfig.getChests()) {
-			if (l.equals(co.location)) {
-				co.itemSets.add(item);
-				return true;
-			}
+		Optional<ChestConfiguration> co = gameConfig.getChestAt(l);
+		if (co.isPresent()) {
+			co.get().itemSets.add(item);
+			return true;
 		}
 		return false;
 	}
 	
-	public boolean updateAllChestItemSets(Location l, List<String> itemSets) {
-		for (ChestConfiguration co : gameConfig.getChests()) {
-			if (l.equals(co.location)) {
-				co.itemSets.clear();
-				co.itemSets.addAll(itemSets);
-				return true;
-			}
+	public boolean setChestItemSets(Location l, List<String> itemSets) {
+		Optional<ChestConfiguration> co = gameConfig.getChestAt(l);
+		if (co.isPresent()) {
+			ChestConfiguration chestConfiguration = co.get();
+			chestConfiguration.itemSets.clear();
+			chestConfiguration.itemSets.addAll(itemSets);
+			return true;
 		}
 		return false;
 	}
 	
 	public List<String> getChestItemSets(Location l) {
-		for (ChestConfiguration co : gameConfig.getChests()) {
-			if (l.equals(co.location)) {
-				return co.itemSets;
-			}
-		}
-		if (l.getBlock().getType() == Material.CHEST) {
-			return new ArrayList<>();
-		}
-		return null;
+		return gameConfig.getChestAt(l).map(co -> co.itemSets).orElse(null);
 	}
 	
 	public boolean isSpawnPlate(Location l) {
-		return gameConfig.getSpawnLocations().stream().anyMatch(loc -> loc.equals(l));
+		return gameConfig.getSpawnLocations().stream().anyMatch(loc -> loc.compareTo(l));
 	}
 	
 	public boolean addSpawnPlate(Location l) {
-		return gameConfig.getSpawnLocations().add(l);
+		return gameConfig.getSpawnLocations().add(new BlockLocation(l));
 	}
 	
 	public boolean removeSpawnPlate(Location l) {
-		return gameConfig.getSpawnLocations().removeIf(loc -> loc.equals(l));
+		return gameConfig.getSpawnLocations().removeIf(loc -> loc.compareTo(l));
 	}
 	
 	public boolean createItemSet(String name, boolean makeDefault) {
@@ -348,9 +316,10 @@ public class Scene {
 		}
 		return false;
 	}
-	
+
+	// TODO as above TODO
 	public List<String> getDeathmatchLocations() {
-		return gameConfig.getDeathmatchConfigs().stream().map(x -> x.getLocationAsString()).collect(Collectors.toList());
+		return gameConfig.getDeathmatchConfigs().stream().map(x -> x.location.toString()).collect(Collectors.toList());
 	}
 	
 	public void queryInput(EditorQueries query) {
@@ -385,6 +354,7 @@ public class Scene {
 
 			break;
 		case RENAME_ITEMSET_NAME:
+			// TODO not used yet
 			renameItemSet(associatedKey, strOutput);
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.RENAMED_ITEM_SET);
 			break;

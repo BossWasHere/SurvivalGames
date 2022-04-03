@@ -215,11 +215,13 @@ public class Messages {
         public static final PluginMessage DISABLED_BORDER = new PluginMessage("editor.disableborder");
         public static final PluginMessage DISABLED_DEATH_FIREWORK = new PluginMessage("editor.disabledeathfirework");
         public static final PluginMessage DISABLED_KILL_FIREWORK = new PluginMessage("editor.disablekillfirework");
+        public static final PluginMessage DISABLED_DEATH_LIGHTNING = new PluginMessage("editor.disabledeathlightning");
         public static final PluginMessage DISABLED_WIP = new PluginMessage("editor.disablewip");
         public static final PluginMessage ENABLED_AUTOFILL = new PluginMessage("editor.enableautofill");
         public static final PluginMessage ENABLED_BORDER = new PluginMessage("editor.enableborder");
         public static final PluginMessage ENABLED_DEATH_FIREWORK = new PluginMessage("editor.enabledeathfirework");
         public static final PluginMessage ENABLED_KILL_FIREWORK = new PluginMessage("editor.enablekillfirework");
+        public static final PluginMessage ENABLED_DEATH_LIGHTNING = new PluginMessage("editor.enabledeathlightning");
         public static final PluginMessage ENABLED_WIP = new PluginMessage("editor.enablewip");
 
         public static final PluginMessage MODIFIED_ITEMS = new PluginMessage("editor.modifyitems");

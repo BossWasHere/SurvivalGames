@@ -227,6 +227,7 @@ public class ProtocolConnector {
 		if (observingPlayers.size() < 1) {
 			return;
 		}
+
 		PacketContainer packet = getInitPacketFromController(controller);
 		
 		for (Player player : observingPlayers) {

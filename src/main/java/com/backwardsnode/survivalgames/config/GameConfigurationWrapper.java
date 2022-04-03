@@ -18,9 +18,9 @@
 
 package com.backwardsnode.survivalgames.config;
 
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.item.ItemSet;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
@@ -35,11 +35,11 @@ import java.util.*;
 
 public class GameConfigurationWrapper {
 
-    public static final int SUPPORTED_CONFIG = 3;
+    public static final int SUPPORTED_CONFIG = 2;
 
     private final GameConfiguration GAME_CONFIGURATION;
 
-    private List<Location> spawnLocs;
+    private List<BlockLocation> spawnLocs;
     private int defaultSetIndex = 0;
     private File mainConfigFile;
 
@@ -102,7 +102,7 @@ public class GameConfigurationWrapper {
 
         spawnLocs = new ArrayList<>();
         for (String strSpawn : GAME_CONFIGURATION.spawnLocations) {
-            spawnLocs.add(Utils.locationFromString(strSpawn, false));
+            spawnLocs.add(new BlockLocation(strSpawn));
         }
 
         for (int i = 0; i < GAME_CONFIGURATION.itemSets.size(); i++) {
@@ -113,8 +113,8 @@ public class GameConfigurationWrapper {
         }
     }
 
-    public Set<Location> checkChests() {
-        Set<Location> invalidLocations = new HashSet<>();
+    public Set<BlockLocation> checkChests() {
+        Set<BlockLocation> invalidLocations = new HashSet<>();
         for (ChestConfiguration co : GAME_CONFIGURATION.chestLocations) {
             if (co.location.getBlock().getType() != Material.CHEST) {
                 invalidLocations.add(co.location);
@@ -165,8 +165,8 @@ public class GameConfigurationWrapper {
                 GAME_CONFIGURATION.spawnLocations.clear();
             }
 
-            for (Location spawnLocation : spawnLocs) {
-                GAME_CONFIGURATION.spawnLocations.add(Utils.stringFromLocation(spawnLocation, false, true));
+            for (BlockLocation spawnLocation : spawnLocs) {
+                GAME_CONFIGURATION.spawnLocations.add(spawnLocation.toString());
             }
 
             try (FileWriter writer = new FileWriter(file)) {
@@ -191,7 +191,7 @@ public class GameConfigurationWrapper {
         GAME_CONFIGURATION.mapName = mapName;
     }
 
-    public List<Location> getSpawnLocations() {
+    public List<BlockLocation> getSpawnLocations() {
         return spawnLocs;
     }
 
@@ -335,9 +335,8 @@ public class GameConfigurationWrapper {
         return GAME_CONFIGURATION.chestLocations;
     }
 
-    public ChestConfiguration getChestAt(Location location) {
-        Optional<ChestConfiguration> oco = getChests().stream().filter(co -> co.location.equals(location)).findFirst();
-        return oco.orElse(null);
+    public Optional<ChestConfiguration> getChestAt(Location location) {
+        return getChests().stream().filter(co -> co.location.compareTo(location)).findFirst();
     }
 
     public List<ItemSet> getItemSets() {

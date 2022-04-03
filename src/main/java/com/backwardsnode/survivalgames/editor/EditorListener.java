@@ -101,12 +101,11 @@ public class EditorListener implements Listener {
 							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADD_CHEST_FIRST);
 						}
 					}
+					e.setCancelled(true);
 				} else {
 					if (scene.removeItemChest(target.getLocation())) {
 						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
 					}
-					// don't cancel
-					return;
 				}
 			} else if (type == Material.HEAVY_WEIGHTED_PRESSURE_PLATE) {
 				if (action == Action.RIGHT_CLICK_BLOCK) {
@@ -121,20 +120,22 @@ public class EditorListener implements Listener {
 							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADDED_SPAWN_POS);
 						}
 					}
+					e.setCancelled(true);
 				} else {
 					if (scene.removeSpawnPlate(target.getLocation())) {
 						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
 					}
-					// don't cancel
-					return;
 				}
 			}
 
-		} else if (EditorItems.ITEMSET_SWORD.isSimilar(handler.getHandler(), locale, item)) {
+		}
+		if (EditorItems.ITEMSET_SWORD.isSimilar(handler.getHandler(), locale, item)) {
 			handler.openItemSetInventory(player);
+			e.setCancelled(true);
 
 		} else if (EditorItems.SETTINGS_COMPARATOR.isSimilar(handler.getHandler(), locale, item)) {
 			handler.openSettingInventory(player);
+			e.setCancelled(true);
 
 		} else if (EditorItems.WORLDBORDER_FENCE.isSimilar(handler.getHandler(), locale, item)) {
 			if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
@@ -142,6 +143,7 @@ public class EditorListener implements Listener {
 			} else {
 				handler.openWorldBorderInventory(player);
 			}
+			e.setCancelled(true);
 
 		} else if (EditorItems.INVSWITCH_BOOKSHELF.isSimilar(handler.getHandler(), locale, item)) {
 			if (scene.isToolkitOpen()) {
@@ -150,8 +152,8 @@ public class EditorListener implements Listener {
 				scene.showToolkit();
 			}
 
+			e.setCancelled(true);
 		}
-		e.setCancelled(true);
 	}
 	
 	@EventHandler
@@ -191,36 +193,36 @@ public class EditorListener implements Listener {
 				Location loc = Utils.locationFromString(chestBlockData.getItemMeta().getLore().get(0), false);
 				ItemStack[] items = i.getContents();
 				List<String> selected = new ArrayList<>();
-				for (int j = 0; j < items.length; j++) {
-					if (items[j] != null) {
-						if (items[j].equals(item)) {
-							switch (items[j].getType()) {
-							case LIME_STAINED_GLASS:
-								items[j].setType(Material.RED_STAINED_GLASS);
-								break;
-							case LIME_CONCRETE:
-								items[j].setType(Material.RED_CONCRETE);
-								break;
-							case RED_STAINED_GLASS:
-								items[j].setType(Material.LIME_STAINED_GLASS);
-								break;
-							case RED_CONCRETE:
-								items[j].setType(Material.LIME_CONCRETE);
-								break;
-							default:
-								continue;
+				for (ItemStack itemStack : items) {
+					if (itemStack != null) {
+						if (itemStack.equals(item)) {
+							switch (itemStack.getType()) {
+								case LIME_STAINED_GLASS:
+									itemStack.setType(Material.RED_STAINED_GLASS);
+									break;
+								case LIME_CONCRETE:
+									itemStack.setType(Material.RED_CONCRETE);
+									break;
+								case RED_STAINED_GLASS:
+									itemStack.setType(Material.LIME_STAINED_GLASS);
+									break;
+								case RED_CONCRETE:
+									itemStack.setType(Material.LIME_CONCRETE);
+									break;
+								default:
+									continue;
 							}
 						}
-						switch (items[j].getType()) {
-						case LIME_STAINED_GLASS:
-						case LIME_CONCRETE:
-							selected.add(items[j].getItemMeta().getDisplayName());
-						default:
-							break;
+						switch (itemStack.getType()) {
+							case LIME_STAINED_GLASS:
+							case LIME_CONCRETE:
+								selected.add(itemStack.getItemMeta().getDisplayName());
+							default:
+								break;
 						}
 					}
 				}
-				if (scene.updateAllChestItemSets(loc, selected)) {
+				if (scene.setChestItemSets(loc, selected)) {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFIED_ITEMS);
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFY_ITEMS_ERR);
@@ -232,8 +234,6 @@ public class EditorListener implements Listener {
 			if (EditorItems.RENAME_MAP_NAMETAG.isSimilar(handler.getHandler(), locale, item)) {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.MAP_NAME);
-			} else if (EditorItems.IMPLEMENTS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
-				//TODO
 			} else if (EditorItems.BORDER_DPS_CACTUS.isSimilar(handler.getHandler(), locale, item)) {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.BORDER_DPS);
@@ -275,6 +275,14 @@ public class EditorListener implements Listener {
 				} else {
 					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_KILL_FIREWORK);
 				}
+			} else if (EditorItems.LIGHTNING_ROD.isSimilar(handler.getHandler(), locale, item)) {
+				boolean deathLightning = !scene.getGameConfiguration().getLightningOnDeath();
+				scene.getGameConfiguration().setLightningOnDeath(deathLightning);
+				if (deathLightning) {
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_DEATH_LIGHTNING);
+				} else {
+					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_DEATH_LIGHTNING);
+				}
 			} else if (EditorItems.ISWIP_BRICKS.isSimilar(handler.getHandler(), locale, item)) {
 				boolean wip = !scene.getGameConfiguration().getIsWIP();
 				scene.getGameConfiguration().setIsWIP(wip);
@@ -294,10 +302,8 @@ public class EditorListener implements Listener {
 				scene.hideBorder();
 			} else {
 				if (item.hasItemMeta()) {
-					if (item.hasItemMeta()) {
-						if (item.getItemMeta().hasDisplayName()) {
-							scene.setBorderDeathmatchTarget(item.getItemMeta().getDisplayName());
-						}
+					if (item.getItemMeta().hasDisplayName()) {
+						scene.setBorderDeathmatchTarget(item.getItemMeta().getDisplayName());
 					}
 				}
 			}

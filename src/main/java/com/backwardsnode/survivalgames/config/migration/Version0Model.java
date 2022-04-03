@@ -18,8 +18,8 @@
 
 package com.backwardsnode.survivalgames.config.migration;
 
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.*;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ public class Version0Model implements Migration {
 		bc.damagePerSecond = border.damagePerSecond;
 		bc.deathmatchLocations = border.deathmatchLocations.stream().map(x -> {
 			DeathmatchConfiguration dc = new DeathmatchConfiguration();
-			dc.location = Utils.locationFromString(x.loc, true);
+			dc.location = new BlockLocation(x.loc);
 			dc.borderDiameter = x.borderRadius;
 			dc.shrinkTime = x.shrinkTime;
 			dc.deathmatchDuration = x.deathmatchTime;

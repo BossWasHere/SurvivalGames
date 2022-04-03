@@ -65,10 +65,6 @@ public class BorderController implements Controller {
 		loadDefaults(defaultWorld);
 		setDefaults();
 	}
-
-	public boolean isProtocol() {
-		return protocolConnector != null;
-	}
 	
 	public void setCenter(double xPos, double zPos) {
 		centerX = xPos;
@@ -88,11 +84,11 @@ public class BorderController implements Controller {
 		}
 	}
 	
-	public void setTarget(double xPos, double zPos, double radius, long closeSpeed) {
+	public void setTarget(double xPos, double zPos, double diameter, long closeSpeed) {
 		centerX = xPos;
 		centerZ = zPos;
 		lastDiameter = getDiameter();
-		targetDiameter = radius;
+		targetDiameter = diameter;
 		millisToTake = closeSpeed;
 		shrinkStartedAt = new Date().getTime();
 		if (protocolConnector != null) {

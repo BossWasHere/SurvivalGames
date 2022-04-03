@@ -19,10 +19,8 @@
 package com.backwardsnode.survivalgames.world;
 
 import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.LootDropConfiguration;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 import java.util.HashMap;
@@ -33,7 +31,7 @@ public class LootDropManager {
 
     private final Plugin PLUGIN;
 
-    private final Map<String, LootDrop> DROPS;
+    private final Map<BlockLocation, LootDrop> DROPS;
     private final Map<UUID, LootDrop> FALLING_BLOCKS;
 
     public LootDropManager(Plugin plugin) {
@@ -44,9 +42,8 @@ public class LootDropManager {
 
     public LootDrop summonLootDrop(LootDropConfiguration configuration, boolean placeBeacon) {
         LootDrop lootDrop = new LootDrop(this, configuration);
-        String locationString = Utils.stringFromLocation(configuration.location, false, true);
 
-        LootDrop existing = DROPS.remove(locationString);
+        LootDrop existing = DROPS.remove(configuration.location);
         if (existing != null) {
             existing.close();
         }
@@ -57,13 +54,13 @@ public class LootDropManager {
 
         lootDrop.summonDropEntity();
 
-        DROPS.put(locationString, lootDrop);
+        DROPS.put(configuration.location, lootDrop);
 
         return lootDrop;
     }
 
-    public LootDrop getDropAtLocation(Location location) {
-        return DROPS.get(Utils.stringFromLocation(location, false, true));
+    public LootDrop getDropAtLocation(BlockLocation location) {
+        return DROPS.get(location);
     }
 
     public LootDrop getAndRemoveAssociatedDrop(UUID entityId) {

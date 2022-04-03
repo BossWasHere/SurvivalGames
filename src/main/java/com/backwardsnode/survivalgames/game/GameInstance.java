@@ -29,6 +29,7 @@ import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.message.PluginMessage;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.backwardsnode.survivalgames.world.LootDrop;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -48,8 +49,8 @@ public class GameInstance {
 	private final GameConfigurationWrapper CONFIG;
 	private final PlayerCacheSettings CACHE_SETTINGS;
 	private final Map<UUID, PlayerState> INGAME_PLAYERS;
-	private final Set<Location> OPENED_CHESTS;
-	private final Map<Location, LootDrop> DROPS_IN_PROGRESS;
+	private final Set<BlockLocation> OPENED_CHESTS;
+	private final Map<BlockLocation, LootDrop> DROPS_IN_PROGRESS;
 	private final Random RANDOM;
 
 	private ScoreboardController scoreboard;
@@ -366,14 +367,14 @@ public class GameInstance {
 			Player p = player.cache.getPlayer();
 			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, CONFIG.getMapName());
 
-			List<Location> spawnLocations = CONFIG.getSpawnLocations();
-			Location commonSpawnLocation = spawnLocations.get(0).clone().add(0.5, 0, 0.5);
+			List<BlockLocation> spawnLocations = CONFIG.getSpawnLocations();
+			Location commonSpawnLocation = spawnLocations.get(0).toBukkitLocation().add(0.5, 0, 0.5);
 			if (player.spectating) {
 				p.teleport(commonSpawnLocation);
 				p.setGameMode(GameMode.SPECTATOR);
 				MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.AS_SPECTATOR);
 			} else {
-				p.teleport(spawnLocations.get(i).clone().add(0.5, 0, 0.5));
+				p.teleport(spawnLocations.get(i).toBukkitLocation().add(0.5, 0, 0.5));
 				p.setGameMode(GameMode.ADVENTURE);
 				i++;
 			}
@@ -474,7 +475,7 @@ public class GameInstance {
 			Block b = co.location.getBlock();
 			if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest chest)) {
 				if (missingChests < 5) {
-					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.getLocationAsString());
+					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.location.toString());
 				}
 				missingChests++;
 				continue;
@@ -643,7 +644,7 @@ public class GameInstance {
 					player.getLocation().getWorld().dropItemNaturally(player.getLocation(), item);
 				}
 			} else {
-				player.teleport(CONFIG.getSpawnLocations().get(0));
+				player.teleport(CONFIG.getSpawnLocations().get(0).toBukkitLocation());
 				ps.alive = false;
 			}
 		}
@@ -760,7 +761,7 @@ public class GameInstance {
 		return border;
 	}
 
-	public Set<Location> getOpenedChests() {
+	public Set<BlockLocation> getOpenedChests() {
 		return OPENED_CHESTS;
 	}
 

@@ -23,13 +23,14 @@ import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
 import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
+import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.message.JsonMessage;
 import com.backwardsnode.survivalgames.message.JsonTextEvent;
 import com.backwardsnode.survivalgames.message.Messages;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -58,13 +59,13 @@ public class SGCheck extends BaseCommand {
 					sendMessage(sender, Messages.Plugin.IO_FILE_FOUND, target.getName());
 					GameConfigurationWrapper gcw = new GameConfigurationWrapper(target, true);
 					sendMessage(sender, Messages.Plugin.IO_FILE_LOADED);
-					Set<Location> invalidLocations = gcw.checkChests();
+					Set<BlockLocation> invalidLocations = gcw.checkChests();
 					if (invalidLocations.size() > 0) {
 						StringBuilder builder = new StringBuilder();
 						builder.append("At: ");
 						int i = 0;
-						for (Location location : invalidLocations) {
-							builder.append("[").append(Utils.stringFromLocation(location, false, true)).append("], ");
+						for (BlockLocation location : invalidLocations) {
+							builder.append("[").append(location.toString()).append("], ");
 							if (i++ % 3 == 0) {
 								builder.append('\n');
 							}
@@ -88,8 +89,11 @@ public class SGCheck extends BaseCommand {
 						sendMessage(sender, Messages.Config.CHEST_LOCATED, gcw.getChests().size());
 					}
 				}
+			} catch (GameConfigurationException unused) {
+				sendMessage(sender, Messages.Config.OUTDATED);
 			} catch (FileNotFoundException | JsonIOException e) {
 				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
+				e.printStackTrace();
 			} catch (JsonSyntaxException e) {
 				sendMessage(sender, Messages.Config.SYNTAX);
 				e.printStackTrace();

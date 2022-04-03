@@ -23,9 +23,9 @@ import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
 import com.backwardsnode.survivalgames.config.LootDropConfiguration;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import com.backwardsnode.survivalgames.world.LootDrop;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,7 +48,7 @@ public class TestLootDrop extends BaseCommand {
                 int blockZ = Integer.parseInt(args[2]);
 
                 LootDropConfiguration ldc = new LootDropConfiguration();
-                ldc.location = new Location(player.getWorld(), blockX, blockY, blockZ);
+                ldc.location = new BlockLocation(player.getWorld(), blockX, blockY, blockZ);
 
                 LootDrop lootDrop = PLUGIN.getHost().getLootDropManager().summonLootDrop(ldc, true);
 
