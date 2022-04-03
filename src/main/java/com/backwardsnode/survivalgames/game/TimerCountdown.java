@@ -32,13 +32,14 @@ public class TimerCountdown implements Runnable {
 	
 	@Override
 	public void run() {
-		if (isZero) return;
-		double cV = remaining--;
-		if (cV < 1) {
-			isZero = true;
-			instance.triggerEvent(nextOperation);
-		}
 		instance.tick(remaining, nextOperation);
+		if (!isZero) {
+			double cV = remaining--;
+			if (cV < 1) {
+				isZero = true;
+				instance.triggerEvent(nextOperation);
+			}
+		}
 	}
 	
 	public void zeroCountdown(boolean skipEvent) {

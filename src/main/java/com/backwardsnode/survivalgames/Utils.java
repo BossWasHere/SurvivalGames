@@ -234,12 +234,7 @@ public class Utils {
     }
 
     public static boolean fillChest(Chest chest, Collection<ItemSet> allItemSets, Collection<String> permittedItemSets) {
-        Set<ItemSet> selector = allItemSets.stream().filter(x -> permittedItemSets.equals(x.name)).collect(Collectors.toSet());
-
-        List<ItemModel> assorted = new ArrayList<>();
-        for (ItemSet select : selector) {
-            assorted.addAll(select.items);
-        }
+        List<ItemModel> assorted = filterModels(allItemSets, permittedItemSets);
 
         chest.setCustomName("Loot Chest");
         chest.update(true, false);
@@ -266,6 +261,41 @@ public class Utils {
         }
 
         return isOkay;
+    }
+
+    public static boolean dropSomeItems(Location location, Collection<ItemSet> allItemSets, Collection<String> permittedItemSets, int itemsToCreate) {
+        List<ItemModel> assorted = filterModels(allItemSets, permittedItemSets);
+
+        Random r = new Random();
+        int availableItems = assorted.size();
+        itemsToCreate = Math.min(availableItems, itemsToCreate);
+
+        boolean isOkay = true;
+        for (int i = 0; i < itemsToCreate && availableItems > 0; i++) {
+            ItemModel model = assorted.remove(r.nextInt(availableItems--));
+            ItemStack item = model.getEquivalent();
+            if (item == null) {
+                Bukkit.getLogger().warning("Unknown item [" + model.id + "], you should check the config file");
+                isOkay = false;
+                itemsToCreate++;
+                continue;
+            }
+
+            location.getWorld().dropItemNaturally(location, item);
+        }
+
+        return isOkay;
+    }
+
+    private static List<ItemModel> filterModels(Collection<ItemSet> allItemSets, Collection<String> permittedItemSets) {
+        Set<ItemSet> selector = allItemSets.stream().filter(x -> permittedItemSets.equals(x.name)).collect(Collectors.toSet());
+
+        List<ItemModel> assorted = new ArrayList<>();
+        for (ItemSet select : selector) {
+            assorted.addAll(select.items);
+        }
+
+        return assorted;
     }
 
     /**
@@ -327,7 +357,7 @@ public class Utils {
 
     }
 
-    public static String secondsToString(long pTime) {
+    public static String secondsToMMSS(long pTime) {
         return String.format("%02d:%02d", pTime / 60, pTime % 60);
     }
 

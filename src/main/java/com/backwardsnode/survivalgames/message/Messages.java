@@ -274,9 +274,9 @@ public class Messages {
         public static final PluginMessage START = new PluginMessage("game.start");
         public static final PluginMessage START_WITHOUT_SPECTATORS = new PluginMessage("game.startwithoutspec");
         public static final PluginMessage START_WITH_SPECTATORS = new PluginMessage("game.startwithspec");
+        public static final PluginMessage LOOT_DROPPING = new PluginMessage("game.lootdropping");
         public static final PluginMessage WON = new PluginMessage("game.won");
         public static final PluginMessage REWARDS_OVERFLOW = new PluginMessage("game.rewardsoverflow");
-
     }
 
     public static final class Misc {

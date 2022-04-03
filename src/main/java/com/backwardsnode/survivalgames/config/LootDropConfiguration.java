@@ -35,9 +35,11 @@ public class LootDropConfiguration implements SerializableLocation {
     public List<String> itemSets;
     public boolean canDropAutomatically;
     public boolean canDropOnDemand;
+    public int itemCount;
 
     @Override
     public String getLocationAsString() {
         return Utils.stringFromLocation(location, false, true);
     }
+
 }

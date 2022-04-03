@@ -48,15 +48,15 @@ import java.util.UUID;
 
 public class GameListener implements Listener {
 
-	private final GameManager manager;
+	private final GameManager MANAGER;
 	
-	private HashMap<UUID, Player> damagingEffects;
+	private final HashMap<UUID, Player> DAMAGING_EFFECTS;
 
 	private final boolean preventSpectatorInventoryViewing;
 	
 	public GameListener(GameManager manager) {
-		this.manager = manager;
-		damagingEffects = new HashMap<>();
+		MANAGER = manager;
+		DAMAGING_EFFECTS = new HashMap<>();
 		preventSpectatorInventoryViewing = !PluginConfigKeys.ALLOW_SPECTATORS_SEE_INVENTORY.get(manager.getPlugin().getConfig());
 	}
 	
@@ -66,7 +66,7 @@ public class GameListener implements Listener {
 		if (clicked == null) {
 			return;
 		}
-		GameInstance instance = manager.getGame(e.getPlayer());
+		GameInstance instance = MANAGER.getGame(e.getPlayer());
 		if (instance == null) {
 			return;
 		}
@@ -76,11 +76,11 @@ public class GameListener implements Listener {
 				e.setCancelled(true);
 
 			} else if (!instance.getGameConfiguration().getDoChestPrefilling() && clicked.getState() instanceof Chest) {
-				ChestConfiguration co = instance.getChestData(clicked.getLocation());
+				ChestConfiguration co = instance.getGameConfiguration().getChestAt(clicked.getLocation());
 				if (co != null) {
 					if (!instance.getOpenedChests().add(co.location)) {
 						Chest chest = (Chest) clicked.getState();
-						Utils.fillChest(chest, instance.getItemSets(), co.itemSets);
+						Utils.fillChest(chest, instance.getGameConfiguration().getItemSets(), co.itemSets);
 					}
 				}
 			}
@@ -98,7 +98,7 @@ public class GameListener implements Listener {
 		}
 
 		Player player = e.getPlayer();
-		GameInstance instance = manager.getGame(player);
+		GameInstance instance = MANAGER.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -122,7 +122,7 @@ public class GameListener implements Listener {
 		if (!(e.getWhoClicked() instanceof Player player)) {
 			return;
 		}
-		GameInstance instance = manager.getGame(player);
+		GameInstance instance = MANAGER.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -142,7 +142,7 @@ public class GameListener implements Listener {
 		if (!(e.getPlayer() instanceof Player player)) {
 			return;
 		}
-		GameInstance instance = manager.getGame(player);
+		GameInstance instance = MANAGER.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -157,7 +157,7 @@ public class GameListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerMoveEvent(PlayerMoveEvent e) {
-		GameInstance instance = manager.getGame(e.getPlayer());
+		GameInstance instance = MANAGER.getGame(e.getPlayer());
 		if (instance == null) {
 			return;
 		}
@@ -180,7 +180,7 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = manager.getGame(damaged);
+		GameInstance instance = MANAGER.getGame(damaged);
 		if (instance == null) {
 			return;
 		}
@@ -213,7 +213,7 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = manager.getGame(damaged);
+		GameInstance instance = MANAGER.getGame(damaged);
 		if (instance == null) {
 			return;
 		}
@@ -232,14 +232,14 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = manager.getGame(damaged);
+		GameInstance instance = MANAGER.getGame(damaged);
 		if (instance == null) {
 			return;
 		}
 		if (instance.isActive() && e.getCause().equals(DamageCause.MAGIC)) {
 			PlayerState ps = instance.getPlayerState(damaged);
 			if (ps.alive) {
-				Player potionPlayer = damagingEffects.remove(damaged.getUniqueId());
+				Player potionPlayer = DAMAGING_EFFECTS.remove(damaged.getUniqueId());
 				if (potionPlayer != null) {
 					instance.processDeath(damaged, potionPlayer);
 					return;
@@ -278,7 +278,7 @@ public class GameListener implements Listener {
 		}
 		ProjectileSource shooter = e.getEntity().getShooter();
 		if (shooter instanceof Player player) {
-			GameInstance instance = manager.getGame(player);
+			GameInstance instance = MANAGER.getGame(player);
 			if (instance == null) {
 				return;
 			}
@@ -288,7 +288,7 @@ public class GameListener implements Listener {
 						if (le instanceof Player) {
 							PlayerState state = instance.getPlayerState((Player)le);
 							if (state.alive) {
-								damagingEffects.put(le.getUniqueId(), player);
+								DAMAGING_EFFECTS.put(le.getUniqueId(), player);
 							}
 						}
 					}
@@ -302,7 +302,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onPlayerQuitEvent(PlayerQuitEvent e) {
 		Player player = e.getPlayer();
-		GameInstance instance = manager.getGame(player);
+		GameInstance instance = MANAGER.getGame(player);
 		if (instance == null) {
 			return;
 		}

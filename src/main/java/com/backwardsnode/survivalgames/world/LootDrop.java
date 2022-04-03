@@ -18,11 +18,11 @@
 
 package com.backwardsnode.survivalgames.world;
 
+import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.LootDropConfiguration;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import com.backwardsnode.survivalgames.item.ItemModel;
+import com.backwardsnode.survivalgames.item.ItemSet;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
@@ -31,6 +31,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Fireball;
 import org.bukkit.util.Vector;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class LootDrop {
@@ -77,9 +78,17 @@ public class LootDrop {
         }
     }
 
-    public void placeChest() {
+    public void placeChest(boolean playEffects) {
         if (closed || LOOT_DROP_CONFIGURATION == null || chestPlaced) {
             return;
+        }
+
+        Location location = LOOT_DROP_CONFIGURATION.location;
+        if (playEffects) {
+            World world = location.getWorld();
+            world.playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.1f, 1f);
+            world.playSound(location, Sound.BLOCK_AMETHYST_BLOCK_FALL, SoundCategory.PLAYERS, 1f, 1f);
+            world.spawnParticle(Particle.DRAGON_BREATH, location, 50, 2d, 0, 2d, 0.03d);
         }
 
         LOOT_DROP_CONFIGURATION.location.getBlock().setType(Material.ENDER_CHEST);
@@ -172,4 +181,17 @@ public class LootDrop {
         closed = true;
     }
 
+    public void popAndClose(Collection<ItemSet> itemSets) {
+        if (closed) return;
+        Location location = LOOT_DROP_CONFIGURATION.location.clone().add(0.5d, 0.5d, 0.5d);
+        World world = location.getWorld();
+
+        world.playSound(location, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6f, 1f);
+        world.playSound(location, Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.PLAYERS, 1f, 1f);
+        world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5f, 1f);
+        world.spawnParticle(Particle.EXPLOSION_NORMAL, location, 1);
+        Utils.dropSomeItems(location, itemSets, LOOT_DROP_CONFIGURATION.itemSets, LOOT_DROP_CONFIGURATION.itemCount);
+
+        close();
+    }
 }

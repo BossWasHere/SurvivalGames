@@ -179,7 +179,7 @@ public class PluginListener implements Listener {
 				e.setCancelled(true);
 				fallingBlock.remove();
 				if (!drop.isClosed()) {
-					drop.placeChest();
+					drop.placeChest(true);
 				}
 			}
 		}
@@ -195,7 +195,7 @@ public class PluginListener implements Listener {
 				e.setCancelled(true);
 				fallingBlock.remove();
 				if (!drop.isClosed()) {
-					drop.placeChest();
+					drop.placeChest(true);
 				}
 			}
 		}

@@ -29,6 +29,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+
 public class TestLootDrop extends BaseCommand {
 
     public TestLootDrop(Plugin plugin) {
@@ -50,7 +52,7 @@ public class TestLootDrop extends BaseCommand {
 
                 LootDrop lootDrop = PLUGIN.getHost().getLootDropManager().summonLootDrop(ldc, true);
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, lootDrop::close, 200);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, () -> lootDrop.popAndClose(new ArrayList<>(0)), 200);
                 return ExecutionStatus.SUCCESS;
 
             } catch (NumberFormatException e) {

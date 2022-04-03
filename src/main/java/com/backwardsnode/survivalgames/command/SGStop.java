@@ -47,7 +47,7 @@ public class SGStop extends BaseCommand {
 
 		if (i != null) {
 			i.terminate();
-			sendMessage(sender, Messages.Command.SGStop.STOPPED, i.getFileName());
+			sendMessage(sender, Messages.Command.SGStop.STOPPED, i.getGameConfiguration().getFileName());
 		} else {
 			sendMessage(sender, Messages.Game.NOT_RUNNING);
 		}

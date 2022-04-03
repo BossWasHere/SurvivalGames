@@ -94,7 +94,7 @@ public class GameManager {
 		default:
 			return false;
 		}
-		NAME_GAME_MAP.put(instance.getFileName(), instance);
+		NAME_GAME_MAP.put(gcw.getFileName(), instance);
 		return true;
 	}
 	
@@ -133,7 +133,7 @@ public class GameManager {
 
 	public void onGameFinished(GameInstance instance) {
 		if (!closing) {
-			NAME_GAME_MAP.remove(instance.getFileName());
+			NAME_GAME_MAP.remove(instance.getGameConfiguration().getFileName());
 			for (Entry<UUID, GameInstance> es : PLAYER_GAME_MAP.entrySet()) {
 				if (es.getValue().equals(instance)) {
 					PLAYER_GAME_MAP.remove(es.getKey());
@@ -151,6 +151,7 @@ public class GameManager {
 		for (GameInstance i : NAME_GAME_MAP.values()) {
 			i.terminate();
 		}
+		NAME_GAME_MAP.clear();
 	}
 
 	public GameInstance getGameByMap(String fileName) {

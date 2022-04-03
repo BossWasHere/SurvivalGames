@@ -27,9 +27,9 @@ import com.backwardsnode.survivalgames.controller.ScoreboardElement;
 import com.backwardsnode.survivalgames.dependency.plugin.VaultConnector;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.item.ItemModel;
-import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.message.PluginMessage;
+import com.backwardsnode.survivalgames.world.LootDrop;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -40,6 +40,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class GameInstance {
 
@@ -47,7 +48,9 @@ public class GameInstance {
 	private final GameConfigurationWrapper CONFIG;
 	private final PlayerCacheSettings CACHE_SETTINGS;
 	private final Map<UUID, PlayerState> INGAME_PLAYERS;
-	private final HashSet<Location> OPENED_CHESTS;
+	private final Set<Location> OPENED_CHESTS;
+	private final Map<Location, LootDrop> DROPS_IN_PROGRESS;
+	private final Random RANDOM;
 
 	private ScoreboardController scoreboard;
 	private BossBarController bossbar;
@@ -62,6 +65,9 @@ public class GameInstance {
 
 	private BukkitTask timerTask;
 	private TimerCountdown timerInstance;
+
+	private int timeToNextLootDrop;
+	private float nextLootDropProbability;
 	
 	private boolean flagIsActive;
 	private boolean flagDisableMovement;
@@ -69,16 +75,18 @@ public class GameInstance {
 	private boolean flagDeathmatchStarted;
 	
 	protected GameInstance(GameManager manager, GameConfigurationWrapper gcw, PlayerCacheSettings cacheSettings) throws GameConfigurationException {
-		MANAGER = manager;
-		CONFIG = gcw;
-		CACHE_SETTINGS = cacheSettings;
-
 		if (gcw.getSpawnLocations().size() < 2) {
 			throw new GameConfigurationException("Not enough spawn locations");
 		}
 
+		MANAGER = manager;
+		CONFIG = gcw;
+		CACHE_SETTINGS = cacheSettings;
+
 		INGAME_PLAYERS = new HashMap<>();
 		OPENED_CHESTS = new HashSet<>();
+		DROPS_IN_PROGRESS = new HashMap<>();
+		RANDOM = new Random();
 
 		currentStatus = GameStatus.WAITING;
 	}
@@ -270,15 +278,88 @@ public class GameInstance {
 	}
 	
 	protected void tick(long remaining, GameStatus nextOperation) {
-		scoreboard.updateScoreboardElement(ScoreboardElement.TIME_LEFT, Utils.secondsToString(remaining));
-		bossbar.setHealth(remaining);
+		// Update time left on tick
+		if (remaining >= 0) {
+			scoreboard.updateScoreboardElement(ScoreboardElement.TIME_LEFT, Utils.secondsToMMSS(remaining));
+			bossbar.setHealth(remaining);
+		}
 
+		double diameter = border.getDiameter();
+
+		// Update zone size on two-second tick
 		if (nextOperation == GameStatus.CLOSE_PLAY_AREA && remaining % 2 == 0) {
-			String dim = String.valueOf(Math.floor(border.getDiameter()));
+			String dim = String.valueOf(Math.floor(diameter));
 			scoreboard.updateScoreboardElement(ScoreboardElement.ZONE_SIZE, dim + "," + dim + " blocks");
 		}
+
+		// Damage on tick
+		if (deathmatchConfig != null) {
+			double radius = diameter / 2;
+			double dps = getGameConfiguration().getBorderDPS();
+			double centerX = deathmatchConfig.getCenterX();
+			double centerZ = deathmatchConfig.getCenterZ();
+
+			for (PlayerState playerState : INGAME_PLAYERS.values()) {
+				if (playerState.alive) {
+					Player player = playerState.cache.getPlayer();
+					Location location = player.getLocation();
+
+					if (Math.abs(centerX - location.getX()) > radius || Math.abs(centerZ - location.getZ()) > radius) {
+						player.damage(dps);
+					}
+				}
+			}
+		}
+
+		// Decrement loot drop timer on tick
+		if (--timeToNextLootDrop == 0) {
+			if (nextLootDropProbability > 0 && nextLootDropProbability > RANDOM.nextFloat()) {
+				if (summonLootDrop(true)) {
+					nextLootDropProbability = getGameConfiguration().getLootDropTriggerProbability();
+				} else {
+					nextLootDropProbability += getGameConfiguration().getLootDropTriggerProbabilityIncrement();
+				}
+			}
+		}
 	}
-	
+
+	public boolean summonLootDrop(boolean changeTimer) {
+		boolean dropped = false;
+
+		List<LootDropConfiguration> lootDrops = getGameConfiguration().getLootDropLocations();
+		int selectionSize = lootDrops.size();
+		if (selectionSize > 0) {
+			List<Integer> selectionOrder = IntStream.range(0, selectionSize).boxed().toList();
+			Collections.shuffle(selectionOrder, RANDOM);
+
+			for (int i : selectionOrder) {
+				LootDropConfiguration lootDropConfiguration = lootDrops.get(i);
+				if (!DROPS_IN_PROGRESS.containsKey(lootDropConfiguration.location)) {
+					announce(Messages.Game.LOOT_DROPPING);
+
+					LootDrop lootDrop = MANAGER.getPlugin().getHost().getLootDropManager().summonLootDrop(lootDropConfiguration, true);
+					DROPS_IN_PROGRESS.put(lootDropConfiguration.location, lootDrop);
+
+					dropped = true;
+					break;
+				}
+			}
+		}
+
+		int window = getGameConfiguration().getLootDropTriggerWindow();
+		if (changeTimer) {
+			if (dropped) {
+				timeToNextLootDrop = getGameConfiguration().getLootDropDelay();
+				if (timeToNextLootDrop > 0 && window > 0) {
+					timeToNextLootDrop += RANDOM.nextInt(window);
+				}
+			} else {
+				timeToNextLootDrop = window == 0 ? 1 : RANDOM.nextInt(window);
+			}
+		}
+		return dropped;
+	}
+
 	private void preparePlayers() {
 		int i = 0;
 		for (PlayerState player : INGAME_PLAYERS.values()) {
@@ -314,7 +395,7 @@ public class GameInstance {
 	
 	private void releasePlayers() {
 		flagDisableMovement = false;
-		playGlobalPingSound();
+		playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 
 		int gracePeriod = CONFIG.getGracePeriod();
 		if (gracePeriod <= 0) {
@@ -332,7 +413,7 @@ public class GameInstance {
 		flagPVPEnabled = true;
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "PvP On");
 		if (shouldAnnounce) {
-			playGlobalPingSound();
+			playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 			announce(Messages.Game.PVP_ENABLED);
 		}
 		bossbar.resetHealth(CONFIG.getPreShrinkPeriod());
@@ -341,7 +422,7 @@ public class GameInstance {
 	}
 	
 	private void shrinkPlayArea() {
-		playGlobalPingSound();
+		playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 		if (deathmatchConfig != null) {
 			announce(Messages.Game.BORDER_SHRINKING);
 			scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Border Shrinking");
@@ -368,7 +449,7 @@ public class GameInstance {
 	}
 	
 	private void startDeathmatch() {
-		playGlobalPingSound();
+		playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 		flagDeathmatchStarted = true;
 		announce(Messages.Game.DEATHMATCH);
 		scoreboard.updateScoreboardElement(ScoreboardElement.STATUS, "Deathmatch");
@@ -380,7 +461,7 @@ public class GameInstance {
 	}
 	
 	private void closeBorder() {
-		playGlobalPingSound();
+		playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 		announce(Messages.Game.BORDER_SHRINKING);
 		border.setTarget(1, deathmatchConfig.collapseTime);
 		timerInstance.setOperation(GameStatus.FINISH_GAME, deathmatchConfig.collapseTime);
@@ -419,15 +500,16 @@ public class GameInstance {
 				case 0 -> scoreboard.updateScoreboardElement(ScoreboardElement.MOST_KILLS_1, state.cache.getPlayer().getDisplayName() + ": " + state.kills);
 				case 1 -> scoreboard.updateScoreboardElement(ScoreboardElement.MOST_KILLS_2, state.cache.getPlayer().getDisplayName() + ": " + state.kills);
 				case 2 -> scoreboard.updateScoreboardElement(ScoreboardElement.MOST_KILLS_3, state.cache.getPlayer().getDisplayName() + ": " + state.kills);
+				default -> { return; }
 			}
 			i++;
 		}
 	}
 	
-	private void playGlobalPingSound() {
+	private void playGlobalSound(Sound sound) {
 		for (PlayerState ps : INGAME_PLAYERS.values()) {
 			Player p = ps.cache.getPlayer();
-			p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 1f, 1f);
+			p.playSound(p.getLocation(), sound, SoundCategory.PLAYERS, 1f, 1f);
 		}
 	}
 	
@@ -443,33 +525,40 @@ public class GameInstance {
 			}
 		}
 		if (count < 2) {
-			if (count == 1) {
-				endGame(w.getDisplayName());
-			} else {
-				endGame(null);
-			}
+			endGame(count == 1 ? w.getDisplayName() : null);
 			return -1;
 		}
 		return count;
 	}
 	
 	protected boolean processDeath(Player player, Player killer) {
+		return processDeathInternal(player, killer, null);
+	}
+
+	protected boolean processDeathByEntity(Player player, String entity) {
+		return processDeathInternal(player, null, entity);
+	}
+
+	private boolean processDeathInternal(Player player, Player killer, String otherEntity) {
 		if (removePlayer(player, false)) {
+			boolean firework;
 			if (killer == null) {
 				announce(Messages.Game.DEATH_GENERIC, player.getDisplayName());
-				if (CONFIG.getSpawnFireworkOnDeath()) {
-					Utils.spawnRandomFirework(player.getLocation());
-				}
+				firework = CONFIG.getSpawnFireworkOnDeath();
+			} else if (otherEntity != null) {
+				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), otherEntity);
+				firework = CONFIG.getSpawnFireworkOnDeath();
 			} else {
 				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), killer.getDisplayName());
-				if (CONFIG.getSpawnFireworkOnKill()) {
-					Utils.spawnRandomFirework(player.getLocation());
-				}
+				firework = CONFIG.getSpawnFireworkOnKill();
 				PlayerState ps = getPlayerState(killer);
 				if (ps != null) {
 					ps.kills += 1;
 					updateMostKills();
 				}
+			}
+			if (firework) {
+				Utils.spawnRandomFirework(player.getLocation());
 			}
 
 			if (CONFIG.getLightningOnDeath()) {
@@ -477,20 +566,6 @@ public class GameInstance {
 			}
 
 			GameDeathEvent gameDeathEvent = new GameDeathEvent(this, player, killer);
-			Bukkit.getPluginManager().callEvent(gameDeathEvent);
-			return true;
-		}
-		return false;
-	}
-
-	protected boolean processDeathByEntity(Player player, String entity) {
-		if (removePlayer(player, false)) {
-			announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), entity);
-			if (CONFIG.getSpawnFireworkOnDeath()) {
-				Utils.spawnRandomFirework(player.getLocation());
-			}
-
-			GameDeathEvent gameDeathEvent = new GameDeathEvent(this, player, null);
 			Bukkit.getPluginManager().callEvent(gameDeathEvent);
 			return true;
 		}
@@ -517,7 +592,7 @@ public class GameInstance {
 			i++;
 			state.placement = i;
 		}
-		terminate(listPlayerState);
+		terminate();
 	}
 
 	public void rewardPlayer(PlayerState state) {
@@ -587,12 +662,10 @@ public class GameInstance {
 		}
 		return returning;
 	}
-	
+
 	public void terminate() {
-		terminate(INGAME_PLAYERS.values());
-	}
-	
-	private void terminate(Collection<PlayerState> playerStates) {
+		Collection<PlayerState> playerStates = INGAME_PLAYERS.values();
+
 		if (!flagIsActive) return;
 		flagIsActive = false;
 
@@ -613,7 +686,7 @@ public class GameInstance {
 		MANAGER.onGameFinished(this);
 	}
 	
-	private void restoreState(PlayerState ps) {		
+	private void restoreState(PlayerState ps) {
 		if (!ps.spectating) {
 			ps.cache.restore(CACHE_SETTINGS);
 		} else if (CACHE_SETTINGS.cacheGamemode) {
@@ -623,13 +696,6 @@ public class GameInstance {
 		updatePlayerTime(ps.cache.getPlayer(), true);
 
 		MANAGER.getPlugin().getDefaultListener().cleanupPlayer(ps.cache.getPlayer());
-	}
-	
-	public void announce(PluginMessage message) {
-		for (PlayerState ps : INGAME_PLAYERS.values()) {
-			Player p = ps.cache.getPlayer();
-			MANAGER.getPlugin().getMessageProvider().sendMessage(p, message);
-		}
 	}
 	
 	public void announce(PluginMessage message, Object... formatVars) {
@@ -643,13 +709,11 @@ public class GameInstance {
 		return INGAME_PLAYERS.get(player.getUniqueId());
 	}
 
-	public ChestConfiguration getChestData(Location location) {
-		Optional<ChestConfiguration> oco = CONFIG.getChests().stream().filter(co -> co.location.equals(location)).findFirst();
-		return oco.orElse(null);
-	}
-
 	public void tryUnpackLootDrop(Block clicked) {
-		// TODO summon loot drops
+		LootDrop lootDrop = DROPS_IN_PROGRESS.remove(clicked.getLocation());
+		if (lootDrop != null) {
+			lootDrop.popAndClose(getGameConfiguration().getItemSets());
+		}
 	}
 
 	public int getInitialPlayerCount() {
@@ -670,10 +734,6 @@ public class GameInstance {
 
 	public DeathmatchConfiguration getDeathmatchConfig() {
 		return deathmatchConfig;
-	}
-
-	public Collection<ItemSet> getItemSets() {
-		return CONFIG.getItemSets();
 	}
 
 	public GameStatus getStatus() {
@@ -697,17 +757,10 @@ public class GameInstance {
 	}
 
 	public BorderController getBorderController() {
-		if (border != null && border.isProtocol()) {
-			return border;
-		}
-		return null;
+		return border;
 	}
 
-	public String getFileName() {
-		return CONFIG.getFileName();
-	}
-
-	public HashSet<Location> getOpenedChests() {
+	public Set<Location> getOpenedChests() {
 		return OPENED_CHESTS;
 	}
 

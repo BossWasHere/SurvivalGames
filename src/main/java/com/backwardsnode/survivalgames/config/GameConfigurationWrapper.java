@@ -83,14 +83,7 @@ public class GameConfigurationWrapper {
         initialize();
     }
 
-    public void initialize() {
-//        if (GAME_CONFIGURATION.chestLocations == null ||
-//                GAME_CONFIGURATION.itemSets == null ||
-//                GAME_CONFIGURATION.strSpawns == null ||
-//                GAME_CONFIGURATION.rewards == null ||
-//                GAME_CONFIGURATION.lootDropLocations == null) {
-//            throw new GameConfigurationException("Missing configuration entries");
-//        }
+    private void initialize() {
         if (GAME_CONFIGURATION.chestLocations == null) {
             GAME_CONFIGURATION.chestLocations = new ArrayList<>();
         }
@@ -242,6 +235,38 @@ public class GameConfigurationWrapper {
         GAME_CONFIGURATION.preShrinkPeriod = preShrinkPeriod;
     }
 
+    public int getLootDropDelay() {
+        return GAME_CONFIGURATION.lootDropDelay;
+    }
+
+    public void setLootDropDelay(int lootDropDelay) {
+        GAME_CONFIGURATION.lootDropDelay = Math.max(-1, lootDropDelay);
+    }
+
+    public int getLootDropTriggerWindow() {
+        return Math.max(0, GAME_CONFIGURATION.lootDropTriggerWithin);
+    }
+
+    public void setLootDropTriggerWindow(int lootDropTriggerWindow) {
+        GAME_CONFIGURATION.lootDropTriggerWithin = Math.max(0, lootDropTriggerWindow);
+    }
+
+    public float getLootDropTriggerProbability() {
+        return GAME_CONFIGURATION.lootDropTriggerProbability;
+    }
+
+    public void setLootDropTriggerProbability(float lootDropTriggerProbability) {
+        GAME_CONFIGURATION.lootDropTriggerProbability = lootDropTriggerProbability;
+    }
+
+    public float getLootDropTriggerProbabilityIncrement() {
+        return GAME_CONFIGURATION.lootDropTriggerProbabilityIncrement;
+    }
+
+    public void setLootDropTriggerProbabilityIncrement(float lootDropTriggerProbabilityIncrement) {
+        GAME_CONFIGURATION.lootDropTriggerProbabilityIncrement = lootDropTriggerProbabilityIncrement;
+    }
+
     public double getBorderStartDiameter() {
         return GAME_CONFIGURATION.border.borderStartDiameter;
     }
@@ -310,6 +335,11 @@ public class GameConfigurationWrapper {
         return GAME_CONFIGURATION.chestLocations;
     }
 
+    public ChestConfiguration getChestAt(Location location) {
+        Optional<ChestConfiguration> oco = getChests().stream().filter(co -> co.location.equals(location)).findFirst();
+        return oco.orElse(null);
+    }
+
     public List<ItemSet> getItemSets() {
         return Collections.unmodifiableList(GAME_CONFIGURATION.itemSets);
     }
@@ -332,6 +362,10 @@ public class GameConfigurationWrapper {
 
     public ItemSet getItemSetByName(String name) {
         return GAME_CONFIGURATION.itemSets.stream().filter(x -> x.name.equals(name)).findFirst().orElse(null);
+    }
+
+    public List<LootDropConfiguration> getLootDropLocations() {
+        return GAME_CONFIGURATION.lootDropLocations;
     }
 
     public Map<String, RewardConfiguration> getRewards() {

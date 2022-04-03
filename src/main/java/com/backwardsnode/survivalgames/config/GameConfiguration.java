@@ -19,10 +19,11 @@ package com.backwardsnode.survivalgames.config;
 
 import com.backwardsnode.survivalgames.item.ItemSet;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class GameConfiguration {
+public class GameConfiguration implements Serializable {
 	
 	public int configVersion;
 	public String mapName;
