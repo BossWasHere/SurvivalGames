@@ -32,6 +32,6 @@ public class SGVote extends BaseCommand {
 
     @Override
     public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
-        return null;
+        return ExecutionStatus.SUCCESS;
     }
 }

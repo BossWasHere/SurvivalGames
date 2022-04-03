@@ -19,6 +19,7 @@ package com.backwardsnode.survivalgames.editor;
 
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.message.Messages;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -190,7 +191,7 @@ public class EditorListener implements Listener {
 		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.CHOOSE_SET_TITLE, locale))) {
 			ItemStack chestBlockData = i.getItem(i.getSize() - 1);
 			if (chestBlockData != null) {
-				Location loc = Utils.locationFromString(chestBlockData.getItemMeta().getLore().get(0), false);
+				Location loc = new BlockLocation(chestBlockData.getItemMeta().getLore().get(0)).toBukkitLocation();
 				ItemStack[] items = i.getContents();
 				List<String> selected = new ArrayList<>();
 				for (ItemStack itemStack : items) {

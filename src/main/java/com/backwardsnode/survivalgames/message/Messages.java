@@ -88,6 +88,14 @@ public class Messages {
 
         }
 
+        public static final class SGHelp {
+
+            public static final PluginMessage DESC = new PluginMessage("command.sghelp.description", false);
+            public static final PluginMessage USAGE = new PluginMessage("command.sghelp.usage", false);
+            public static final PluginMessage HELP_BANNER = new PluginMessage("command.sghelp.banner", false);
+
+        }
+
         public static final class SGJoin {
 
             public static final PluginMessage DESC = new PluginMessage("command.sgjoin.description", false);

@@ -45,6 +45,10 @@ command:
     loaded: "&9Loaded settings for map %s"
     notediting: "&cYou are not currently editing a map"
     opening: "&aOpening editor..."
+  sghelp:
+    description: "Displays help for SurvivalGames"
+    usage: "/sghelp"
+    banner: "&7[&6⚔&7] &3SurvivalGames Help &7- &9Version ${build.version} &7[&6⚔&7]"
   sgjoin:
     description: "Accept a game invitation"
     usage: "/sgjoin <map>"
@@ -81,7 +85,7 @@ command:
     usage: "/sgstop [map]"
     stopped: "&aStopped game on %s"
   sgvote:
-    description: "Vote for a map or something while in-game"
+    description: "Vote for a map or an event while in-game"
     usage: "/sgvote"
 config:
   chests:

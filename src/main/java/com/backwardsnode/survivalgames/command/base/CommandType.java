@@ -38,6 +38,7 @@ public enum CommandType {
     SG_DELETE("sgdelete", "SG Delete", Messages.Command.SGDelete.DESC, Messages.Command.SGDelete.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgd"),
     SG_EDIT("sgedit", "SG Edit", Messages.Command.SGEdit.DESC, Messages.Command.SGEdit.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "survivalgamesedit", "sge"),
     SG_DISCARD("sgdiscard", "SG Discard Edit", Messages.Command.SGDiscard.DESC, Messages.Command.SGDiscard.USAGE, SG_EDIT.getBasicPermission(), ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgdisc"),
+    SG_HELP("sghelp", "SG Help", Messages.Command.SGHelp.DESC, Messages.Command.SGHelp.USAGE, ExecutionCheck.ALWAYS, "sgh"),
     SG_JOIN("sgjoin", "SG Join", Messages.Command.SGJoin.DESC, Messages.Command.SGJoin.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION, "sgj"),
     SG_LIST("sglist", "SG List", Messages.Command.SGList.DESC, Messages.Command.SGList.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgl"),
     SG_MIGRATE("sgmigrate", "SG Migrate", Messages.Command.SGMigrate.DESC, Messages.Command.SGMigrate.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION_OR_CONSOLE, "sgm", "sgconvert"),

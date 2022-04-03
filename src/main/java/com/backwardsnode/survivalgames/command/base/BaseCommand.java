@@ -60,6 +60,10 @@ public abstract class BaseCommand extends Command {
         }
     }
 
+    public CommandType getType() {
+        return TYPE;
+    }
+
     public abstract ExecutionStatus executeDelegate(CommandSender sender, String[] args);
 
 }

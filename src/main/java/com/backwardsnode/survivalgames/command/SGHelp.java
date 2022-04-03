@@ -22,16 +22,38 @@ import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.command.base.BaseCommand;
 import com.backwardsnode.survivalgames.command.base.CommandType;
 import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
+import com.backwardsnode.survivalgames.message.MessageProvider;
+import com.backwardsnode.survivalgames.message.Messages;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-public class SGAuto extends BaseCommand {
+public class SGHelp extends BaseCommand {
 
-    public SGAuto(Plugin plugin) {
-        super(plugin, CommandType.SG_AUTO);
+    public SGHelp(Plugin plugin) {
+        super(plugin, CommandType.SG_HELP);
     }
 
     @Override
     public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
+        sendMessage(sender, Messages.Command.SGHelp.HELP_BANNER);
+
+        MessageProvider mp = PLUGIN.getMessageProvider();
+        if (sender instanceof Player player) {
+            String locale = player.getLocale();
+            for (BaseCommand bc : PLUGIN.getCommandRegistry().getCommands()) {
+                if (sender.hasPermission(bc.getType().getBasicPermission())) {
+                    sender.sendMessage(ChatColor.GRAY + "/" + bc.getLabel() + " - " + ChatColor.DARK_AQUA + mp.compileMessage(bc.getType().getDescriptionMessage(), locale));
+                }
+            }
+        } else {
+            for (BaseCommand bc : PLUGIN.getCommandRegistry().getCommands()) {
+                sender.sendMessage(ChatColor.GRAY + bc.getLabel() + " - " + ChatColor.DARK_AQUA + mp.compileDefaultMessage(bc.getType().getDescriptionMessage()));
+            }
+        }
+
+
         return ExecutionStatus.SUCCESS;
     }
 }
+

@@ -25,49 +25,42 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.SimplePluginManager;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public final class CommandRegistry {
 
     public static final String NAMESPACE = "survivalgames";
 
     private final Plugin PLUGIN;
-
-    private boolean registered = false;
-
-    private final BaseCommand SG_AUTO_COMMAND;
-    private final BaseCommand SG_CANCEL_COMMAND;
-    private final BaseCommand SG_CHECK_COMMAND;
-    private final BaseCommand SG_DEATHMATCH_COMMAND;
-    private final BaseCommand SG_DELETE_COMMAND;
-    private final BaseCommand SG_DISCARD_COMMAND;
-    private final BaseCommand SG_EDIT_COMMAND;
-    private final BaseCommand SG_JOIN_COMMAND;
-    private final BaseCommand SG_LIST_COMMAND;
-    private final BaseCommand SG_MIGRATE_COMMAND;
-    private final BaseCommand SG_RELOAD_LANG;
-    private final BaseCommand SG_START_COMMAND;
-    private final BaseCommand SG_STOP_COMMAND;
-    private final BaseCommand SG_VOTE_COMMAND;
+    private final BaseCommand[] COMMANDS;
 
     private final BaseCommand TEST_LOOT_DROP_COMMAND;
+
+    private boolean registered = false;
 
     public CommandRegistry(Plugin plugin) {
         PLUGIN = plugin;
 
-        SG_AUTO_COMMAND = new SGAuto(plugin);
-        SG_CANCEL_COMMAND = new SGCancel(plugin);
-        SG_CHECK_COMMAND = new SGCheck(plugin);
-        SG_DEATHMATCH_COMMAND = new SGDeathmatch(plugin);
-        SG_DELETE_COMMAND = new SGDelete(plugin);
-        SG_DISCARD_COMMAND = new SGDiscard(plugin);
-        SG_EDIT_COMMAND = new SGEdit(plugin);
-        SG_JOIN_COMMAND = new SGJoin(plugin);
-        SG_LIST_COMMAND = new SGList(plugin);
-        SG_MIGRATE_COMMAND = new SGMigrate(plugin);
-        SG_RELOAD_LANG = new SGReloadLang(plugin);
-        SG_START_COMMAND = new SGStart(plugin);
-        SG_STOP_COMMAND = new SGStop(plugin);
-        SG_VOTE_COMMAND = new SGVote(plugin);
+        COMMANDS = new BaseCommand[]{
+                new SGAuto(plugin),
+                new SGCancel(plugin),
+                new SGCheck(plugin),
+                new SGDeathmatch(plugin),
+                new SGDelete(plugin),
+                new SGDiscard(plugin),
+                new SGEdit(plugin),
+                new SGHelp(plugin),
+                new SGJoin(plugin),
+                new SGList(plugin),
+                new SGMigrate(plugin),
+                new SGReloadLang(plugin),
+                new SGStart(plugin),
+                new SGStop(plugin),
+                new SGVote(plugin)
+        };
 
         TEST_LOOT_DROP_COMMAND = new TestLootDrop(plugin);
     }
@@ -81,20 +74,9 @@ public final class CommandRegistry {
             field.setAccessible(true);
             CommandMap commandMap = (CommandMap) field.get(Bukkit.getServer().getPluginManager());
 
-            commandMap.register(SG_AUTO_COMMAND.getName(), NAMESPACE, SG_AUTO_COMMAND);
-            commandMap.register(SG_CANCEL_COMMAND.getName(), NAMESPACE, SG_CANCEL_COMMAND);
-            commandMap.register(SG_CHECK_COMMAND.getName(), NAMESPACE, SG_CHECK_COMMAND);
-            commandMap.register(SG_DEATHMATCH_COMMAND.getName(), NAMESPACE, SG_DEATHMATCH_COMMAND);
-            commandMap.register(SG_DELETE_COMMAND.getName(), NAMESPACE, SG_DELETE_COMMAND);
-            commandMap.register(SG_DISCARD_COMMAND.getName(), NAMESPACE, SG_DISCARD_COMMAND);
-            commandMap.register(SG_EDIT_COMMAND.getName(), NAMESPACE, SG_EDIT_COMMAND);
-            commandMap.register(SG_JOIN_COMMAND.getName(), NAMESPACE, SG_JOIN_COMMAND);
-            commandMap.register(SG_LIST_COMMAND.getName(), NAMESPACE, SG_LIST_COMMAND);
-            commandMap.register(SG_MIGRATE_COMMAND.getName(), NAMESPACE, SG_MIGRATE_COMMAND);
-            commandMap.register(SG_RELOAD_LANG.getName(), NAMESPACE, SG_RELOAD_LANG);
-            commandMap.register(SG_START_COMMAND.getName(), NAMESPACE, SG_START_COMMAND);
-            commandMap.register(SG_STOP_COMMAND.getName(), NAMESPACE, SG_STOP_COMMAND);
-            commandMap.register(SG_VOTE_COMMAND.getName(), NAMESPACE, SG_VOTE_COMMAND);
+            for (BaseCommand baseCommand : COMMANDS) {
+                commandMap.register(baseCommand.getName(), NAMESPACE, baseCommand);
+            }
 
             if (Plugin.TEST) {
                 commandMap.register(TEST_LOOT_DROP_COMMAND.getName(), NAMESPACE, TEST_LOOT_DROP_COMMAND);
@@ -104,5 +86,9 @@ public final class CommandRegistry {
             PLUGIN.getLogger().severe("An error occured while building the CommandMap for " + PLUGIN.getName());
             e.printStackTrace();
         }
+    }
+
+    public BaseCommand[] getCommands() {
+        return COMMANDS;
     }
 }

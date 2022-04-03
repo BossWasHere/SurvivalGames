@@ -147,67 +147,6 @@ public class Utils {
     }
 
     /**
-     * Serializes a location object to a comma-separated string in the format:
-     * <blockquote>x,y,z,world</blockquote>
-     * @param location The location in the world to serialize
-     * @param chunkRef If the y-value should be omitted
-     * @param toXYZInt If xyz coordinates should be rounded
-     * @return A string representation of the location
-     */
-    public static String stringFromLocation(Location location, boolean chunkRef, boolean toXYZInt) {
-        World world = location.getWorld();
-        String worldName = world == null ? null : world.getName();
-
-        if (toXYZInt) {
-            if (chunkRef) {
-                return String.format("%d,%d,%s", location.getBlockX(), location.getBlockZ(), worldName);
-            }
-            return String.format("%d,%d,%d,%s", location.getBlockX(), location.getBlockY(), location.getBlockZ(), worldName);
-        }
-
-        if (chunkRef) {
-            return String.format("%e,%e,%s", location.getX(), location.getZ(), worldName);
-        }
-        return String.format("%e,%e,%e,%s", location.getX(), location.getY(), location.getZ(), worldName);
-    }
-
-    /**
-     * Deserializes a comma-separated string in the format:
-     * <blockquote>x,y,z,world</blockquote>
-     * To a location within a loaded bukkit world
-     * @param location The string to deserialize
-     * @param chunkRef If the y-value is omitted
-     * @return A Location object representing the position of the string
-     */
-    public static Location locationFromString(String location, boolean chunkRef) {
-        int index = 0;
-        double x,y=0,z;
-        float yaw=0, pitch=0;
-        String name;
-        String[] spl = location.split(",");
-        try {
-            x = Double.parseDouble(spl[index++]);
-            if (!chunkRef) {
-                y = Double.parseDouble(spl[index++]);
-            }
-            z = Double.parseDouble(spl[index++]);
-            name = spl[index];
-        } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            return null;
-        }
-        World world = Bukkit.getWorld(name);
-        if (world == null) return null;
-        return new Location(world, x, y, z, yaw, pitch);
-    }
-
-    public static boolean isSameLocation(Location a, Location b, boolean toIntCoordinates) {
-        if (toIntCoordinates) {
-            return a.getWorld().equals(b.getWorld()) && a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b.getBlockZ();
-        }
-        return a.getWorld().equals(b.getWorld()) && a.getBlockX() == b.getX() && a.getY() == b.getY() && a.getZ() == b.getZ();
-    }
-
-    /**
      * Finds the most appropriate multiple of 9 to set as the inventory size for a basic player inventory
      * The number returned will be the same or a greater multiple of 9
      * @param itemLength The number of items given, not necessarily a multiple of 9

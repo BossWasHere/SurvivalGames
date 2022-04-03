@@ -24,6 +24,7 @@ import com.backwardsnode.survivalgames.controller.BorderController;
 import com.backwardsnode.survivalgames.item.ItemModel;
 import com.backwardsnode.survivalgames.item.ItemSet;
 import com.backwardsnode.survivalgames.message.Messages;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -173,7 +174,7 @@ public class EditorManager {
 				}
 			}
 		}
-		inv.setItem(invSize - 1, Utils.addNameAndLore(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE), "Inventory-Info", Utils.stringFromLocation(location, false, true)));
+		inv.setItem(invSize - 1, Utils.addNameAndLore(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE), "Inventory-Info", new BlockLocation(location).toString()));
 		player.openInventory(inv);		
 		return true;
 	}

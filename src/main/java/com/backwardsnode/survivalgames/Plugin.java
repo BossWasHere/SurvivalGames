@@ -125,6 +125,10 @@ public final class Plugin extends JavaPlugin {
 		return new File(getDataFolder(), "maps/");
 	}
 
+	public CommandRegistry getCommandRegistry() {
+		return commandRegistry;
+	}
+
 	public PluginListener getDefaultListener() {
 		return pluginListener;
 	}
