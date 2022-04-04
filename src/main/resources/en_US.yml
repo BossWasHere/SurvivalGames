@@ -48,7 +48,7 @@ command:
   sghelp:
     description: "Displays help for SurvivalGames"
     usage: "/sghelp"
-    banner: "&7[&6⚔&7] &3SurvivalGames Help &7- &9Version ${build.version} &7[&6⚔&7]"
+    banner: "&7[&6⚔&7] &3SurvivalGames Help &7- &9Version ${version} &7[&6⚔&7]"
   sgjoin:
     description: "Accept a game invitation"
     usage: "/sgjoin <map>"
