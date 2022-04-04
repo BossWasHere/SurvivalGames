@@ -43,7 +43,7 @@ import java.util.List;
 
 public class EditorListener implements Listener {
 
-	private EditorManager handler;
+	private final EditorManager handler;
 
 	public EditorListener(EditorManager handler) {
 		this.handler = handler;
@@ -61,10 +61,8 @@ public class EditorListener implements Listener {
 
 		if (EditorItems.LOOT_CHEST.isSimilar(handler.getHandler(), locale, item)) {
 			scene.addItemChest(e.getBlock().getLocation());
-			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.Editor.ADDED_CHEST);
 		} else if (EditorItems.SPAWN_PLATE.isSimilar(handler.getHandler(), locale, item)) {
 			scene.addSpawnPlate(e.getBlock().getLocation());
-			handler.getHandler().getMessageProvider().sendMessage(e.getPlayer(), Messages.Editor.ADDED_SPAWN_POS);
 		}
 	}
 	
@@ -90,42 +88,34 @@ public class EditorListener implements Listener {
 					if (scene.isItemChest(target.getLocation())) {
 						if (item == null) {
 							scene.removeItemChest(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
 						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
 							handler.openChestItemSetInventory(player, target.getLocation());
 						}
 					} else {
 						if (item == null) {
 							scene.addItemChest(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADDED_CHEST);
 						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
 							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADD_CHEST_FIRST);
 						}
 					}
 					e.setCancelled(true);
 				} else {
-					if (scene.removeItemChest(target.getLocation())) {
-						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
-					}
+					scene.removeItemChest(target.getLocation());
 				}
 			} else if (type == Material.HEAVY_WEIGHTED_PRESSURE_PLATE) {
 				if (action == Action.RIGHT_CLICK_BLOCK) {
 					if (scene.isSpawnPlate(target.getLocation())) {
 						if (item == null) {
 							scene.removeSpawnPlate(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
 						}
 					} else {
 						if (item == null) {
 							scene.addSpawnPlate(target.getLocation());
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADDED_SPAWN_POS);
 						}
 					}
 					e.setCancelled(true);
 				} else {
-					if (scene.removeSpawnPlate(target.getLocation())) {
-						handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
-					}
+					scene.removeSpawnPlate(target.getLocation());
 				}
 			}
 

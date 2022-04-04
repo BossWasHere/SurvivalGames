@@ -157,5 +157,4 @@ public class GameManager {
 	public GameInstance getGameByMap(String fileName) {
 		return NAME_GAME_MAP.get(fileName);
 	}
-
 }

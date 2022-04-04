@@ -233,10 +233,13 @@ public class Scene {
 		co.itemSets = new ArrayList<>();
 		co.itemSets.add(gameConfig.getDefaultItemSet().name);
 
+		manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ADDED_CHEST);
+
 		return gameConfig.getChests().add(co);
 	}
 	
 	public boolean removeItemChest(Location l) {
+		manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.REMOVED_CHEST);
 		return gameConfig.getChests().removeIf(co -> co.location.compareTo(l));
 	}
 	
@@ -269,10 +272,14 @@ public class Scene {
 	}
 	
 	public boolean addSpawnPlate(Location l) {
+		manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.ADDED_SPAWN_POS);
+
 		return gameConfig.getSpawnLocations().add(new BlockLocation(l));
 	}
 	
 	public boolean removeSpawnPlate(Location l) {
+		manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.REMOVED_SPAWN_POS);
+
 		return gameConfig.getSpawnLocations().removeIf(loc -> loc.compareTo(l));
 	}
 	
@@ -390,5 +397,9 @@ public class Scene {
 
 	public GameConfigurationWrapper getGameConfiguration() {
 		return gameConfig;
+	}
+
+	public void confirmationResolution(boolean confirm) {
+		// TODO action confirmation
 	}
 }

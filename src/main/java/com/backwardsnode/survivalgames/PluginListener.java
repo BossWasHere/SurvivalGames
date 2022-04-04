@@ -33,10 +33,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -143,8 +147,10 @@ public class PluginListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInventoryClosed(InventoryCloseEvent e) {
-		if (e.getInventory().getType() == InventoryType.ANVIL) {
-			Location location = e.getInventory().getLocation();
+		Inventory i = e.getInventory();
+
+		if (i.getType() == InventoryType.ANVIL) {
+			Location location = i.getLocation();
 			UUID uuid = e.getPlayer().getUniqueId();
 
 			if (location != null) {
@@ -166,6 +172,55 @@ public class PluginListener implements Listener {
 			}
 
 			playersUsingAnvils.remove(uuid);
+		} else if (i.getType().equals(InventoryType.CHEST) && i.getSize() == 27) {
+			ItemStack item = i.getItem( 26);
+
+			if (item != null && item.hasItemMeta()) {
+				ItemMeta meta = item.getItemMeta();
+				if (meta.hasDisplayName()) {
+					String name = item.getItemMeta().getDisplayName();
+
+					if (name.startsWith("id:confirm")) {
+						PLUGIN.getHost().passConfirmationResolution((Player)e.getPlayer(), false);
+					}
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onInventoryClickEvent(InventoryClickEvent e) {
+		Inventory i = e.getClickedInventory();
+
+		if (i == null) {
+			return;
+		}
+
+		if (i.getType().equals(InventoryType.CHEST) && i.getSize() == 27 && e.getWhoClicked() instanceof Player player) {
+			ItemStack item = i.getItem( 26);
+
+			if (item != null && item.hasItemMeta()) {
+				ItemMeta meta = item.getItemMeta();
+				if (meta.hasDisplayName()) {
+					String name = item.getItemMeta().getDisplayName();
+
+					if (name.equals("id:confirm")) {
+						ItemStack clicked = e.getCurrentItem();
+						if (clicked != null) {
+							Material type = clicked.getType();
+							if (type == Material.RED_CONCRETE) {
+								PLUGIN.getHost().passConfirmationResolution(player, false);
+							} else if (type == Material.LIME_CONCRETE) {
+								PLUGIN.getHost().passConfirmationResolution(player, true);
+							}
+
+							e.getWhoClicked().closeInventory();
+						}
+
+						e.setCancelled(true);
+					}
+				}
+			}
 		}
 	}
 

@@ -776,4 +776,8 @@ public class GameInstance {
 	public int getTeamSize() {
 		return 1;
 	}
+
+    public void confirmationResolution(Player player, boolean confirm) {
+		// TODO action confirmation
+    }
 }

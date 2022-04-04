@@ -50,6 +50,11 @@ enable-party: true
 # enable cosmetic options (custom kill firework, etc.)
 enable-cosmetics: true
 
+# configure actions that players should confirm
+confirmActions:
+  # asks for save confirmation when a player stops editing
+  confirm-editor-save: true
+
 # override map settings with global settings below
 globalSettings:
   # list of ids of items which should be prohibited while in-game

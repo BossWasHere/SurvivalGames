@@ -45,6 +45,8 @@ public final class PluginConfigKeys<T> {
     public static final PluginConfigKeys<Boolean> ENABLE_PARTY = new PluginConfigKeys<>(true, "enable-party");
     public static final PluginConfigKeys<Boolean> ENABLE_COSMETICS = new PluginConfigKeys<>(true, "enable-cosmetics");
 
+    public static final PluginConfigKeys<Boolean> CONFIRM_EDITOR_SAVE = new PluginConfigKeys<>(true, "confirmActions", "confirm-editor-save");
+
     public static final PluginConfigKeys<List<String>> DISABLE_ITEMS = new PluginConfigKeys<>(null, "globalSettings", "disable-items");
     public static final PluginConfigKeys<Boolean> OUTSIDE_SPECTATORS_PAY = new PluginConfigKeys<>(false, "globalSettings", "outside-spectators-must-pay");
     public static final PluginConfigKeys<Boolean> PERMIT_BOUNTIES = new PluginConfigKeys<>(true, "globalSettings", "permit-bounties");

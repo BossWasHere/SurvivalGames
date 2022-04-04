@@ -264,6 +264,19 @@ public class SGHost {
         return controller;
     }
 
+    public void passConfirmationResolution(Player player, boolean confirm) {
+        GameInstance gameInstance = GAME_MANAGER.getGame(player);
+        if (gameInstance != null) {
+            gameInstance.confirmationResolution(player, confirm);
+            return;
+        }
+
+        Scene scene = EDITOR_MANAGER.getEditor(player);
+        if (scene != null) {
+            scene.confirmationResolution(confirm);
+        }
+    }
+
     /**
      * Closes and disposes of resources held by this host
      */
