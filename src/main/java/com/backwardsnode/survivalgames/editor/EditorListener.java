@@ -17,7 +17,6 @@
  */
 package com.backwardsnode.survivalgames.editor;
 
-import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.world.BlockLocation;
 import org.bukkit.Location;

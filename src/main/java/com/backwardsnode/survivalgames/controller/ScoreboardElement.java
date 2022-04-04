@@ -32,17 +32,18 @@ public enum ScoreboardElement {
 	MOST_KILLS_3(ChatColor.GRAY + "  3. %", "No data", 1),
 	TIME_LEFT(ChatColor.GREEN + "[Time Remaining] " + ChatColor.WHITE + "- %", "00:00", 0);
 	
-	private final String wrap, def;
+	private final String wrap;
+	private final String def;
 	private final int pos;
 	
 	
-	private ScoreboardElement(String def, int pos) {
+	ScoreboardElement(String def, int pos) {
 		wrap = null;
 		this.def = def;
 		this.pos = pos;
 	}
 	
-	private ScoreboardElement(String wrap, String def, int pos) {
+	ScoreboardElement(String wrap, String def, int pos) {
 		this.wrap = wrap;
 		this.def = def;
 		this.pos = pos;

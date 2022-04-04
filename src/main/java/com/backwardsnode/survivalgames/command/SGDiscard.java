@@ -35,8 +35,8 @@ public class SGDiscard extends BaseCommand {
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
 		Player player = (Player) sender;
 
-		if (PLUGIN.getHost().getEditorManager().isEditor(player)) {
-			PLUGIN.getHost().getEditorManager().closeEditor(player, false);
+		if (plugin.getHost().getEditorManager().isEditor(player)) {
+			plugin.getHost().getEditorManager().closeEditor(player, false);
 			sendMessage(sender, Messages.Command.SGDiscard.DISCARDED);
 		} else {
 			sendMessage(sender, Messages.Command.SGEdit.NOT_EDITING);

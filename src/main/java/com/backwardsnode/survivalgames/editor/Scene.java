@@ -345,11 +345,11 @@ public class Scene {
 			return true;
 		}
 		PredicateResult<String, ?> pr = currentQuery.getPredicate().validate(message);
-		if (!pr.SUCCESSFUL) {
+		if (!pr.successful()) {
 			manager.getHandler().getMessageProvider().sendMessage(editor, Messages.Editor.BAD_VALUE);
 			return true;
 		}
-		String strOutput = pr.INPUT;
+		String strOutput = pr.input();
 		switch (currentQuery) {
 		case NEW_ITEMSET_NAME:
 			createItemSet(strOutput, false);

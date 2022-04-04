@@ -31,15 +31,15 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final LootDropConfiguration TO_DROP;
-    private final boolean WAS_CALLED_IN;
+    private final LootDropConfiguration toDrop;
+    private final boolean wasCalledIn;
 
     private boolean cancelled = false;
 
     public GameLootDropEvent(@NotNull GameInstance gameInstance, @NotNull LootDropConfiguration toDrop, boolean wasCalledIn) {
         super(gameInstance);
-        TO_DROP = toDrop;
-        WAS_CALLED_IN = wasCalledIn;
+        this.toDrop = toDrop;
+        this.wasCalledIn = wasCalledIn;
     }
 
     /**
@@ -47,7 +47,7 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
      * @return the {@link LootDropConfiguration}
      */
     public @NotNull LootDropConfiguration getLootDropConfiguration() {
-        return TO_DROP;
+        return toDrop;
     }
 
     /**
@@ -55,7 +55,7 @@ public class GameLootDropEvent extends GameEvent implements Cancellable {
      * @return True if called in, false if dropped automatically
      */
     public boolean wasCalledIn() {
-        return WAS_CALLED_IN;
+        return wasCalledIn;
     }
 
     @Override

@@ -29,7 +29,7 @@ import org.bukkit.Bukkit;
 
 public class DependencyManager {
 
-    private final Plugin PLUGIN;
+    private final Plugin plugin;
 
     private ProtocolConnector protocolConnector;
     private VaultConnector vaultConnector;
@@ -38,43 +38,43 @@ public class DependencyManager {
     private SQLDataSource dataSource;
 
     public DependencyManager(Plugin plugin) {
-        PLUGIN = plugin;
+        this.plugin = plugin;
     }
 
     public void loadPlugins() {
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
-            protocolConnector = new ProtocolConnector(PLUGIN);
+            protocolConnector = new ProtocolConnector(plugin);
             protocolConnector.listenPackets();
-            PLUGIN.getLogger().info("Loaded plugin hook with ProtocolLib");
+            plugin.getLogger().info("Loaded plugin hook with ProtocolLib");
         } else {
-            PLUGIN.getLogger().warning("Loaded plugin without ProtocolLib, some features will be disabled");
+            plugin.getLogger().warning("Loaded plugin without ProtocolLib, some features will be disabled");
         }
 
-        if (PluginConfigKeys.USE_PLACEHOLDER_API.get(PLUGIN.getConfig()) && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            placeholderAPIConnector = new PlaceholderAPIConnector(PLUGIN);
+        if (PluginConfigKeys.USE_PLACEHOLDER_API.get(plugin.getConfig()) && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            placeholderAPIConnector = new PlaceholderAPIConnector(plugin);
             placeholderAPIConnector.register();
 
-            PLUGIN.getLogger().info("Loaded plugin hook with PlaceholderAPI");
+            plugin.getLogger().info("Loaded plugin hook with PlaceholderAPI");
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             vaultConnector = new VaultConnector();
             if (vaultConnector.isConnected()) {
-                PLUGIN.getLogger().info("Loaded plugin hook with Vault");
+                plugin.getLogger().info("Loaded plugin hook with Vault");
             } else {
-                PLUGIN.getLogger().warning("Could not connect to economy service, some features will be disabled");
+                plugin.getLogger().warning("Could not connect to economy service, some features will be disabled");
             }
         }
     }
 
     public void loadDataSource() {
 
-        if (DependencyInjector.HIKARI_CP.downloadAndInject(PLUGIN)) {
+        if (DependencyInjector.HIKARI_CP.downloadAndInject(plugin)) {
             dataSource = new HikariConnector();
-            PLUGIN.getLogger().info("Connected to HikariCP");
+            plugin.getLogger().info("Connected to HikariCP");
         } else {
             dataSource = new JDBCDataSource();
-            PLUGIN.getLogger().warning("Could not connect to HikariCP, using built-in DriverManager");
+            plugin.getLogger().warning("Could not connect to HikariCP, using built-in DriverManager");
         }
     }
 

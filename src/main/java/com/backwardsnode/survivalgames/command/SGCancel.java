@@ -36,11 +36,11 @@ public class SGCancel extends BaseCommand {
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
 		Player player = (Player) sender;
 
-		InvitationCancelType type = PLUGIN.getHost().cancelInvitations(player, false);
+		InvitationCancelType type = plugin.getHost().cancelInvitations(player, false);
 		switch (type) {
-			case NONE -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.NONE);
-			case LEAVE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.LEAVE);
-			case DELETE_INVITATION -> PLUGIN.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.CANCEL);
+			case NONE -> plugin.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.NONE);
+			case LEAVE_INVITATION -> plugin.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.LEAVE);
+			case DELETE_INVITATION -> plugin.getMessageProvider().sendMessage(player, Messages.Command.SGCancel.CANCEL);
 		}
 
 		return ExecutionStatus.SUCCESS;

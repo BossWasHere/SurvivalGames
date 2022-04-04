@@ -49,15 +49,15 @@ import java.util.UUID;
 
 public class GameListener implements Listener {
 
-	private final GameManager MANAGER;
+	private final GameManager manager;
 	
-	private final HashMap<UUID, Player> DAMAGING_EFFECTS;
+	private final HashMap<UUID, Player> damagingEffects;
 
 	private final boolean preventSpectatorInventoryViewing;
 	
 	public GameListener(GameManager manager) {
-		MANAGER = manager;
-		DAMAGING_EFFECTS = new HashMap<>();
+		this.manager = manager;
+		damagingEffects = new HashMap<>();
 		preventSpectatorInventoryViewing = !PluginConfigKeys.ALLOW_SPECTATORS_SEE_INVENTORY.get(manager.getPlugin().getConfig());
 	}
 	
@@ -67,7 +67,7 @@ public class GameListener implements Listener {
 		if (clicked == null) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(e.getPlayer());
+		GameInstance instance = manager.getGame(e.getPlayer());
 		if (instance == null) {
 			return;
 		}
@@ -100,7 +100,7 @@ public class GameListener implements Listener {
 		}
 
 		Player player = e.getPlayer();
-		GameInstance instance = MANAGER.getGame(player);
+		GameInstance instance = manager.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -124,7 +124,7 @@ public class GameListener implements Listener {
 		if (!(e.getWhoClicked() instanceof Player player)) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(player);
+		GameInstance instance = manager.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -144,7 +144,7 @@ public class GameListener implements Listener {
 		if (!(e.getPlayer() instanceof Player player)) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(player);
+		GameInstance instance = manager.getGame(player);
 		if (instance == null) {
 			return;
 		}
@@ -159,11 +159,12 @@ public class GameListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerMoveEvent(PlayerMoveEvent e) {
-		GameInstance instance = MANAGER.getGame(e.getPlayer());
+		GameInstance instance = manager.getGame(e.getPlayer());
 		if (instance == null) {
 			return;
 		}
 		if (instance.isActive() && instance.isMovementDisabled()) {
+			// TODO how can e.getTo() be null?
 			double x1 = e.getTo().getX();
 			double z1 = e.getTo().getZ();
 			double x2 = e.getFrom().getX();
@@ -182,7 +183,7 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(damaged);
+		GameInstance instance = manager.getGame(damaged);
 		if (instance == null) {
 			return;
 		}
@@ -215,7 +216,7 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(damaged);
+		GameInstance instance = manager.getGame(damaged);
 		if (instance == null) {
 			return;
 		}
@@ -234,29 +235,26 @@ public class GameListener implements Listener {
 		if (!(e.getEntity() instanceof Player damaged)) {
 			return;
 		}
-		GameInstance instance = MANAGER.getGame(damaged);
-		if (instance == null) {
+		GameInstance instance = manager.getGame(damaged);
+		if (instance == null || !instance.isActive()) {
 			return;
 		}
-		if (instance.isActive() && e.getCause().equals(DamageCause.MAGIC)) {
+
+		if (e.getCause().equals(DamageCause.MAGIC)) {
 			PlayerState ps = instance.getPlayerState(damaged);
 			if (ps.alive) {
-				Player potionPlayer = DAMAGING_EFFECTS.remove(damaged.getUniqueId());
+				Player potionPlayer = damagingEffects.remove(damaged.getUniqueId());
 				if (potionPlayer != null) {
 					instance.processDeath(damaged, potionPlayer);
 					return;
 				}
 				instance.processDeath(damaged, null);
 			}
+		} else {
+			// TODO is this needed?
+			// Fall damage?
 		}
-	}
-	
-	/*
-	 * Any other cause of death
-	 */
-	@EventHandler
-	public void onPlayerDeathEvent(PlayerDeathEvent e) {
-		// TODO is this needed?
+
 	}
 	
 	/*
@@ -280,7 +278,7 @@ public class GameListener implements Listener {
 		}
 		ProjectileSource shooter = e.getEntity().getShooter();
 		if (shooter instanceof Player player) {
-			GameInstance instance = MANAGER.getGame(player);
+			GameInstance instance = manager.getGame(player);
 			if (instance == null) {
 				return;
 			}
@@ -290,7 +288,7 @@ public class GameListener implements Listener {
 						if (le instanceof Player) {
 							PlayerState state = instance.getPlayerState((Player)le);
 							if (state.alive) {
-								DAMAGING_EFFECTS.put(le.getUniqueId(), player);
+								damagingEffects.put(le.getUniqueId(), player);
 							}
 						}
 					}
@@ -304,7 +302,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onPlayerQuitEvent(PlayerQuitEvent e) {
 		Player player = e.getPlayer();
-		GameInstance instance = MANAGER.getGame(player);
+		GameInstance instance = manager.getGame(player);
 		if (instance == null) {
 			return;
 		}

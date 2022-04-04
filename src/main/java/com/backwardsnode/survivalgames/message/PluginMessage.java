@@ -19,24 +19,24 @@ package com.backwardsnode.survivalgames.message;
 
 public class PluginMessage {
 
-    private final String TARGET;
-    private final boolean PREFIX;
+    private final String target;
+    private final boolean prefix;
 
     public PluginMessage(String target) {
-        TARGET = target;
-        PREFIX = true;
+        this.target = target;
+        prefix = true;
     }
 
     public PluginMessage(String target, boolean prefix) {
-        TARGET = target;
-        PREFIX = prefix;
+        this.target = target;
+        this.prefix = prefix;
     }
 
     public String getTarget() {
-        return TARGET;
+        return target;
     }
 
     public boolean getPrefix() {
-        return PREFIX;
+        return prefix;
     }
 }

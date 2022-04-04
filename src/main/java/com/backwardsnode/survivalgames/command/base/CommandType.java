@@ -49,58 +49,58 @@ public enum CommandType {
 
     TEST_LOOT_DROP("testlootdrop", "Test Loot Drop", Messages.Command.TestCommand.DESC, Messages.Command.TestCommand.USAGE, ExecutionCheck.IS_PLAYER_WITH_PERMISSION);
 
-    private final String COMMAND;
-    private final String FRIENDLY_NAME;
-    private final String[] ALIASES;
-    private final String PERMISSION;
-    private final ExecutionCheck CHECK;
-    private final PluginMessage DESCRIPTION_MESSAGE;
-    private final PluginMessage USAGE_MESSAGE;
+    private final String command;
+    private final String friendlyName;
+    private final String[] aliases;
+    private final String permission;
+    private final ExecutionCheck check;
+    private final PluginMessage descriptionMessage;
+    private final PluginMessage usageMessage;
 
     CommandType(String command, String friendlyName, PluginMessage descriptionMessage, PluginMessage usageMessage, ExecutionCheck check, String... aliases) {
         this(command, friendlyName, descriptionMessage, usageMessage, null, check, aliases);
     }
 
     CommandType(String command, String friendlyName, PluginMessage descriptionMessage, PluginMessage usageMessage, String overridePermission, ExecutionCheck check, String... aliases) {
-        COMMAND = command;
-        FRIENDLY_NAME = friendlyName;
-        DESCRIPTION_MESSAGE = descriptionMessage;
-        PERMISSION = overridePermission == null ? CommandRegistry.NAMESPACE + "." + command : overridePermission;
-        CHECK = check;
-        USAGE_MESSAGE = usageMessage;
-        ALIASES = aliases;
+        this.command = command;
+        this.friendlyName = friendlyName;
+        this.descriptionMessage = descriptionMessage;
+        this.usageMessage = usageMessage;
+        permission = overridePermission == null ? CommandRegistry.NAMESPACE + "." + command : overridePermission;
+        this.check = check;
+        this.aliases = aliases;
     }
 
     public String getCommand() {
-        return COMMAND;
+        return command;
     }
 
     public List<String> getAliases() {
-        return Arrays.asList(ALIASES);
+        return Arrays.asList(aliases);
     }
 
     public String getBasicPermission() {
-        return PERMISSION;
+        return permission;
     }
 
     public PluginMessage getDescriptionMessage() {
-        return DESCRIPTION_MESSAGE;
+        return descriptionMessage;
     }
 
     public PluginMessage getUsageMessage() {
-        return USAGE_MESSAGE;
+        return usageMessage;
     }
 
     public String getDefaultDescription(Plugin plugin) {
-        return plugin.getMessageProvider().compileDefaultMessage(DESCRIPTION_MESSAGE);
+        return plugin.getMessageProvider().compileDefaultMessage(descriptionMessage);
     }
 
     public String getDefaultUsage(Plugin plugin) {
-        return plugin.getMessageProvider().compileDefaultMessage(USAGE_MESSAGE);
+        return plugin.getMessageProvider().compileDefaultMessage(usageMessage);
     }
 
     public ExecutionStatus canExecute(CommandSender sender) {
-        switch (CHECK) {
+        switch (check) {
             case ALWAYS:
                 return ExecutionStatus.SUCCESS;
             case IS_PLAYER_WITH_PERMISSION:
@@ -118,6 +118,6 @@ public enum CommandType {
 
     @Override
     public String toString() {
-        return FRIENDLY_NAME;
+        return friendlyName;
     }
 }

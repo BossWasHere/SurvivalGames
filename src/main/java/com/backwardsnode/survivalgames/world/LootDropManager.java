@@ -18,7 +18,6 @@
 
 package com.backwardsnode.survivalgames.world;
 
-import com.backwardsnode.survivalgames.Plugin;
 import com.backwardsnode.survivalgames.config.LootDropConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -29,21 +28,18 @@ import java.util.UUID;
 
 public class LootDropManager {
 
-    private final Plugin PLUGIN;
+    private final Map<BlockLocation, LootDrop> drops;
+    private final Map<UUID, LootDrop> fallingBlocks;
 
-    private final Map<BlockLocation, LootDrop> DROPS;
-    private final Map<UUID, LootDrop> FALLING_BLOCKS;
-
-    public LootDropManager(Plugin plugin) {
-        PLUGIN = plugin;
-        DROPS = new HashMap<>();
-        FALLING_BLOCKS = new HashMap<>();
+    public LootDropManager() {
+        drops = new HashMap<>();
+        fallingBlocks = new HashMap<>();
     }
 
     public LootDrop summonLootDrop(LootDropConfiguration configuration, boolean placeBeacon) {
         LootDrop lootDrop = new LootDrop(this, configuration);
 
-        LootDrop existing = DROPS.remove(configuration.location);
+        LootDrop existing = drops.remove(configuration.location);
         if (existing != null) {
             existing.close();
         }
@@ -54,34 +50,34 @@ public class LootDropManager {
 
         lootDrop.summonDropEntity();
 
-        DROPS.put(configuration.location, lootDrop);
+        drops.put(configuration.location, lootDrop);
 
         return lootDrop;
     }
 
     public LootDrop getDropAtLocation(BlockLocation location) {
-        return DROPS.get(location);
+        return drops.get(location);
     }
 
     public LootDrop getAndRemoveAssociatedDrop(UUID entityId) {
-        return FALLING_BLOCKS.remove(entityId);
+        return fallingBlocks.remove(entityId);
     }
 
     protected void rememberFallingEntity(UUID entityId, LootDrop lootDrop) {
-        FALLING_BLOCKS.put(entityId, lootDrop);
+        fallingBlocks.put(entityId, lootDrop);
     }
 
     public void clearAll() {
-        for (UUID key : FALLING_BLOCKS.keySet()) {
+        for (UUID key : fallingBlocks.keySet()) {
             Entity e = Bukkit.getEntity(key);
             if (e != null) {
                 e.remove();
             }
         }
-        for (LootDrop drop : DROPS.values()) {
+        for (LootDrop drop : drops.values()) {
             drop.close();
         }
-        FALLING_BLOCKS.clear();
-        DROPS.clear();
+        fallingBlocks.clear();
+        drops.clear();
     }
 }

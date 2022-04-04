@@ -28,29 +28,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 
-
-/*private WorldBorder border;
-//private double pre_borderRadius;
-//private Location pre_borderCentre;
-//private int borderStartRadius;
-//border = config.spawnLocs.get(0).getWorld().getWorldBorder();
-//pre_borderRadius = border.getSize();
-//pre_borderCentre = border.getCenter();
-int endLocations = config.border.deathmatchLocations.size();
-if (endLocations > 0) {
-	deathmatchSettings = config.border.deathmatchLocations.get(new Random().nextInt(endLocations));
-}
-borderStartRadius = config.border.borderStartRadius < 10 ? 500 : config.border.borderStartRadius;
-border.setDamageBuffer(0);
-border.setDamageAmount(config.border.damagePerSecond);
-border.setSize(borderStartRadius * 2);*/
-
 public class BorderController implements Controller {
+
+	public static final int MAX_SIZE = 29999984;
 
 	private final ProtocolConnector protocolConnector;
 	private final HashSet<Player> observingPlayers;
-	
-	public static final int MAX_SIZE = 29999984;
 	
 	private double lastDiameter, targetDiameter, centerX, centerZ;
 	private long shrinkStartedAt, millisToTake;
@@ -95,32 +78,28 @@ public class BorderController implements Controller {
 			protocolConnector.worldBorderPacketInitialize(this, observingPlayers);
 		}
 	}
-	
+
+	@Override
 	public void setVisibleTo(Collection<PlayerState> players) {
 		players.forEach(p -> setVisibleTo(p.cache.getPlayer()));
 	}
-	
+
+	@Override
 	public void setVisibleTo(Player player) {
-		if (observingPlayers.add(player)) {
-			if (protocolConnector != null) {
-				protocolConnector.worldBorderPacketInitialize(this, player);
-			} else {
-				// Well u can't do much
-			}
+		if (protocolConnector != null && observingPlayers.add(player)) {
+			protocolConnector.worldBorderPacketInitialize(this, player);
 		}
 	}
-	
+
+	@Override
 	public void unsetVisibleTo(Collection<PlayerState> players) {
 		players.forEach(p -> unsetVisibleTo(p.cache.getPlayer()));
 	}
-	
+
+	@Override
 	public void unsetVisibleTo(Player player) {
-		if (observingPlayers.remove(player)) {
-			if (protocolConnector != null) {
-				protocolConnector.worldBorderPacketReset(this, player);
-			} else {
-				// Well u can't do much
-			}
+		if (protocolConnector != null && observingPlayers.remove(player)) {
+			protocolConnector.worldBorderPacketReset(this, player);
 		}
 	}
 	
@@ -156,17 +135,14 @@ public class BorderController implements Controller {
 	public void updatePlayers() {
 		if (protocolConnector != null) {
 			protocolConnector.worldBorderPacketInitialize(this, observingPlayers);
-		} else {
-			// Non-protocol border
 		}
 	}
-	
+
+	@Override
 	public void close() {
 		if (protocolConnector != null) {
 			setDefaults();
 			protocolConnector.worldBorderPacketInitialize(this, observingPlayers);
-		} else {
-			// Non-protocol border
 		}
 	}
 
@@ -174,7 +150,7 @@ public class BorderController implements Controller {
 		if (millisToTake == 0) {
 			return targetDiameter;
 		}
-		long diff = new Date().getTime() - shrinkStartedAt;
+		double diff = new Date().getTime() - shrinkStartedAt;
 		if (diff > millisToTake) {
 			return targetDiameter;
 		}

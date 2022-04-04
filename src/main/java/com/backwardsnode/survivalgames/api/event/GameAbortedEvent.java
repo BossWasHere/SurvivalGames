@@ -33,14 +33,14 @@ public class GameAbortedEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final GameStatus REASON;
-    private final GameConfigurationWrapper GAME_CONFIGURATION;
-    private final Player INITIATOR;
+    private final GameStatus reason;
+    private final GameConfigurationWrapper gameConfiguration;
+    private final Player initiator;
 
     public GameAbortedEvent(@NotNull GameStatus reason, @NotNull GameConfigurationWrapper gameConfiguration, @Nullable Player initiator) {
-        REASON = reason;
-        GAME_CONFIGURATION = gameConfiguration;
-        INITIATOR = initiator;
+        this.reason = reason;
+        this.gameConfiguration = gameConfiguration;
+        this.initiator = initiator;
     }
 
     /**
@@ -48,7 +48,7 @@ public class GameAbortedEvent extends Event {
      * @return The {@link GameStatus} reason
      */
     public @NotNull GameStatus getReason() {
-        return REASON;
+        return reason;
     }
 
     /**
@@ -56,7 +56,7 @@ public class GameAbortedEvent extends Event {
      * @return The {@link GameConfigurationWrapper}
      */
     public @NotNull GameConfigurationWrapper getGameConfiguration() {
-        return GAME_CONFIGURATION;
+        return gameConfiguration;
     }
 
     /**
@@ -64,7 +64,7 @@ public class GameAbortedEvent extends Event {
      * @return The {@link Player}
      */
     public @Nullable Player getInitiator() {
-        return INITIATOR;
+        return initiator;
     }
 
     @Override

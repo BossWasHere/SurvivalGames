@@ -26,27 +26,26 @@ import java.util.HashSet;
 
 public class InvitedGameConfiguration {
 
-	private final Plugin PLUGIN;
-	private final Player PLAYER;
-	private final GameConfigurationWrapper CONFIGURATION;
-	
-	private HashSet<Player> players;
+	private final Plugin plugin;
+	private final Player player;
+	private final GameConfigurationWrapper gameConfiguration;
+	private final HashSet<Player> players;
 	
 	public InvitedGameConfiguration(Plugin plugin, Player player, GameConfigurationWrapper configuration) {
-		PLUGIN = plugin;
-		PLAYER = player;
-		CONFIGURATION = configuration;
+		this.plugin = plugin;
+		this.player = player;
+		gameConfiguration = configuration;
 		
 		players = new HashSet<>();
 		players.add(player);
 	}
 
 	public Player getInviter() {
-		return PLAYER;
+		return player;
 	}
 
 	public GameConfigurationWrapper getGameConfiguration() {
-		return CONFIGURATION;
+		return gameConfiguration;
 	}
 	
 	public boolean addPlayer(Player player) {
@@ -62,16 +61,16 @@ public class InvitedGameConfiguration {
 	}
 	
 	public void start() {
-		PLUGIN.getHost().getGameManager().startGame(CONFIGURATION, PLUGIN.getCacheSettings(), PLAYER, players, true, PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS);
+		plugin.getHost().getGameManager().startGame(gameConfiguration, plugin.getCacheSettings(), player, players, true, PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS);
 	}
 
 	public void announceCancelled(boolean hostLeft) {
 		for (Player p : players) {
 			if (p.isOnline()) {
 				if (hostLeft) {
-					PLUGIN.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.HOST_LEFT);
+					plugin.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.HOST_LEFT);
 				} else {
-					PLUGIN.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.CANCELLED);
+					plugin.getMessageProvider().sendMessage(p, Messages.Command.SGJoin.CANCELLED);
 				}
 			}
 		}

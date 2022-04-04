@@ -42,19 +42,18 @@ public class SGEdit extends BaseCommand {
 
 		if (args.length > 0) {
 			try {
-				if (PLUGIN.getHost().getEditorManager().closeEditor(player, true)) {
+				if (plugin.getHost().getEditorManager().closeEditor(player, true)) {
 					sendMessage(sender, Messages.Command.SGEdit.CLOSING);
 				} else {
 					File target;
 					if (args[0].toLowerCase().endsWith(".json")) {
-						target = new File(PLUGIN.getMapFolder(), args[0]);
+						target = new File(plugin.getMapFolder(), args[0]);
 					} else {
-						target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
+						target = new File(plugin.getMapFolder(), args[0] + ".json");
 					}
-					GameConfigurationWrapper gcw = null;
+					GameConfigurationWrapper gcw;
 					try {
-						if (!target.exists()) {
-							target.createNewFile();
+						if (!target.createNewFile()) {
 							gcw = new GameConfigurationWrapper(target, false);
 							sendMessage(sender, Messages.Command.SGEdit.CREATED);
 						} else {
@@ -62,7 +61,7 @@ public class SGEdit extends BaseCommand {
 							sendMessage(sender, Messages.Command.SGEdit.LOADED, target.getName());
 						}
 
-						PLUGIN.getHost().getEditorManager().addEditor(player, gcw);
+						plugin.getHost().getEditorManager().addEditor(player, gcw);
 						sendMessage(sender, Messages.Command.SGEdit.OPENING);
 
 					} catch (GameConfigurationException e) {
@@ -73,8 +72,8 @@ public class SGEdit extends BaseCommand {
 				sendMessage(sender, Messages.Plugin.IO_EXCEPTION);
 			}
 		} else {
-			if (PLUGIN.getHost().getEditorManager().isEditor(player)) {
-				PLUGIN.getHost().getEditorManager().closeEditor(player, true);
+			if (plugin.getHost().getEditorManager().isEditor(player)) {
+				plugin.getHost().getEditorManager().closeEditor(player, true);
 				sendMessage(sender, Messages.Command.SGEdit.CLOSING);
 			} else {
 				return ExecutionStatus.BAD_USAGE;

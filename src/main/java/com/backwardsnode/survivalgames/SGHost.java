@@ -40,23 +40,23 @@ import java.util.Map;
  */
 public class SGHost {
 
-    private final Plugin PLUGIN;
+    private final Plugin plugin;
 
-    private final EditorManager EDITOR_MANAGER;
-    private final GameManager GAME_MANAGER;
-    private final LootDropManager LOOT_DROP_MANAGER;
+    private final EditorManager editorManager;
+    private final GameManager gameManager;
+    private final LootDropManager lootDropManager;
 
-    private final HashMap<String, InvitedGameConfiguration> INVITATIONS;
+    private final HashMap<String, InvitedGameConfiguration> invitations;
 
     private boolean closed = false;
 
     public SGHost(Plugin plugin) {
-        PLUGIN = plugin;
+        this.plugin = plugin;
 
-        EDITOR_MANAGER = new EditorManager(plugin);
-        GAME_MANAGER = new GameManager(plugin);
-        LOOT_DROP_MANAGER = new LootDropManager(plugin);
-        INVITATIONS = new HashMap<>();
+        editorManager = new EditorManager(plugin);
+        gameManager = new GameManager(plugin);
+        lootDropManager = new LootDropManager();
+        invitations = new HashMap<>();
     }
 
     /**
@@ -64,7 +64,7 @@ public class SGHost {
      * @return The current {@link EditorManager}
      */
     public EditorManager getEditorManager() {
-        return EDITOR_MANAGER;
+        return editorManager;
     }
 
     /**
@@ -72,7 +72,7 @@ public class SGHost {
      * @return The current {@link GameManager}
      */
     public GameManager getGameManager() {
-        return GAME_MANAGER;
+        return gameManager;
     }
 
     /**
@@ -80,7 +80,7 @@ public class SGHost {
      * @return The current {@link LootDropManager}
      */
     public LootDropManager getLootDropManager() {
-        return LOOT_DROP_MANAGER;
+        return lootDropManager;
     }
 
     /**
@@ -91,19 +91,19 @@ public class SGHost {
     public boolean isPlayerBusy(Player player) {
         if (closed) return false;
 
-        if (EDITOR_MANAGER.isEditor(player)) {
+        if (editorManager.isEditor(player)) {
             return true;
         }
-        return GAME_MANAGER.isPlayerIngame(player);
+        return gameManager.isPlayerIngame(player);
     }
 
     public GameConfigurationWrapper getCurrentEditorOrGameConfiguration(Player player) {
         if (closed) return null;
 
-        Scene scene = EDITOR_MANAGER.getEditor(player);
+        Scene scene = editorManager.getEditor(player);
         if (scene != null) return scene.getGameConfiguration();
 
-        GameInstance gameInstance = GAME_MANAGER.getGame(player);
+        GameInstance gameInstance = gameManager.getGame(player);
         if (gameInstance != null) return gameInstance.getGameConfiguration();
 
         return null;
@@ -117,7 +117,7 @@ public class SGHost {
     public boolean isMapInUse(String mapName) {
         if (closed) return false;
 
-        return GAME_MANAGER.isMapInUse(mapName);
+        return gameManager.isMapInUse(mapName);
     }
 
     /**
@@ -128,7 +128,7 @@ public class SGHost {
     public boolean mapHasPendingInvitation(String mapName) {
         if (closed) return false;
 
-        return INVITATIONS.containsKey(mapName.toLowerCase());
+        return invitations.containsKey(mapName.toLowerCase());
     }
 
     /**
@@ -141,7 +141,7 @@ public class SGHost {
     public boolean addInvitation(Player initiator, GameConfigurationWrapper configuration, String mapName) {
         if (closed) return false;
 
-        for (InvitedGameConfiguration game : INVITATIONS.values()) {
+        for (InvitedGameConfiguration game : invitations.values()) {
             if (game.hasPlayer(initiator)) {
                 return false;
             }
@@ -149,7 +149,7 @@ public class SGHost {
                 return false;
             }
         }
-        InvitedGameConfiguration igc = new InvitedGameConfiguration(PLUGIN, initiator, configuration);
+        InvitedGameConfiguration igc = new InvitedGameConfiguration(plugin, initiator, configuration);
 
         GameNewInvitationEvent gameNewInvitationEvent = new GameNewInvitationEvent(igc);
         Bukkit.getPluginManager().callEvent(gameNewInvitationEvent);
@@ -157,16 +157,15 @@ public class SGHost {
             return false;
         }
 
-        INVITATIONS.put(mapName.toLowerCase(), igc);
+        invitations.put(mapName.toLowerCase(), igc);
 
-        PLUGIN.getLogger().info(initiator.getName() + " started an invitational game on " + configuration.getMapName());
-        PLUGIN.getServer().getScheduler().scheduleSyncDelayedTask(PLUGIN, () -> startInvitationalGame(igc), 1200);
+        plugin.getLogger().info(initiator.getName() + " started an invitational game on " + configuration.getMapName());
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> startInvitationalGame(igc), 1200);
 
 
         return true;
     }
 
-    // TODO this is messy
     /**
      * Attempts to cancel an invitation started or accepted by a player
      * @param player the player to cancel the invitation for
@@ -177,7 +176,7 @@ public class SGHost {
         if (closed) return InvitationCancelType.NONE;
 
         InvitationCancelType ct = InvitationCancelType.NONE;
-        for (Map.Entry<String, InvitedGameConfiguration> entry : INVITATIONS.entrySet()) {
+        for (Map.Entry<String, InvitedGameConfiguration> entry : invitations.entrySet()) {
             InvitedGameConfiguration igc = entry.getValue();
 
             if (igc.removePlayer(player)) {
@@ -186,14 +185,14 @@ public class SGHost {
 
             if (igc.getInviter().equals(player)) {
                 igc.announceCancelled(disconnected);
-                INVITATIONS.remove(entry.getKey());
-                PLUGIN.getLogger().info("Cancelled game - Host: " + player.getName() + ", Map: " + igc.getGameConfiguration().getMapName() + ", Disconnected: " + disconnected);
+                invitations.remove(entry.getKey());
+                //plugin.getLogger().info("Rejected invitation - Host: " + player.getName() + ", Map: " + igc.getGameConfiguration().getMapName() + ", Disconnected: " + disconnected);
                 ct = InvitationCancelType.DELETE_INVITATION;
             }
 
-            if (ct != InvitationCancelType.NONE) {
-                Bukkit.getPluginManager().callEvent(new GameInvitationCancelledEvent(player, igc, ct));
-
+            Bukkit.getPluginManager().callEvent(new GameInvitationCancelledEvent(player, igc, ct));
+            if (ct == InvitationCancelType.DELETE_INVITATION) {
+                // TODO enforce player cannot accept invite <- player sent their own invite
                 return ct;
             }
         }
@@ -209,7 +208,7 @@ public class SGHost {
     public boolean signUpInvitation(Player player, String mapName) {
         if (closed) return false;
 
-        InvitedGameConfiguration igc = INVITATIONS.get(mapName.toLowerCase());
+        InvitedGameConfiguration igc = invitations.get(mapName.toLowerCase());
         if (igc != null) {
 
             GameInvitationAcceptEvent gameInvitationAcceptEvent = new GameInvitationAcceptEvent(player, igc);
@@ -230,7 +229,7 @@ public class SGHost {
     public void startInvitationalGame(InvitedGameConfiguration igc) {
         if (closed) return;
 
-        if (INVITATIONS.remove(igc.getGameConfiguration().getMapName().toLowerCase()) != null) {
+        if (invitations.remove(igc.getGameConfiguration().getMapName().toLowerCase()) != null) {
             igc.start();
         }
     }
@@ -242,7 +241,7 @@ public class SGHost {
      * @apiNote used to prevent anvils breaking after use
      */
     public boolean hasWorldProtection(Player player) {
-        return GAME_MANAGER.isPlayerIngame(player);
+        return gameManager.isPlayerIngame(player);
     }
 
     /**
@@ -253,25 +252,25 @@ public class SGHost {
     public BorderController tryGetBorder(Player player) {
         BorderController controller = null;
 
-        GameInstance gameInstance = GAME_MANAGER.getGame(player);
+        GameInstance gameInstance = gameManager.getGame(player);
         if (gameInstance != null) {
             controller = gameInstance.getBorderController();
         }
         if (controller == null) {
-            controller = EDITOR_MANAGER.getBorderFor(player);
+            controller = editorManager.getBorderFor(player);
         }
 
         return controller;
     }
 
     public void passConfirmationResolution(Player player, boolean confirm) {
-        GameInstance gameInstance = GAME_MANAGER.getGame(player);
+        GameInstance gameInstance = gameManager.getGame(player);
         if (gameInstance != null) {
             gameInstance.confirmationResolution(player, confirm);
             return;
         }
 
-        Scene scene = EDITOR_MANAGER.getEditor(player);
+        Scene scene = editorManager.getEditor(player);
         if (scene != null) {
             scene.confirmationResolution(confirm);
         }
@@ -284,10 +283,10 @@ public class SGHost {
         if (closed) return;
         closed = true;
 
-        INVITATIONS.clear();
+        invitations.clear();
 
-        GAME_MANAGER.close(true);
-        EDITOR_MANAGER.closeAllEditors(true);
-        LOOT_DROP_MANAGER.clearAll();
+        gameManager.close(true);
+        editorManager.closeAllEditors(true);
+        lootDropManager.clearAll();
     }
 }

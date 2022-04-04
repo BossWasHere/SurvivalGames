@@ -31,12 +31,12 @@ public class GameStatusChangeEvent extends GameEvent implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final GameStatus STATUS;
+    private final GameStatus status;
     private boolean cancelled = false;
 
     public GameStatusChangeEvent(@NotNull GameInstance gameInstance, @NotNull GameStatus status) {
         super(gameInstance);
-        STATUS = status;
+        this.status = status;
     }
 
     /**
@@ -44,7 +44,7 @@ public class GameStatusChangeEvent extends GameEvent implements Cancellable {
      * @return The {@link GameStatus}
      */
     public @NotNull GameStatus getStatus() {
-        return STATUS;
+        return status;
     }
 
     @Override

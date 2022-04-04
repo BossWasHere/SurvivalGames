@@ -50,12 +50,12 @@ public class TestLootDrop extends BaseCommand {
                 LootDropConfiguration ldc = new LootDropConfiguration();
                 ldc.location = new BlockLocation(player.getWorld(), blockX, blockY, blockZ);
 
-                LootDrop lootDrop = PLUGIN.getHost().getLootDropManager().summonLootDrop(ldc, true);
+                LootDrop lootDrop = plugin.getHost().getLootDropManager().summonLootDrop(ldc, true);
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, () -> lootDrop.popAndClose(new ArrayList<>(0)), 200);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> lootDrop.popAndClose(new ArrayList<>(0)), 200);
                 return ExecutionStatus.SUCCESS;
 
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             } catch (Exception e) {
                 e.printStackTrace();
             }

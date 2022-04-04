@@ -46,6 +46,14 @@ public class TimerCountdown implements Runnable {
 		isZero = skipEvent;
 		remaining = 0;
 	}
+
+	public long getDuration() {
+		return duration;
+	}
+
+	public long getRemaining() {
+		return remaining;
+	}
 	
 	public void setOperation(GameStatus nextOperation, long duration) {
 		this.duration = duration;

@@ -37,15 +37,15 @@ public class GameConfigurationWrapper {
 
     public static final int SUPPORTED_CONFIG = 2;
 
-    private final GameConfiguration GAME_CONFIGURATION;
+    private final GameConfiguration gameConfiguration;
 
     private List<BlockLocation> spawnLocs;
     private int defaultSetIndex = 0;
     private File mainConfigFile;
 
     public GameConfigurationWrapper() {
-        GAME_CONFIGURATION = new GameConfiguration();
-        GAME_CONFIGURATION.configVersion = SUPPORTED_CONFIG;
+        gameConfiguration = new GameConfiguration();
+        gameConfiguration.configVersion = SUPPORTED_CONFIG;
         initialize();
     }
 
@@ -54,7 +54,7 @@ public class GameConfigurationWrapper {
             throw new GameConfigurationException("Configuration is outdated: " + gameConfiguration.configVersion + " < " + SUPPORTED_CONFIG);
         }
 
-        GAME_CONFIGURATION = gameConfiguration;
+        this.gameConfiguration = gameConfiguration;
         initialize();
     }
 
@@ -63,19 +63,19 @@ public class GameConfigurationWrapper {
             FileReader fileReader = new FileReader(configFile);
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
-            GAME_CONFIGURATION = gson.fromJson(new JsonReader(fileReader), GameConfiguration.class);
+            gameConfiguration = gson.fromJson(new JsonReader(fileReader), GameConfiguration.class);
 
             try {
                 fileReader.close();
             } catch (IOException ignored) {}
 
-            if (GAME_CONFIGURATION.configVersion != SUPPORTED_CONFIG) {
-                throw new GameConfigurationException("Configuration is outdated: " + GAME_CONFIGURATION.configVersion + " < " + SUPPORTED_CONFIG);
+            if (gameConfiguration.configVersion != SUPPORTED_CONFIG) {
+                throw new GameConfigurationException("Configuration is outdated: " + gameConfiguration.configVersion + " < " + SUPPORTED_CONFIG);
             }
 
         } else {
-            GAME_CONFIGURATION = new GameConfiguration();
-            GAME_CONFIGURATION.configVersion = SUPPORTED_CONFIG;
+            gameConfiguration = new GameConfiguration();
+            gameConfiguration.configVersion = SUPPORTED_CONFIG;
         }
 
 
@@ -84,29 +84,29 @@ public class GameConfigurationWrapper {
     }
 
     private void initialize() {
-        if (GAME_CONFIGURATION.chestLocations == null) {
-            GAME_CONFIGURATION.chestLocations = new ArrayList<>();
+        if (gameConfiguration.chestLocations == null) {
+            gameConfiguration.chestLocations = new ArrayList<>();
         }
-        if (GAME_CONFIGURATION.itemSets == null) {
-            GAME_CONFIGURATION.itemSets = new ArrayList<>();
+        if (gameConfiguration.itemSets == null) {
+            gameConfiguration.itemSets = new ArrayList<>();
         }
-        if (GAME_CONFIGURATION.spawnLocations == null) {
-            GAME_CONFIGURATION.spawnLocations = new ArrayList<>();
+        if (gameConfiguration.spawnLocations == null) {
+            gameConfiguration.spawnLocations = new ArrayList<>();
         }
-        if (GAME_CONFIGURATION.rewards == null) {
-            GAME_CONFIGURATION.rewards = new HashMap<>();
+        if (gameConfiguration.rewards == null) {
+            gameConfiguration.rewards = new HashMap<>();
         }
-        if (GAME_CONFIGURATION.lootDropLocations == null) {
-            GAME_CONFIGURATION.lootDropLocations = new ArrayList<>();
+        if (gameConfiguration.lootDropLocations == null) {
+            gameConfiguration.lootDropLocations = new ArrayList<>();
         }
 
         spawnLocs = new ArrayList<>();
-        for (String strSpawn : GAME_CONFIGURATION.spawnLocations) {
+        for (String strSpawn : gameConfiguration.spawnLocations) {
             spawnLocs.add(new BlockLocation(strSpawn));
         }
 
-        for (int i = 0; i < GAME_CONFIGURATION.itemSets.size(); i++) {
-            if (GAME_CONFIGURATION.itemSets.get(i).isDefault) {
+        for (int i = 0; i < gameConfiguration.itemSets.size(); i++) {
+            if (gameConfiguration.itemSets.get(i).isDefault) {
                 defaultSetIndex = i;
                 break;
             }
@@ -115,7 +115,7 @@ public class GameConfigurationWrapper {
 
     public Set<BlockLocation> checkChests() {
         Set<BlockLocation> invalidLocations = new HashSet<>();
-        for (ChestConfiguration co : GAME_CONFIGURATION.chestLocations) {
+        for (ChestConfiguration co : gameConfiguration.chestLocations) {
             if (co.location.getBlock().getType() != Material.CHEST) {
                 invalidLocations.add(co.location);
             }
@@ -136,18 +136,18 @@ public class GameConfigurationWrapper {
     }
 
     public DeathmatchConfiguration selectDeathmatch() {
-        if (GAME_CONFIGURATION.border.deathmatchLocations == null) {
+        if (gameConfiguration.border.deathmatchLocations == null) {
             return null;
         }
-        int opts = GAME_CONFIGURATION.border.deathmatchLocations.size();
+        int opts = gameConfiguration.border.deathmatchLocations.size();
         if (opts == 0) {
             return null;
         }
-        return GAME_CONFIGURATION.border.deathmatchLocations.get(new Random().nextInt(opts));
+        return gameConfiguration.border.deathmatchLocations.get(new Random().nextInt(opts));
     }
 
     public List<DeathmatchConfiguration> getDeathmatchConfigs() {
-        return GAME_CONFIGURATION.border.deathmatchLocations;
+        return gameConfiguration.border.deathmatchLocations;
     }
 
     public boolean save() {
@@ -159,18 +159,18 @@ public class GameConfigurationWrapper {
             GsonBuilder builder = new GsonBuilder().serializeNulls().setPrettyPrinting();
             Gson gson = builder.create();
 
-            if (GAME_CONFIGURATION.spawnLocations == null) {
-                GAME_CONFIGURATION.spawnLocations = new ArrayList<>();
+            if (gameConfiguration.spawnLocations == null) {
+                gameConfiguration.spawnLocations = new ArrayList<>();
             } else {
-                GAME_CONFIGURATION.spawnLocations.clear();
+                gameConfiguration.spawnLocations.clear();
             }
 
             for (BlockLocation spawnLocation : spawnLocs) {
-                GAME_CONFIGURATION.spawnLocations.add(spawnLocation.toString());
+                gameConfiguration.spawnLocations.add(spawnLocation.toString());
             }
 
             try (FileWriter writer = new FileWriter(file)) {
-                gson.toJson(GAME_CONFIGURATION, writer);
+                gson.toJson(gameConfiguration, writer);
             }
             return true;
         } catch (Exception e) {
@@ -180,15 +180,15 @@ public class GameConfigurationWrapper {
     }
 
     public boolean hasMapName() {
-        return GAME_CONFIGURATION.mapName != null;
+        return gameConfiguration.mapName != null;
     }
 
     public String getMapName() {
-        return GAME_CONFIGURATION.mapName == null ? "unknown" : GAME_CONFIGURATION.mapName;
+        return gameConfiguration.mapName == null ? "unknown" : gameConfiguration.mapName;
     }
 
     public void setMapName(String mapName) {
-        GAME_CONFIGURATION.mapName = mapName;
+        gameConfiguration.mapName = mapName;
     }
 
     public List<BlockLocation> getSpawnLocations() {
@@ -196,143 +196,143 @@ public class GameConfigurationWrapper {
     }
 
     public boolean getDoChestPrefilling() {
-        return GAME_CONFIGURATION.preFillChests;
+        return gameConfiguration.preFillChests;
     }
 
     public void setDoChestPrefilling(boolean doChestPrefilling) {
-        GAME_CONFIGURATION.preFillChests = doChestPrefilling;
+        gameConfiguration.preFillChests = doChestPrefilling;
     }
 
     public float getEntryFee() {
-        return GAME_CONFIGURATION.entryFee;
+        return gameConfiguration.entryFee;
     }
 
     public void setEntryFee(float entryFee) {
-        GAME_CONFIGURATION.entryFee = entryFee;
+        gameConfiguration.entryFee = entryFee;
     }
 
     public int getWaitPeriod() {
-        return GAME_CONFIGURATION.waitPeriod;
+        return gameConfiguration.waitPeriod;
     }
 
     public void setWaitPeriod(int waitPeriod) {
-        GAME_CONFIGURATION.waitPeriod = waitPeriod;
+        gameConfiguration.waitPeriod = waitPeriod;
     }
 
     public int getGracePeriod() {
-        return GAME_CONFIGURATION.gracePeriod;
+        return gameConfiguration.gracePeriod;
     }
 
     public void setGracePeriod(int gracePeriod) {
-        GAME_CONFIGURATION.gracePeriod = gracePeriod;
+        gameConfiguration.gracePeriod = gracePeriod;
     }
 
     public int getPreShrinkPeriod() {
-        return GAME_CONFIGURATION.preShrinkPeriod;
+        return gameConfiguration.preShrinkPeriod;
     }
 
     public void setPreShrinkPeriod(int preShrinkPeriod) {
-        GAME_CONFIGURATION.preShrinkPeriod = preShrinkPeriod;
+        gameConfiguration.preShrinkPeriod = preShrinkPeriod;
     }
 
     public int getLootDropDelay() {
-        return GAME_CONFIGURATION.lootDropDelay;
+        return gameConfiguration.lootDropDelay;
     }
 
     public void setLootDropDelay(int lootDropDelay) {
-        GAME_CONFIGURATION.lootDropDelay = Math.max(-1, lootDropDelay);
+        gameConfiguration.lootDropDelay = Math.max(-1, lootDropDelay);
     }
 
     public int getLootDropTriggerWindow() {
-        return Math.max(0, GAME_CONFIGURATION.lootDropTriggerWithin);
+        return Math.max(0, gameConfiguration.lootDropTriggerWithin);
     }
 
     public void setLootDropTriggerWindow(int lootDropTriggerWindow) {
-        GAME_CONFIGURATION.lootDropTriggerWithin = Math.max(0, lootDropTriggerWindow);
+        gameConfiguration.lootDropTriggerWithin = Math.max(0, lootDropTriggerWindow);
     }
 
     public float getLootDropTriggerProbability() {
-        return GAME_CONFIGURATION.lootDropTriggerProbability;
+        return gameConfiguration.lootDropTriggerProbability;
     }
 
     public void setLootDropTriggerProbability(float lootDropTriggerProbability) {
-        GAME_CONFIGURATION.lootDropTriggerProbability = lootDropTriggerProbability;
+        gameConfiguration.lootDropTriggerProbability = lootDropTriggerProbability;
     }
 
     public float getLootDropTriggerProbabilityIncrement() {
-        return GAME_CONFIGURATION.lootDropTriggerProbabilityIncrement;
+        return gameConfiguration.lootDropTriggerProbabilityIncrement;
     }
 
     public void setLootDropTriggerProbabilityIncrement(float lootDropTriggerProbabilityIncrement) {
-        GAME_CONFIGURATION.lootDropTriggerProbabilityIncrement = lootDropTriggerProbabilityIncrement;
+        gameConfiguration.lootDropTriggerProbabilityIncrement = lootDropTriggerProbabilityIncrement;
     }
 
     public double getBorderStartDiameter() {
-        return GAME_CONFIGURATION.border.borderStartDiameter;
+        return gameConfiguration.border.borderStartDiameter;
     }
 
     public void setBorderStartDiameter(double borderStartDiameter) {
-        GAME_CONFIGURATION.border.borderStartDiameter = borderStartDiameter;
+        gameConfiguration.border.borderStartDiameter = borderStartDiameter;
     }
 
     public double getBorderDPS() {
-        return GAME_CONFIGURATION.border.damagePerSecond;
+        return gameConfiguration.border.damagePerSecond;
     }
 
     public void setBorderDPS(double borderDps) {
-        GAME_CONFIGURATION.border.damagePerSecond = borderDps;
+        gameConfiguration.border.damagePerSecond = borderDps;
     }
 
     public int getStartingDaytime() {
-        return GAME_CONFIGURATION.startingDaytime;
+        return gameConfiguration.startingDaytime;
     }
 
     public void setStartingDaytime(int startingDaytime) {
-        GAME_CONFIGURATION.startingDaytime = startingDaytime;
+        gameConfiguration.startingDaytime = startingDaytime;
     }
 
     public boolean getDoDaylightCycle() {
-        return GAME_CONFIGURATION.daylightCycle;
+        return gameConfiguration.daylightCycle;
     }
 
     public void setDoDaylightCycle(boolean doDaylightCycle) {
-        GAME_CONFIGURATION.daylightCycle = doDaylightCycle;
+        gameConfiguration.daylightCycle = doDaylightCycle;
     }
 
     public boolean getSpawnFireworkOnDeath() {
-        return GAME_CONFIGURATION.spawnFireworkOnDeath;
+        return gameConfiguration.spawnFireworkOnDeath;
     }
 
     public void setSpawnFireworkOnDeath(boolean spawnFireworkOnDeath) {
-        GAME_CONFIGURATION.spawnFireworkOnDeath = spawnFireworkOnDeath;
+        gameConfiguration.spawnFireworkOnDeath = spawnFireworkOnDeath;
     }
 
     public boolean getSpawnFireworkOnKill() {
-        return GAME_CONFIGURATION.spawnFireworkOnKill;
+        return gameConfiguration.spawnFireworkOnKill;
     }
 
     public void setSpawnFireworkOnKill(boolean spawnFireworkOnKill) {
-        GAME_CONFIGURATION.spawnFireworkOnKill = spawnFireworkOnKill;
+        gameConfiguration.spawnFireworkOnKill = spawnFireworkOnKill;
     }
 
     public boolean getLightningOnDeath() {
-        return GAME_CONFIGURATION.lightningOnDeath;
+        return gameConfiguration.lightningOnDeath;
     }
 
     public void setLightningOnDeath(boolean lightningOnDeath) {
-        GAME_CONFIGURATION.lightningOnDeath = lightningOnDeath;
+        gameConfiguration.lightningOnDeath = lightningOnDeath;
     }
 
     public boolean getIsWIP() {
-        return GAME_CONFIGURATION.isWIP;
+        return gameConfiguration.isWIP;
     }
 
     public void setIsWIP(boolean isWIP) {
-        GAME_CONFIGURATION.isWIP = isWIP;
+        gameConfiguration.isWIP = isWIP;
     }
 
     public Collection<ChestConfiguration> getChests() {
-        return GAME_CONFIGURATION.chestLocations;
+        return gameConfiguration.chestLocations;
     }
 
     public Optional<ChestConfiguration> getChestAt(Location location) {
@@ -340,35 +340,35 @@ public class GameConfigurationWrapper {
     }
 
     public List<ItemSet> getItemSets() {
-        return Collections.unmodifiableList(GAME_CONFIGURATION.itemSets);
+        return Collections.unmodifiableList(gameConfiguration.itemSets);
     }
 
     public boolean hasNoItemSets() {
-        return GAME_CONFIGURATION.itemSets.isEmpty();
+        return gameConfiguration.itemSets.isEmpty();
     }
 
     public ItemSet getDefaultItemSet() {
-        return GAME_CONFIGURATION.itemSets.get(defaultSetIndex);
+        return gameConfiguration.itemSets.get(defaultSetIndex);
     }
 
     public void addItemSet(ItemSet itemSet, boolean makeDefault) {
-        GAME_CONFIGURATION.itemSets.add(itemSet);
+        gameConfiguration.itemSets.add(itemSet);
 
         if (makeDefault) {
-            defaultSetIndex = GAME_CONFIGURATION.itemSets.size() - 1;
+            defaultSetIndex = gameConfiguration.itemSets.size() - 1;
         }
     }
 
     public ItemSet getItemSetByName(String name) {
-        return GAME_CONFIGURATION.itemSets.stream().filter(x -> x.name.equals(name)).findFirst().orElse(null);
+        return gameConfiguration.itemSets.stream().filter(x -> x.name.equals(name)).findFirst().orElse(null);
     }
 
     public List<LootDropConfiguration> getLootDropLocations() {
-        return GAME_CONFIGURATION.lootDropLocations;
+        return gameConfiguration.lootDropLocations;
     }
 
     public Map<String, RewardConfiguration> getRewards() {
-        return GAME_CONFIGURATION.rewards;
+        return gameConfiguration.rewards;
     }
 
     public RewardConfiguration getReward(int placement) {

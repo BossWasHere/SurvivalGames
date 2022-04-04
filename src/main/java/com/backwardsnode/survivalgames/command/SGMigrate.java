@@ -51,9 +51,9 @@ public class SGMigrate extends BaseCommand {
 			File target = null;
 			try {
 				if (args[0].toLowerCase().endsWith(".json")) {
-					target = new File(PLUGIN.getMapFolder(), args[0]);
+					target = new File(plugin.getMapFolder(), args[0]);
 				} else {
-					target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
+					target = new File(plugin.getMapFolder(), args[0] + ".json");
 				}
 				if (!target.exists()) {
 					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
@@ -68,22 +68,24 @@ public class SGMigrate extends BaseCommand {
 					sendMessage(sender, Messages.Command.SGMigrate.ATTEMPT, target.getName(), version);
 					GameConfiguration gc;
 					switch (version) {
-						case 0:
+						case 0 -> {
 							Version0Model model0 = new Gson().fromJson(data, Version0Model.class);
 							gc = model0.migrate();
-							break;
-						case 1:
+						}
+						case 1 -> {
 							Version1Model model1 = new Gson().fromJson(data, Version1Model.class);
 							gc = model1.migrate();
-							break;
-						case 2:
+						}
+						case 2 -> {
 							sendMessage(sender, Messages.Command.SGMigrate.UP_TO_DATE);
 							return ExecutionStatus.SUCCESS;
-						default:
+						}
+						default -> {
 							sendMessage(sender, Messages.Command.SGMigrate.FUTURE);
 							return ExecutionStatus.SUCCESS;
+						}
 					}
-					Files.copy(target, new File(PLUGIN.getBackupFolder(), Utils.timestamp(target.getName())));
+					Files.copy(target, new File(plugin.getBackupFolder(), Utils.timestamp(target.getName())));
 
 					new GameConfigurationWrapper(gc).saveCopyTo(target);
 					sendMessage(sender, Messages.Command.SGMigrate.SUCCESS, target.getName());

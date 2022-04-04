@@ -38,16 +38,16 @@ public class SGHelp extends BaseCommand {
     public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
         sendMessage(sender, Messages.Command.SGHelp.HELP_BANNER);
 
-        MessageProvider mp = PLUGIN.getMessageProvider();
+        MessageProvider mp = plugin.getMessageProvider();
         if (sender instanceof Player player) {
             String locale = player.getLocale();
-            for (BaseCommand bc : PLUGIN.getCommandRegistry().getCommands()) {
+            for (BaseCommand bc : plugin.getCommandRegistry().getCommands()) {
                 if (sender.hasPermission(bc.getType().getBasicPermission())) {
                     sender.sendMessage(ChatColor.GRAY + "/" + bc.getLabel() + " - " + ChatColor.DARK_AQUA + mp.compileMessage(bc.getType().getDescriptionMessage(), locale));
                 }
             }
         } else {
-            for (BaseCommand bc : PLUGIN.getCommandRegistry().getCommands()) {
+            for (BaseCommand bc : plugin.getCommandRegistry().getCommands()) {
                 sender.sendMessage(ChatColor.GRAY + bc.getLabel() + " - " + ChatColor.DARK_AQUA + mp.compileDefaultMessage(bc.getType().getDescriptionMessage()));
             }
         }

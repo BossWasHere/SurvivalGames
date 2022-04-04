@@ -37,16 +37,16 @@ public class LootDrop {
 
     public static final int SPAWN_HEIGHT = 120;
 
-    private final LootDropManager MANAGER;
-    private final LootDropConfiguration LOOT_DROP_CONFIGURATION;
+    private final LootDropManager manager;
+    private final LootDropConfiguration lootDropConfiguration;
 
     private BlockState[] beaconReplacementStates;
     private boolean chestPlaced = false;
     private boolean closed = false;
 
     protected LootDrop(LootDropManager manager, LootDropConfiguration lootDropConfiguration) {
-        MANAGER = manager;
-        LOOT_DROP_CONFIGURATION = lootDropConfiguration;
+        this.manager = manager;
+        this.lootDropConfiguration = lootDropConfiguration;
     }
 
     public void summonDropEntity() {
@@ -54,9 +54,10 @@ public class LootDrop {
             return;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocation();
+        Location location = lootDropConfiguration.location.toBukkitLocation();
 
         World world = location.getWorld();
+        assert world != null;
 
         Location top = world.getHighestBlockAt(location.getBlockX(), location.getBlockZ()).getLocation().add(0.5, SPAWN_HEIGHT, 0.5);
 
@@ -71,32 +72,33 @@ public class LootDrop {
             fireball.addPassenger(fallingBlock);
 
             UUID fallingBlockUUID = fallingBlock.getUniqueId();
-            MANAGER.rememberFallingEntity(fallingBlockUUID, this);
+            manager.rememberFallingEntity(fallingBlockUUID, this);
         } else {
             Bukkit.getLogger().warning("Tried to spawn fireball but ended up with " + entity.getType() + " instead.");
         }
     }
 
     public void placeChest(boolean playEffects) {
-        if (closed || LOOT_DROP_CONFIGURATION == null || chestPlaced) {
+        if (closed || lootDropConfiguration == null || chestPlaced) {
             return;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocation();
+        Location location = lootDropConfiguration.location.toBukkitLocation();
         if (playEffects) {
             World world = location.getWorld();
+            assert world != null;
             world.playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.1f, 1f);
             world.playSound(location, Sound.BLOCK_AMETHYST_BLOCK_FALL, SoundCategory.PLAYERS, 1f, 1f);
             world.spawnParticle(Particle.DRAGON_BREATH, location, 50, 2d, 0, 2d, 0.03d);
         }
 
-        LOOT_DROP_CONFIGURATION.location.getBlock().setType(Material.ENDER_CHEST);
+        lootDropConfiguration.location.getBlock().setType(Material.ENDER_CHEST);
         chestPlaced = true;
     }
 
     public void removeChest() {
         if (chestPlaced) {
-            LOOT_DROP_CONFIGURATION.location.getBlock().setType(Material.AIR);
+            lootDropConfiguration.location.getBlock().setType(Material.AIR);
 
             chestPlaced = false;
         }
@@ -107,12 +109,13 @@ public class LootDrop {
             return false;
         }
 
-        Location location = LOOT_DROP_CONFIGURATION.location.copyAndAdd(0, -1, 0).toBukkitLocation();
+        Location location = lootDropConfiguration.location.copyAndAdd(0, -1, 0).toBukkitLocation();
         World world = location.getWorld();
 
         int blockY = location.getBlockY();
 
         // not enough space to place it
+        assert world != null;
         if (world.getMinHeight() >= blockY || blockY >= world.getMaxHeight()) {
             return false;
         }
@@ -182,14 +185,15 @@ public class LootDrop {
 
     public void popAndClose(Collection<ItemSet> itemSets) {
         if (closed) return;
-        Location location = LOOT_DROP_CONFIGURATION.location.toBukkitLocationCentered();
+        Location location = lootDropConfiguration.location.toBukkitLocationCentered();
         World world = location.getWorld();
 
+        assert world != null;
         world.playSound(location, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6f, 1f);
         world.playSound(location, Sound.BLOCK_ENDER_CHEST_OPEN, SoundCategory.PLAYERS, 1f, 1f);
         world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5f, 1f);
         world.spawnParticle(Particle.EXPLOSION_NORMAL, location, 1);
-        Utils.dropSomeItems(location, itemSets, LOOT_DROP_CONFIGURATION.itemSets, LOOT_DROP_CONFIGURATION.itemCount);
+        Utils.dropSomeItems(location, itemSets, lootDropConfiguration.itemSets, lootDropConfiguration.itemCount);
 
         close();
     }

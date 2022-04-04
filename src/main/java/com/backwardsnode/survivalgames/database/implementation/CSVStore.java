@@ -34,19 +34,19 @@ public class CSVStore implements DataStoreImplementation {
 
     private static final String GAME_HISTORY_HEADER = "date,map,duration,team_size,players,team_groups,entered_deathmatch,players_at_deathmatch,deathmatch_location,finished,placements,settings\n";
 
-    private final File CSV_FILE_GAME_HISTORY;
+    private final File csvFileGameHistory;
 
     private boolean closed = false;
 
     public CSVStore(@NotNull File directory) {
-        CSV_FILE_GAME_HISTORY = new File(directory, "game_history.csv");
+        csvFileGameHistory = new File(directory, "game_history.csv");
     }
 
     @Override
     public boolean initialize() throws IOException {
         if (closed) throw new IOException("Data store is closed");
 
-        return appendToFile(CSV_FILE_GAME_HISTORY, null);
+        return appendToFile(csvFileGameHistory, null);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class CSVStore implements DataStoreImplementation {
         // TODO append settings when we implement some
         // entryBuilder.append(instance.getSettings());
 
-        appendToFile(CSV_FILE_GAME_HISTORY, entryBuilder.toString());
+        appendToFile(csvFileGameHistory, entryBuilder.toString());
     }
 
     @Override

@@ -17,12 +17,7 @@
  */
 package com.backwardsnode.survivalgames.exception;
 
-import java.io.Serial;
-
 public class GameConfigurationException extends GameException {
-
-	@Serial
-	private static final long serialVersionUID = 1231855642451720778L;
 
 	public GameConfigurationException(String message) {
 		super(message);

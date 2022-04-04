@@ -35,13 +35,13 @@ public class SGDeathmatch extends BaseCommand {
 	// TODO prettify
 	@Override
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
-		if (PLUGIN.getHost().getGameManager() == null) {
+		if (plugin.getHost().getGameManager() == null) {
 			return ExecutionStatus.SUCCESS;
 		}
 
 		if (args.length > 0) {
 			// when we provide the name of the map
-			GameInstance i = PLUGIN.getHost().getGameManager().getGameByMap(args[0]);
+			GameInstance i = plugin.getHost().getGameManager().getGameByMap(args[0]);
 			if (i != null) {
 				startDeathmatch(sender, i);
 			} else {
@@ -49,9 +49,8 @@ public class SGDeathmatch extends BaseCommand {
 			}
 		} else {
 			// when we don't
-			if (sender instanceof Player) {
-				Player player = (Player) sender;
-				GameInstance i = PLUGIN.getHost().getGameManager().getGame(player);
+			if (sender instanceof Player player) {
+				GameInstance i = plugin.getHost().getGameManager().getGame(player);
 				if (i != null) {
 					startDeathmatch(player, i);
 				} else {

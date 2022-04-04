@@ -25,26 +25,22 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.SimplePluginManager;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 public final class CommandRegistry {
 
     public static final String NAMESPACE = "survivalgames";
 
-    private final Plugin PLUGIN;
-    private final BaseCommand[] COMMANDS;
+    private final Plugin plugin;
+    private final BaseCommand[] commands;
 
-    private final BaseCommand TEST_LOOT_DROP_COMMAND;
+    private final BaseCommand testLootDropCommand;
 
     private boolean registered = false;
 
     public CommandRegistry(Plugin plugin) {
-        PLUGIN = plugin;
+        this.plugin = plugin;
 
-        COMMANDS = new BaseCommand[]{
+        commands = new BaseCommand[]{
                 new SGAuto(plugin),
                 new SGCancel(plugin),
                 new SGCheck(plugin),
@@ -62,7 +58,7 @@ public final class CommandRegistry {
                 new SGVote(plugin)
         };
 
-        TEST_LOOT_DROP_COMMAND = new TestLootDrop(plugin);
+        testLootDropCommand = new TestLootDrop(plugin);
     }
 
     public void registerCommands() {
@@ -74,21 +70,21 @@ public final class CommandRegistry {
             field.setAccessible(true);
             CommandMap commandMap = (CommandMap) field.get(Bukkit.getServer().getPluginManager());
 
-            for (BaseCommand baseCommand : COMMANDS) {
+            for (BaseCommand baseCommand : commands) {
                 commandMap.register(baseCommand.getName(), NAMESPACE, baseCommand);
             }
 
             if (Plugin.TEST) {
-                commandMap.register(TEST_LOOT_DROP_COMMAND.getName(), NAMESPACE, TEST_LOOT_DROP_COMMAND);
+                commandMap.register(testLootDropCommand.getName(), NAMESPACE, testLootDropCommand);
             }
 
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            PLUGIN.getLogger().severe("An error occured while building the CommandMap for " + PLUGIN.getName());
+            plugin.getLogger().severe("An error occured while building the CommandMap for " + plugin.getName());
             e.printStackTrace();
         }
     }
 
     public BaseCommand[] getCommands() {
-        return COMMANDS;
+        return commands;
     }
 }

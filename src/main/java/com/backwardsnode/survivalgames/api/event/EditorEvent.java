@@ -27,10 +27,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class EditorEvent extends Event {
 
-    private final Scene SCENE;
+    private final Scene scene;
 
     public EditorEvent(@NotNull Scene scene) {
-        SCENE = scene;
+        this.scene = scene;
     }
 
     /**
@@ -38,6 +38,6 @@ public abstract class EditorEvent extends Event {
      * @return The {@link Scene}
      */
     public @NotNull Scene getScene() {
-        return SCENE;
+        return scene;
     }
 }

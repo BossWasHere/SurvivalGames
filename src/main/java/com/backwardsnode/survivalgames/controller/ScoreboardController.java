@@ -27,32 +27,49 @@ import java.util.EnumMap;
 
 public class ScoreboardController implements Controller {
 
-	private final Scoreboard bukkitScoreboard;
-	private final Objective bukkitObjective;
+	private final Scoreboard scoreboard;
+	private final Objective objective;
 	
-	private EnumMap<ScoreboardElement, String> lastTags;
+	private final EnumMap<ScoreboardElement, String> lastTags;
 	
 	public ScoreboardController(String displayName) {
 		lastTags = new EnumMap<>(ScoreboardElement.class);
 		ScoreboardManager bukkitManager = Bukkit.getScoreboardManager();
-		bukkitScoreboard = bukkitManager.getNewScoreboard();
+		assert bukkitManager != null;
+		scoreboard = bukkitManager.getNewScoreboard();
 		
-		bukkitObjective = bukkitScoreboard.registerNewObjective(hashCode() + "_main", "dummy", displayName);
-		bukkitObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		objective = scoreboard.registerNewObjective(hashCode() + "_main", "dummy", displayName);
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 	}
-	
+
+	@Override
 	public void setVisibleTo(Collection<PlayerState> playerStates) {
-		playerStates.forEach(ps -> ps.cache.getPlayer().setScoreboard(bukkitScoreboard));
+		playerStates.forEach(ps -> ps.cache.getPlayer().setScoreboard(scoreboard));
 	}
-	
+
+	@Override
 	public void setVisibleTo(Player player) {
-		player.setScoreboard(bukkitScoreboard);
+		player.setScoreboard(scoreboard);
+	}
+
+	@Override
+	public void unsetVisibleTo(Collection<PlayerState> playerStates) {
+		playerStates.forEach(ps -> unsetVisibleTo(ps.cache.getPlayer()));
+	}
+
+	@Override
+	public void unsetVisibleTo(Player player) {
+		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+
+		if (scoreboardManager != null) {
+			player.setScoreboard(scoreboardManager.getMainScoreboard());
+		}
 	}
 	
 	public void initialize() {
 		for (ScoreboardElement e : ScoreboardElement.values()) {
 			lastTags.put(e, e.getTag());
-			Score score = bukkitObjective.getScore(e.getTag());
+			Score score = objective.getScore(e.getTag());
 			score.setScore(e.getPos());
 		}
 	}
@@ -61,14 +78,14 @@ public class ScoreboardController implements Controller {
 		if (lastTags.get(element).equals(element.getTag(value))) {
 			return;
 		}
-		bukkitScoreboard.resetScores(lastTags.get(element));
+		scoreboard.resetScores(lastTags.get(element));
 		lastTags.put(element, element.getTag(value));
-		Score score = bukkitObjective.getScore(lastTags.get(element));
+		Score score = objective.getScore(lastTags.get(element));
 		score.setScore(element.getPos());
 	}
 	
 	@Override
 	public void close() {
-		bukkitObjective.unregister();
+		objective.unregister();
 	}
 }

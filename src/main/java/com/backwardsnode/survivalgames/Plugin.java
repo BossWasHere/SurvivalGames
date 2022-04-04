@@ -45,6 +45,7 @@ public final class Plugin extends JavaPlugin {
 	private PluginListener pluginListener;
 	private SGHost sgHost;
 	
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	@Override
 	public void onLoad() {
 
@@ -87,7 +88,6 @@ public final class Plugin extends JavaPlugin {
 		sgHost = new SGHost(this);
 
 
-		// TODO help command
 		if (commandRegistry == null) {
 			commandRegistry = new CommandRegistry(this);
 		}
@@ -161,6 +161,7 @@ public final class Plugin extends JavaPlugin {
 
 	public void extractFile(Path destination, String internalPath, CopyOption... copyOptions) throws IOException {
 		InputStream is = this.getClass().getResourceAsStream("/" + internalPath);
+		assert is != null;
 		Files.copy(is, destination, copyOptions);
 	}
 }

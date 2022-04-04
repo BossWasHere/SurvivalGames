@@ -57,34 +57,34 @@ public class EditorTest {
 	
 	void assertAsString(ResolvingPredicate<String, ?> p) {
 		PredicateResult<String, ?> r = p.validate(str);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(String.class));
 		r = p.validate(doubleStr);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(String.class));
 		r = p.validate(intStr);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(String.class));
 	}
 	
 	void assertAsDouble(ResolvingPredicate<String, ?> p) {
 		PredicateResult<String, ?> r = p.validate(str);
-		assertFalse(r.SUCCESSFUL);
+		assertFalse(r.successful());
 		r = p.validate(doubleStr);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(Double.class));
 		r = p.validate(intStr);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(Double.class));
 	}
 	
 	void assertAsInteger(ResolvingPredicate<String, ?> p) {
 		PredicateResult<String, ?> r = p.validate(str);
-		assertFalse(r.SUCCESSFUL);
+		assertFalse(r.successful());
 		r = p.validate(doubleStr);
-		assertFalse(r.SUCCESSFUL);
+		assertFalse(r.successful());
 		r = p.validate(intStr);
-		assertTrue(r.SUCCESSFUL);
+		assertTrue(r.successful());
 		assertNotNull(r.wrapOutput(Integer.class));
 	}
 }

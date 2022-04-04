@@ -17,12 +17,7 @@
  */
 package com.backwardsnode.survivalgames.exception;
 
-import java.io.Serial;
-
 public class GameException extends RuntimeException {
-
-	@Serial
-	private static final long serialVersionUID = 6156382423457115615L;
 
 	public GameException(String message) {
 		super(message);

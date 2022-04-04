@@ -31,26 +31,26 @@ import java.util.Map.Entry;
 
 public class GameManager {
 
-	private final Plugin PLUGIN;
+	private final Plugin plugin;
 
-	private final HashMap<UUID, GameInstance> PLAYER_GAME_MAP;
-	private final HashMap<String, GameInstance> NAME_GAME_MAP;
+	private final HashMap<UUID, GameInstance> playerGameMap;
+	private final HashMap<String, GameInstance> nameGameMap;
 
-	private final boolean PERMIT_TIME_CONTROL;
+	private final boolean permitTimeControl;
 
 	private boolean closing = false;
 	
 	public GameManager(Plugin plugin) {
-		PLUGIN = plugin;
-		PLAYER_GAME_MAP = new HashMap<>();
-		NAME_GAME_MAP = new HashMap<>();
-		PERMIT_TIME_CONTROL = PluginConfigKeys.PERMIT_TIME_CONTROL.get(plugin.getConfig());
+		this.plugin = plugin;
+		playerGameMap = new HashMap<>();
+		nameGameMap = new HashMap<>();
+		permitTimeControl = PluginConfigKeys.PERMIT_TIME_CONTROL.get(plugin.getConfig());
 		GameListener listener = new GameListener(this);
 		Bukkit.getPluginManager().registerEvents(listener, plugin);
 	}
 
 	public Plugin getPlugin() {
-		return PLUGIN;
+		return plugin;
 	}
 
 	public boolean startGame(GameConfigurationWrapper gcw, PlayerCacheSettings cacheSettings, Player initiator, Collection<? extends Player> players, boolean ignoreIngamePlayers, PlayerSelectionMethod selectorMode) {
@@ -58,7 +58,7 @@ public class GameManager {
 		if (isMapInUse(gcw.getFileName())) {
 			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_MAP_IN_USE, gcw, initiator));
 
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.MAP_IN_USE);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.MAP_IN_USE);
 			return false;
 		}
 
@@ -66,7 +66,7 @@ public class GameManager {
 		try {
 			instance = new GameInstance(this, gcw, cacheSettings);
 		} catch (GameConfigurationException e) {
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Config.SYNTAX, gcw.getFileName());
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Config.SYNTAX, gcw.getFileName());
 			e.printStackTrace();
 			return false;
 		}
@@ -76,30 +76,30 @@ public class GameManager {
 		switch (instance.getStatus()) {
 		case START_ERR_FEW_PLAYERS:
 			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_FEW_PLAYERS, gcw, initiator));
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.INSUFFICIENT_PLAYERS);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.INSUFFICIENT_PLAYERS);
 			return false;
 		case START_ERR_PLAYER_IN_GAME:
 			Bukkit.getPluginManager().callEvent(new GameAbortedEvent(GameStatus.START_ERR_PLAYER_IN_GAME, gcw, initiator));
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.PLAYER_IN_GAME);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.PLAYER_IN_GAME);
 			return false;
 		case START_SUCCESS_WITH_SPECTATORS:
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.START_WITH_SPECTATORS);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.START_WITH_SPECTATORS);
 			break;
 		case START_SUCCESS_WITHOUT_SPECTATORS:
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.START_WITHOUT_SPECTATORS);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.START_WITHOUT_SPECTATORS);
 			break;
 		case START_SUCCESS:
-			PLUGIN.getMessageProvider().sendMessage(initiator, Messages.Game.START);
+			plugin.getMessageProvider().sendMessage(initiator, Messages.Game.START);
 			break;
 		default:
 			return false;
 		}
-		NAME_GAME_MAP.put(gcw.getFileName(), instance);
+		nameGameMap.put(gcw.getFileName(), instance);
 		return true;
 	}
 	
 	public boolean isMapInUse(String fileName) {
-		return NAME_GAME_MAP.containsKey(fileName);
+		return nameGameMap.containsKey(fileName);
 	}
 
 	public boolean isPlayerIngame(Player player) {
@@ -112,12 +112,12 @@ public class GameManager {
 
 	public GameInstance getGame(Player player) {
 		UUID uuid = player.getUniqueId();
-		GameInstance i = PLAYER_GAME_MAP.get(uuid);
+		GameInstance i = playerGameMap.get(uuid);
 		if (i != null) {
 			if (i.isActive()) {
 				return i;
 			}
-			PLAYER_GAME_MAP.remove(uuid);
+			playerGameMap.remove(uuid);
 		}
 		// TODO this shouldn't happen? was this just some extra check?
 //		for (GameInstance gi : instances) {
@@ -133,28 +133,28 @@ public class GameManager {
 
 	public void onGameFinished(GameInstance instance) {
 		if (!closing) {
-			NAME_GAME_MAP.remove(instance.getGameConfiguration().getFileName());
-			for (Entry<UUID, GameInstance> es : PLAYER_GAME_MAP.entrySet()) {
+			nameGameMap.remove(instance.getGameConfiguration().getFileName());
+			for (Entry<UUID, GameInstance> es : playerGameMap.entrySet()) {
 				if (es.getValue().equals(instance)) {
-					PLAYER_GAME_MAP.remove(es.getKey());
+					playerGameMap.remove(es.getKey());
 				}
 			}
 		}
 	}
 
 	public boolean timeControlEnabled() {
-		return PERMIT_TIME_CONTROL;
+		return permitTimeControl;
 	}
 	
 	public void close(boolean force) {
 		closing = true;
-		for (GameInstance i : NAME_GAME_MAP.values()) {
+		for (GameInstance i : nameGameMap.values()) {
 			i.terminate();
 		}
-		NAME_GAME_MAP.clear();
+		nameGameMap.clear();
 	}
 
 	public GameInstance getGameByMap(String fileName) {
-		return NAME_GAME_MAP.get(fileName);
+		return nameGameMap.get(fileName);
 	}
 }

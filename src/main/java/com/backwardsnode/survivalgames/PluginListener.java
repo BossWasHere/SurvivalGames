@@ -47,13 +47,13 @@ import java.util.UUID;
 
 public class PluginListener implements Listener {
 
-	private final Plugin PLUGIN;
+	private final Plugin plugin;
 
 	private final HashMap<UUID, Location> playersUsingAnvils;
 	private final HashMap<Location, AnvilState> anvilsInUse;
 	
 	public PluginListener(Plugin plugin) {
-		PLUGIN = plugin;
+		this.plugin = plugin;
 
 		playersUsingAnvils = new HashMap<>();
 		anvilsInUse = new HashMap<>();
@@ -84,7 +84,7 @@ public class PluginListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		PLUGIN.getHost().cancelInvitations(e.getPlayer(), true);
+		plugin.getHost().cancelInvitations(e.getPlayer(), true);
 
 		cleanupPlayer(e.getPlayer());
 	}
@@ -129,7 +129,7 @@ public class PluginListener implements Listener {
 			case DAMAGED_ANVIL:
 				Location location = clickedBlock.getLocation();
 
-				if (PLUGIN.getHost().hasWorldProtection(player)) {
+				if (plugin.getHost().hasWorldProtection(player)) {
 					AnvilState anvil = anvilsInUse.get(location);
 					if (anvil == null) {
 						anvil = new AnvilState(currentType, ((Directional)clickedBlock.getBlockData()).getFacing());
@@ -177,11 +177,12 @@ public class PluginListener implements Listener {
 
 			if (item != null && item.hasItemMeta()) {
 				ItemMeta meta = item.getItemMeta();
+				assert meta != null;
 				if (meta.hasDisplayName()) {
 					String name = item.getItemMeta().getDisplayName();
 
 					if (name.startsWith("id:confirm")) {
-						PLUGIN.getHost().passConfirmationResolution((Player)e.getPlayer(), false);
+						plugin.getHost().passConfirmationResolution((Player)e.getPlayer(), false);
 					}
 				}
 			}
@@ -201,6 +202,7 @@ public class PluginListener implements Listener {
 
 			if (item != null && item.hasItemMeta()) {
 				ItemMeta meta = item.getItemMeta();
+				assert meta != null;
 				if (meta.hasDisplayName()) {
 					String name = item.getItemMeta().getDisplayName();
 
@@ -209,9 +211,9 @@ public class PluginListener implements Listener {
 						if (clicked != null) {
 							Material type = clicked.getType();
 							if (type == Material.RED_CONCRETE) {
-								PLUGIN.getHost().passConfirmationResolution(player, false);
+								plugin.getHost().passConfirmationResolution(player, false);
 							} else if (type == Material.LIME_CONCRETE) {
-								PLUGIN.getHost().passConfirmationResolution(player, true);
+								plugin.getHost().passConfirmationResolution(player, true);
 							}
 
 							e.getWhoClicked().closeInventory();
@@ -228,15 +230,7 @@ public class PluginListener implements Listener {
 	public void onEntityChangeBlock(EntityChangeBlockEvent e) {
 		if (e.getEntity() instanceof FallingBlock fallingBlock) {
 
-			LootDrop drop = PLUGIN.getHost().getLootDropManager().getAndRemoveAssociatedDrop(fallingBlock.getUniqueId());
-
-			if (drop != null) {
-				e.setCancelled(true);
-				fallingBlock.remove();
-				if (!drop.isClosed()) {
-					drop.placeChest(true);
-				}
-			}
+			e.setCancelled(lootDropPlaceChest(fallingBlock));
 		}
 	}
 
@@ -244,15 +238,21 @@ public class PluginListener implements Listener {
 	public void onEntityDropItem(EntityDropItemEvent e) {
 		if (e.getEntity() instanceof FallingBlock fallingBlock) {
 
-			LootDrop drop = PLUGIN.getHost().getLootDropManager().getAndRemoveAssociatedDrop(fallingBlock.getUniqueId());
-
-			if (drop != null) {
-				e.setCancelled(true);
-				fallingBlock.remove();
-				if (!drop.isClosed()) {
-					drop.placeChest(true);
-				}
-			}
+			e.setCancelled(lootDropPlaceChest(fallingBlock));
 		}
+	}
+
+	private boolean lootDropPlaceChest(FallingBlock fallingBlock) {
+		LootDrop drop = plugin.getHost().getLootDropManager().getAndRemoveAssociatedDrop(fallingBlock.getUniqueId());
+
+		if (drop == null) {
+			return false;
+		}
+		fallingBlock.remove();
+		if (!drop.isClosed()) {
+			drop.placeChest(true);
+		}
+
+		return true;
 	}
 }

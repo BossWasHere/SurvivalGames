@@ -37,10 +37,9 @@ public class SGStop extends BaseCommand {
 		GameInstance i;
 
 		if (args.length > 0) {
-			i = PLUGIN.getHost().getGameManager().getGameByMap(args[0]);
-		} else if (sender instanceof Player) {
-			Player player = (Player) sender;
-			i = PLUGIN.getHost().getGameManager().getGame(player);
+			i = plugin.getHost().getGameManager().getGameByMap(args[0]);
+		} else if (sender instanceof Player player) {
+			i = plugin.getHost().getGameManager().getGame(player);
 		} else {
 			return ExecutionStatus.NOT_PLAYER;
 		}

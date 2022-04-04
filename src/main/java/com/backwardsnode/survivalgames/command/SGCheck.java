@@ -48,10 +48,10 @@ public class SGCheck extends BaseCommand {
 	@Override
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
 		if (args.length > 0) {
-			File target = new File(PLUGIN.getMapFolder(), args[0]);
+			File target = new File(plugin.getMapFolder(), args[0]);
 			try {
 				if (!target.isFile()) {
-					target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
+					target = new File(plugin.getMapFolder(), args[0] + ".json");
 				}
 				if (!target.isFile()) {
 					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);
@@ -75,15 +75,13 @@ public class SGCheck extends BaseCommand {
 							}
 						}
 
-						builder.substring(0, builder.length() - 2);
-						if (sender instanceof Player) {
-							Player player = (Player) sender;
+						if (sender instanceof Player player) {
 							JsonMessage msg = new JsonMessage().setColor(ChatColor.RED)
-							.setText(PLUGIN.getMessageProvider().compileMessage(Messages.Config.CHEST_MISSING, player.getLocale(), invalidLocations.size(), gcw.getChests().size()))
-							.setHoverEvent(JsonTextEvent.showText(builder.toString()));
+							.setText(plugin.getMessageProvider().compileMessage(Messages.Config.CHEST_MISSING, player.getLocale(), invalidLocations.size(), gcw.getChests().size()))
+							.setHoverEvent(JsonTextEvent.showText(builder.substring(0, builder.length() - 2)));
 							Utils.sendJsonMessage(player, msg);
 						} else {
-							sendMessage(sender, Messages.Config.CHEST_MISSING_CONSOLE, invalidLocations.size(), gcw.getChests().size(), builder.toString());
+							sendMessage(sender, Messages.Config.CHEST_MISSING_CONSOLE, invalidLocations.size(), gcw.getChests().size(), builder.substring(0, builder.length() - 2));
 						}
 					} else {
 						sendMessage(sender, Messages.Config.CHEST_LOCATED, gcw.getChests().size());

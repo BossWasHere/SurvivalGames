@@ -18,7 +18,18 @@
 
 package com.backwardsnode.survivalgames.controller;
 
+import com.backwardsnode.survivalgames.game.PlayerState;
+import org.bukkit.entity.Player;
+
+import java.util.Collection;
+
 public interface Controller {
+
+    void setVisibleTo(Collection<PlayerState> players);
+    void setVisibleTo(Player player);
+
+    void unsetVisibleTo(Collection<PlayerState> players);
+    void unsetVisibleTo(Player player);
 
     void close();
 }

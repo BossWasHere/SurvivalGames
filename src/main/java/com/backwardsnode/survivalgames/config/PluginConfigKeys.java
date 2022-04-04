@@ -24,6 +24,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -113,11 +114,11 @@ public final class PluginConfigKeys<T> {
     public static final PluginConfigKeys<Long> STORAGE_MYSQL_POOL_MAX_LIFETIME = new PluginConfigKeys<>(1800000L, "storage.mysql", "pool.maximum-lifetime");
     public static final PluginConfigKeys<Long> STORAGE_MYSQL_POOL_CONNECTION_TIMEOUT = new PluginConfigKeys<>(5000L, "storage.mysql", "pool.connection-timeout");
 
-    private final T DEF;
-    private final Class<? extends Enum> ENUM_CLASS;
-    private final String SECTION;
-    private final String KEY;
-    private final String FULL_KEY;
+    private final T def;
+    private final Class<? extends Enum> enumClass;
+    private final String section;
+    private final String key;
+    private final String fullKey;
 
     private PluginConfigKeys(T def, String key) {
         this(def, null, null, key);
@@ -132,57 +133,57 @@ public final class PluginConfigKeys<T> {
     }
 
     private PluginConfigKeys(T def, Class<? extends Enum> enumClass, String section, String key) {
-        DEF = def;
-        ENUM_CLASS = enumClass;
-        SECTION = section;
-        KEY = key;
-        FULL_KEY = section == null ? KEY : section + '.' + KEY;
+        this.def = def;
+        this.enumClass = enumClass;
+        this.section = section;
+        this.key = key;
+        fullKey = section == null ? this.key : section + '.' + this.key;
 
         VALUES.add(this);
     }
 
     public String getSection() {
-        return SECTION;
+        return section;
     }
 
     public String getKey() {
-        return KEY;
+        return key;
     }
 
     public String getPath() {
-        return FULL_KEY;
+        return fullKey;
     }
 
     public T getDefault() {
-        return DEF;
+        return def;
     }
 
     public T get(Configuration configuration) {
-        if (ENUM_CLASS == null) {
-            return (T) configuration.get(FULL_KEY, DEF);
+        if (enumClass == null) {
+            return (T) configuration.get(fullKey, def);
         }
 
         try {
-            return (T) Enum.valueOf(ENUM_CLASS, configuration.getString(FULL_KEY, "").toUpperCase());
+            return (T) Enum.valueOf(enumClass, configuration.getString(fullKey, "").toUpperCase());
         } catch (IllegalArgumentException unused) {
             unused.printStackTrace();
-            return DEF;
+            return def;
         }
     }
 
     public T getFromSection(ConfigurationSection configurationSection) {
-        if (ENUM_CLASS == null) {
-            return (T) configurationSection.get(KEY, DEF);
+        if (enumClass == null) {
+            return (T) configurationSection.get(key, def);
         }
 
         try {
-            return (T) Enum.valueOf(ENUM_CLASS, configurationSection.getString(KEY, "").toUpperCase());
+            return (T) Enum.valueOf(enumClass, configurationSection.getString(key, "").toUpperCase());
         } catch (IllegalArgumentException unused) {
-            return DEF;
+            return def;
         }
     }
 
-    public static Iterable<PluginConfigKeys<?>> values() {
-        return Collections.unmodifiableList(VALUES);
+    public static Collection<PluginConfigKeys<?>> values() {
+        return Collections.unmodifiableCollection(VALUES);
     }
 }

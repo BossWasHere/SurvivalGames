@@ -38,15 +38,18 @@ public class SGReloadLang extends BaseCommand {
         if (args.length > 0) {
             boolean success = true;
             if (args[0].contentEquals("*")) {
-                for (File file : PLUGIN.getLanguageFolder().listFiles()) {
-                    String name = file.getName();
-                    if (!name.endsWith(".yml")) {
-                        continue;
+                File[] files = plugin.getLanguageFolder().listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        String name = file.getName();
+                        if (!name.endsWith(".yml")) {
+                            continue;
+                        }
+                        plugin.getMessageProvider().reExtractLanguage(name.substring(0, name.length() - 4));
                     }
-                    PLUGIN.getMessageProvider().reExtractLanguage(name.substring(0, name.length() - 4));
                 }
             } else {
-                success = PLUGIN.getMessageProvider().reExtractLanguage(args[0]);
+                success = plugin.getMessageProvider().reExtractLanguage(args[0]);
             }
 
             sendMessage(sender, success ? Messages.Command.SGReloadLang.SUCCESS : Messages.Command.SGReloadLang.NO_SUCH_LANG);

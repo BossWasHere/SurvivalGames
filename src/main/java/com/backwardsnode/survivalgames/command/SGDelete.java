@@ -36,12 +36,11 @@ public class SGDelete extends BaseCommand {
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
 		if (args.length > 0) {
 			try {
-				File target = new File(PLUGIN.getMapFolder(), args[0]);
+				File target = new File(plugin.getMapFolder(), args[0]);
 				if (!target.isFile()) {
-					target = new File(PLUGIN.getMapFolder(), args[0] + ".json");
+					target = new File(plugin.getMapFolder(), args[0] + ".json");
 				}
-				if (target.isFile()) {
-					target.delete();
+				if (target.isFile() && target.delete()) {
 					sendMessage(sender, Messages.Command.SGDelete.SUCCESS, target.getName());
 				} else {
 					sendMessage(sender, Messages.Plugin.IO_FILE_MISSING, args[0]);

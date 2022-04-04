@@ -30,7 +30,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 public class SGList extends BaseCommand {
 
@@ -40,8 +39,7 @@ public class SGList extends BaseCommand {
 
 	@Override
 	public ExecutionStatus executeDelegate(CommandSender sender, String[] args) {
-		if (sender instanceof Player) {
-			Player player = (Player) sender;
+		if (sender instanceof Player player) {
 			String locale = player.getLocale();
 			JsonMessage.CompoundJsonMessage cmsg = new JsonMessage.CompoundJsonMessage();
 			boolean canStartAll = player.hasPermission(CommandType.SG_START.getBasicPermission() + ".all");
@@ -50,35 +48,35 @@ public class SGList extends BaseCommand {
 
 			// TODO check colors as JSON messages work (or implement a JSON message factory inside/with MessageProvider)
 
-			cmsg.messages.add(new JsonMessage().setText(PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.TITLE, locale)));
-			String loadCmd = "\n" + PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_INVITE, locale);
-			String loadCmdAll = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_ALL, locale);
-			String edit = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.EDIT, locale);
-			String checkconfig = PLUGIN.getMessageProvider().compileMessage(Messages.Command.SGList.CHECK_CONFIG, locale);
+			cmsg.add(new JsonMessage().setText(plugin.getMessageProvider().compileMessage(Messages.Command.SGList.TITLE, locale)));
+			String loadCmd = "\n" + plugin.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_INVITE, locale);
+			String loadCmdAll = plugin.getMessageProvider().compileMessage(Messages.Command.SGList.LOAD_ALL, locale);
+			String edit = plugin.getMessageProvider().compileMessage(Messages.Command.SGList.EDIT, locale);
+			String checkconfig = plugin.getMessageProvider().compileMessage(Messages.Command.SGList.CHECK_CONFIG, locale);
 
 			String sgStartCommand = '/' + CommandType.SG_START.getCommand() + " ";
 			String sgEditCommand = '/' + CommandType.SG_EDIT.getCommand() + " ";
 			String sgCheckCommand = '/' + CommandType.SG_CHECK.getCommand() + " ";
 
-			for (File json : getJsons(PLUGIN.getMapFolder())) {
-				cmsg.messages.add(new JsonMessage().setText(loadCmd).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " invite")));
+			for (File json : getJsons(plugin.getMapFolder())) {
+				cmsg.add(new JsonMessage().setText(loadCmd).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " invite")));
 				if (canStartAll) {
-					cmsg.messages.add(new JsonMessage().setText(" " + loadCmdAll).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " all")));
+					cmsg.add(new JsonMessage().setText(" " + loadCmdAll).setClickEvent(JsonTextEvent.runCommand(sgStartCommand + json.getName() + " all")));
 				}
 				if (canEdit) {
-					cmsg.messages.add(new JsonMessage().setText(" " + edit).setClickEvent(JsonTextEvent.runCommand(sgEditCommand + json.getName())));
+					cmsg.add(new JsonMessage().setText(" " + edit).setClickEvent(JsonTextEvent.runCommand(sgEditCommand + json.getName())));
 				}
 				if (canCheck) {
-					cmsg.messages.add(new JsonMessage().setText(" " + checkconfig).setClickEvent(JsonTextEvent.runCommand(sgCheckCommand + json.getName())));
+					cmsg.add(new JsonMessage().setText(" " + checkconfig).setClickEvent(JsonTextEvent.runCommand(sgCheckCommand + json.getName())));
 				}
-				cmsg.messages.add(new JsonMessage().setText(" - ").setColor(ChatColor.GREEN).setBold(true));
-				cmsg.messages.add(new JsonMessage().setText(json.getName()).setColor(ChatColor.GRAY));
+				cmsg.add(new JsonMessage().setText(" - ").setColor(ChatColor.GREEN).setBold(true));
+				cmsg.add(new JsonMessage().setText(json.getName()).setColor(ChatColor.GRAY));
 			}
 
 			Utils.sendJsonMessage(player, cmsg);
 		} else {
 			sendMessage(sender, Messages.Command.SGList.TITLE);
-			for (File json : getJsons(PLUGIN.getMapFolder())) {
+			for (File json : getJsons(plugin.getMapFolder())) {
 				sender.sendMessage(ChatColor.GRAY + json.getName());
 			}
 		}
@@ -87,13 +85,7 @@ public class SGList extends BaseCommand {
 	}
 	
 	private File[] getJsons(File dataFolder) {
-		return dataFolder.listFiles(new FilenameFilter() {
-			
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".json");
-			}
-		});
+		return dataFolder.listFiles((dir, name) -> name.endsWith(".json"));
 	}
 
 }

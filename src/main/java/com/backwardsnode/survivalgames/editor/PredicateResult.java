@@ -18,28 +18,18 @@
 
 package com.backwardsnode.survivalgames.editor;
 
-public class PredicateResult<T, S> {
-
-    public final boolean SUCCESSFUL;
-    public final T INPUT;
-    public final S OUTPUT;
-
-    public PredicateResult(boolean successful, T input, S output) {
-        SUCCESSFUL = successful;
-        INPUT = input;
-        OUTPUT = output;
-    }
+public record PredicateResult<T, S>(boolean successful, T input, S output) {
 
     public <A> PredicateResult<T, A> wrap(Class<A> clazz) {
-        if (clazz.isInstance(OUTPUT)) {
-            return new PredicateResult<>(SUCCESSFUL, INPUT, clazz.cast(OUTPUT));
+        if (clazz.isInstance(output)) {
+            return new PredicateResult<>(successful, input, clazz.cast(output));
         }
         return null;
     }
 
     public <A> A wrapOutput(Class<A> clazz) {
-        if (clazz.isInstance(OUTPUT)) {
-            return clazz.cast(OUTPUT);
+        if (clazz.isInstance(output)) {
+            return clazz.cast(output);
         }
         return null;
     }

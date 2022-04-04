@@ -36,8 +36,8 @@ public class SGJoin extends BaseCommand {
 		Player player = (Player) sender;
 
 		if (args.length > 0) {
-			if (PLUGIN.getHost().mapHasPendingInvitation(args[0])) {
-				PLUGIN.getHost().signUpInvitation(player, args[0]);
+			if (plugin.getHost().mapHasPendingInvitation(args[0])) {
+				plugin.getHost().signUpInvitation(player, args[0]);
 				sendMessage(sender, Messages.Command.SGJoin.JOINED);
 			} else {
 				sendMessage(sender, Messages.Command.SGJoin.NO_INVITE, args[0]);

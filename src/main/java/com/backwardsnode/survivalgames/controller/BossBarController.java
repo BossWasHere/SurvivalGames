@@ -39,19 +39,23 @@ public class BossBarController implements Controller {
 		maxHealth = health;
 		this.health = health;
 	}
-	
+
+	@Override
 	public void setVisibleTo(Collection<PlayerState> players) {
 		players.forEach(p -> bossBar.addPlayer(p.cache.getPlayer()));
 	}
-	
+
+	@Override
 	public void setVisibleTo(Player player) {
 		bossBar.addPlayer(player);
 	}
-	
+
+	@Override
 	public void unsetVisibleTo(Collection<PlayerState> players) {
 		players.forEach(p -> bossBar.removePlayer(p.cache.getPlayer()));
 	}
-	
+
+	@Override
 	public void unsetVisibleTo(Player player) {
 		bossBar.removePlayer(player);
 	}
@@ -85,7 +89,8 @@ public class BossBarController implements Controller {
 		bossBar.setTitle(name);
 		bossBar.setColor(color);
 	}
-	
+
+	@Override
 	public void close() {
 		bossBar.removeAll();
 	}

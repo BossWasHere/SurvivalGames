@@ -28,10 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class PlaceholderAPIConnector extends PlaceholderExpansion {
 
-    private final Plugin PLUGIN;
+    private final Plugin plugin;
 
     public PlaceholderAPIConnector(Plugin plugin) {
-        PLUGIN = plugin;
+        this.plugin = plugin;
     }
 
     @Override
@@ -60,19 +60,19 @@ public class PlaceholderAPIConnector extends PlaceholderExpansion {
 
         switch (lowercasePlaceholder) {
             case "sg_is_alive" -> {
-                GameInstance gameInstance = PLUGIN.getHost().getGameManager().getGame(player);
+                GameInstance gameInstance = plugin.getHost().getGameManager().getGame(player);
                 return gameInstance != null && gameInstance.getPlayerState(player).alive ? "alive" : "dead";
             }
             case "sg_current_kills" -> {
-                GameInstance gameInstance = PLUGIN.getHost().getGameManager().getGame(player);
+                GameInstance gameInstance = plugin.getHost().getGameManager().getGame(player);
                 return gameInstance == null ? "0" : String.valueOf(gameInstance.getPlayerState(player).kills);
             }
             case "sg_current_map" -> {
-                GameConfigurationWrapper gcw = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
+                GameConfigurationWrapper gcw = plugin.getHost().getCurrentEditorOrGameConfiguration(player);
                 return gcw == null ? "none" : gcw.getMapName();
             }
             case "sg_current_map_file" -> {
-                GameConfigurationWrapper gcw = PLUGIN.getHost().getCurrentEditorOrGameConfiguration(player);
+                GameConfigurationWrapper gcw = plugin.getHost().getCurrentEditorOrGameConfiguration(player);
                 return gcw == null ? "none" : gcw.getFileName();
             }
         }

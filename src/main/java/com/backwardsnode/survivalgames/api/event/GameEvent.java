@@ -27,10 +27,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class GameEvent extends Event {
 
-    protected final GameInstance GAME_INSTANCE;
+    protected final GameInstance gameInstance;
 
     protected GameEvent(@NotNull GameInstance gameInstance) {
-        GAME_INSTANCE = gameInstance;
+        this.gameInstance = gameInstance;
     }
 
     /**
@@ -38,6 +38,6 @@ public abstract class GameEvent extends Event {
      * @return The {@link GameInstance}
      */
     public @NotNull GameInstance getGame() {
-        return GAME_INSTANCE;
+        return gameInstance;
     }
 }

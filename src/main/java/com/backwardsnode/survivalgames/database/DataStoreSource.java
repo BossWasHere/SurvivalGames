@@ -26,13 +26,13 @@ public enum DataStoreSource {
     H2(true),
     MYSQL(true);
 
-    private final boolean IS_JDBC;
+    private final boolean isJdbc;
 
     DataStoreSource(boolean isJdbc) {
-        IS_JDBC = isJdbc;
+        this.isJdbc = isJdbc;
     }
 
     public boolean isJDBC() {
-        return IS_JDBC;
+        return isJdbc;
     }
 }

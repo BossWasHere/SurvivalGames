@@ -102,12 +102,8 @@ public class JsonMessage {
      */
     @Deprecated
     public JsonMessage setColor(String color) {
-        try {
-            ChatColor cc = ChatColor.valueOf(color.toUpperCase());
-            setColor(cc);
-        } catch (Exception e) {
-            // TODO should this be handled?
-        }
+        ChatColor cc = ChatColor.valueOf(color.toUpperCase());
+        setColor(cc);
         return this;
     }
 
@@ -177,30 +173,18 @@ public class JsonMessage {
     public JsonMessage apply(ChatColor color) {
         setColor(color);
         switch (color) {
-            case MAGIC:
-                setObfuscated(true);
-                break;
-            case BOLD:
-                setBold(true);
-                break;
-            case STRIKETHROUGH:
-                setStrikethrough(true);
-                break;
-            case UNDERLINE:
-                setUnderlined(true);
-                break;
-            case ITALIC:
-                setItalic(true);
-                break;
-            case RESET:
+            case MAGIC -> setObfuscated(true);
+            case BOLD -> setBold(true);
+            case STRIKETHROUGH -> setStrikethrough(true);
+            case UNDERLINE -> setUnderlined(true);
+            case ITALIC -> setItalic(true);
+            case RESET -> {
                 setObfuscated(false);
                 setBold(false);
                 setStrikethrough(false);
                 setUnderlined(false);
                 setItalic(false);
-                break;
-            default:
-                break;
+            }
         }
 
         return this;
@@ -297,16 +281,10 @@ public class JsonMessage {
      * A class representing multiple {@link JsonMessage} objects in a sorted list
      *
      */
-    public static class CompoundJsonMessage {
-
-        public List<JsonMessage> messages;
+    public static class CompoundJsonMessage extends ArrayList<JsonMessage> {
 
         public CompoundJsonMessage() {
-            messages = new ArrayList<>();
-        }
-
-        public void addMessage(JsonMessage message) {
-            messages.add(message);
+            super();
         }
 
     }

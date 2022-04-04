@@ -27,17 +27,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class GameInvitationEvent extends Event {
 
-    private final InvitedGameConfiguration INVITED_GAME_CONFIGURATION;
+    private final InvitedGameConfiguration gameConfiguration;
 
     protected GameInvitationEvent(@NotNull InvitedGameConfiguration gameConfiguration) {
-        INVITED_GAME_CONFIGURATION = gameConfiguration;
+        this.gameConfiguration = gameConfiguration;
     }
     /**
      * Gets the current invitation
      * @return The {@link InvitedGameConfiguration}
      */
     public @NotNull InvitedGameConfiguration getGameConfiguration() {
-        return INVITED_GAME_CONFIGURATION;
+        return gameConfiguration;
     }
 
 }

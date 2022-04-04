@@ -107,33 +107,25 @@ public class JsonTextEvent {
     public ClickEvent.Action toBungeeClickAction() throws IllegalStateException {
         if (isHoverEvent()) throw new IllegalStateException("Action is not a click action");
 
-        switch (action) {
-            case OPEN_URL:
-                return ClickEvent.Action.OPEN_URL;
-            case RUN_COMMAND:
-                return ClickEvent.Action.RUN_COMMAND;
-            case SUGGEST_COMMAND:
-                return ClickEvent.Action.SUGGEST_COMMAND;
-            case CHANGE_PAGE:
-                return ClickEvent.Action.CHANGE_PAGE;
-            case COPY_CLIPBOARD:
-                return ClickEvent.Action.COPY_TO_CLIPBOARD;
-        }
-        return null;
+        return switch (action) {
+            case OPEN_URL -> ClickEvent.Action.OPEN_URL;
+            case RUN_COMMAND -> ClickEvent.Action.RUN_COMMAND;
+            case SUGGEST_COMMAND -> ClickEvent.Action.SUGGEST_COMMAND;
+            case CHANGE_PAGE -> ClickEvent.Action.CHANGE_PAGE;
+            case COPY_CLIPBOARD -> ClickEvent.Action.COPY_TO_CLIPBOARD;
+            default -> null;
+        };
     }
 
     public HoverEvent.Action toBungeeHoverAction() throws IllegalStateException {
         if (!isHoverEvent()) throw new IllegalStateException("Action is not a hover action");
 
-        switch (action) {
-            case SHOW_TEXT:
-                return HoverEvent.Action.SHOW_TEXT;
-            case SHOW_ITEM:
-                return HoverEvent.Action.SHOW_ITEM;
-            case SHOW_ENTITY:
-                return HoverEvent.Action.SHOW_ENTITY;
-        }
-        return null;
+        return switch (action) {
+            case SHOW_TEXT -> HoverEvent.Action.SHOW_TEXT;
+            case SHOW_ITEM -> HoverEvent.Action.SHOW_ITEM;
+            case SHOW_ENTITY -> HoverEvent.Action.SHOW_ENTITY;
+            default -> null;
+        };
     }
 
 }

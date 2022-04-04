@@ -30,39 +30,39 @@ import java.util.UUID;
 
 public class AnvilState {
 
-    private final HashSet<UUID> VIEWERS;
-    private final Material ORIGINAL_TYPE;
-    private final BlockFace ROTATION;
+    private final HashSet<UUID> viewers;
+    private final Material originalType;
+    private final BlockFace rotation;
 
     public AnvilState(Material originalType, BlockFace rotation) {
-        VIEWERS = new HashSet<>();
-        ORIGINAL_TYPE = originalType;
-        ROTATION = rotation;
+        viewers = new HashSet<>();
+        this.originalType = originalType;
+        this.rotation = rotation;
     }
 
     public boolean addViewer(UUID uuid) {
-        return VIEWERS.add(uuid);
+        return viewers.add(uuid);
     }
 
     public boolean removeViewer(UUID uuid) {
-        return VIEWERS.remove(uuid);
+        return viewers.remove(uuid);
     }
 
     public boolean isViewer(UUID uuid) {
-        return VIEWERS.contains(uuid);
+        return viewers.contains(uuid);
     }
 
     public boolean hasNoViewers() {
-        return VIEWERS.isEmpty();
+        return viewers.isEmpty();
     }
 
     public void replaceBlock(Location location) {
         Block block = location.getBlock();
-        block.setType(ORIGINAL_TYPE);
+        block.setType(originalType);
         BlockData data = block.getBlockData();
 
         if (data instanceof Directional rotatable) {
-            rotatable.setFacing(ROTATION);
+            rotatable.setFacing(rotation);
             block.setBlockData(rotatable);
         }
     }

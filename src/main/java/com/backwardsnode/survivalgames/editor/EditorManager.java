@@ -39,21 +39,20 @@ import java.util.UUID;
 
 public class EditorManager {
 	
-	private final Plugin PLUGIN;
-	private EditorListener listener;
+	private final Plugin plugin;
 
-	private Map<UUID, Scene> editorsActive;
+	private final Map<UUID, Scene> editorsActive;
 
 	public EditorManager(Plugin plugin) {
-		PLUGIN = plugin;
+		this.plugin = plugin;
 		editorsActive = new HashMap<>();
 
-		listener = new EditorListener(this);
+		EditorListener listener = new EditorListener(this);
 		plugin.getServer().getPluginManager().registerEvents(listener, plugin);
 	}
 
 	public Plugin getHandler() {
-		return PLUGIN;
+		return plugin;
 	}
 	
 	public boolean addEditor(Player player, GameConfigurationWrapper config) {
@@ -108,7 +107,7 @@ public class EditorManager {
 		}
 
 		String locale = player.getLocale();
-		String itemSetTitle = PLUGIN.getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale);
+		String itemSetTitle = plugin.getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale);
 
 		List<ItemSet> itemSets = scene.getGameConfiguration().getItemSets();
 		int itemSetCount = itemSets.size();
@@ -119,7 +118,7 @@ public class EditorManager {
 		for (int j = 0; j < itemSetCount; j++) {
 			i.addItem(Utils.addNameAndLore(new ItemStack(Material.IRON_SWORD), itemSets.get(j).name, "ItemSet #" + j));
 		}
-		i.setItem(invSize - 1, EditorItems.NEW_ITEMSET_CONCRETE.getItem(PLUGIN, locale));
+		i.setItem(invSize - 1, EditorItems.NEW_ITEMSET_CONCRETE.getItem(plugin, locale));
 		player.openInventory(i);
 		return true;
 	}
@@ -135,7 +134,7 @@ public class EditorManager {
 			return false;
 		}
 
-		Inventory inv = Bukkit.createInventory(player, 54, PLUGIN.getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), itemSet));
+		Inventory inv = Bukkit.createInventory(player, 54, plugin.getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), itemSet));
 		if (target.items != null) {
 			List<ItemModel> items = target.items;
 			for (int j = 0; j < items.size() && j < 54; j++) {
@@ -182,12 +181,12 @@ public class EditorManager {
 	public boolean openSettingInventory(Player player) {
 		String locale = player.getLocale();
 		Inventory i = Bukkit.createInventory(null, 18, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.SETTINGS_TITLE, locale));
-		i.addItem(EditorItems.RENAME_MAP_NAMETAG.getItem(PLUGIN, locale), EditorItems.BORDER_DPS_CACTUS.getItem(PLUGIN, locale),
-				EditorItems.DEATHMATCH_CONFIG_FISHINGROD.getItem(PLUGIN, locale), EditorItems.SHRINK_TIME_AXE.getItem(PLUGIN, locale),
-				EditorItems.BORDER_START_MAP.getItem(PLUGIN, locale), EditorItems.WAIT_PERIOD_CLOCK.getItem(PLUGIN, locale),
-				EditorItems.GRACE_PERIOD_POPPY.getItem(PLUGIN, locale), EditorItems.PREFILL_CHESTMINECART.getItem(PLUGIN, locale),
-				EditorItems.DEATH_FIREWORK.getItem(PLUGIN, locale), EditorItems.KILL_FIREWORK.getItem(PLUGIN, locale),
-				EditorItems.LIGHTNING_ROD.getItem(PLUGIN, locale), EditorItems.ISWIP_BRICKS.getItem(PLUGIN, locale));
+		i.addItem(EditorItems.RENAME_MAP_NAMETAG.getItem(plugin, locale), EditorItems.BORDER_DPS_CACTUS.getItem(plugin, locale),
+				EditorItems.DEATHMATCH_CONFIG_FISHINGROD.getItem(plugin, locale), EditorItems.SHRINK_TIME_AXE.getItem(plugin, locale),
+				EditorItems.BORDER_START_MAP.getItem(plugin, locale), EditorItems.WAIT_PERIOD_CLOCK.getItem(plugin, locale),
+				EditorItems.GRACE_PERIOD_POPPY.getItem(plugin, locale), EditorItems.PREFILL_CHESTMINECART.getItem(plugin, locale),
+				EditorItems.DEATH_FIREWORK.getItem(plugin, locale), EditorItems.KILL_FIREWORK.getItem(plugin, locale),
+				EditorItems.LIGHTNING_ROD.getItem(plugin, locale), EditorItems.ISWIP_BRICKS.getItem(plugin, locale));
 		player.openInventory(i);
 		return true;
 	}
@@ -204,7 +203,7 @@ public class EditorManager {
 		int size = Utils.getPreferredSize(locations.size() + 9);
 		String locale = player.getLocale();
 		Inventory i = Bukkit.createInventory(null, size, getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.BORDER_TITLE, locale));
-		String[] itemLore = PLUGIN.getMessageProvider().compileMessage(Messages.Misc.BORDER_SELECT_LORE, locale).split("\\\\n");
+		String[] itemLore = plugin.getMessageProvider().compileMessage(Messages.Misc.BORDER_SELECT_LORE, locale).split("\\n");
 		for (String location : locations) {
 			if (scene.getTargetedBorder() != null) {
 				if (location.equals(scene.getTargetedBorder())) {
@@ -214,9 +213,9 @@ public class EditorManager {
 			}
 			i.addItem(Utils.addNameAndLore(new ItemStack(Material.OAK_FENCE), location, itemLore));
 		}
-		i.setItem(size - 9, EditorItems.INITIAL_BORDER_MAP.getItem(PLUGIN, locale));
-		i.setItem(size - 8, EditorItems.DEATHMATCH_BORDER_SWORD.getItem(PLUGIN, locale));
-		i.setItem(size - 7, EditorItems.HIDE_BORDER_BARRIER.getItem(PLUGIN, locale));
+		i.setItem(size - 9, EditorItems.INITIAL_BORDER_MAP.getItem(plugin, locale));
+		i.setItem(size - 8, EditorItems.DEATHMATCH_BORDER_SWORD.getItem(plugin, locale));
+		i.setItem(size - 7, EditorItems.HIDE_BORDER_BARRIER.getItem(plugin, locale));
 		player.openInventory(i);
 		return true;
 	}

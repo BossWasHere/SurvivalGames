@@ -27,17 +27,17 @@ import java.io.IOException;
 
 public class DataFrontend implements Closeable {
 
-    private final Plugin PLUGIN;
+    private final Plugin plugin;
 
     private DataStoreImplementation dataStore;
 
     private boolean closed = false;
 
     public DataFrontend(Plugin plugin, DataStoreSource source) {
-        PLUGIN = plugin;
+        this.plugin = plugin;
 
         switch (source) {
-            case CSV -> dataStore = new CSVStore(PLUGIN.getDataFolder());
+            case CSV -> dataStore = new CSVStore(this.plugin.getDataFolder());
         }
     }
 

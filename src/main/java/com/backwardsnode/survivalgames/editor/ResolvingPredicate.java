@@ -31,19 +31,11 @@ public abstract class ResolvingPredicate<S, T> {
     public static final ResolvingPredicate<String, Boolean> TRUE_PREDICATE = new ResolvingPredicate<>() {
         @Override
         protected Boolean convert(String string) {
-            switch (string.toLowerCase()) {
-                case "true":
-                case "yes":
-                case "1":
-                case "accept":
-                    return true;
-                case "false":
-                case "no":
-                case "0":
-                case "deny":
-                    return false;
-            }
-            return null;
+            return switch (string.toLowerCase()) {
+                case "true", "yes", "1", "accept" -> true;
+                case "false", "no", "0", "deny" -> false;
+                default -> null;
+            };
         }
     };
 
@@ -52,7 +44,7 @@ public abstract class ResolvingPredicate<S, T> {
         protected Integer convert(String string) {
             try {
                 return Integer.parseInt(string);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
             return null;
         }
@@ -63,7 +55,7 @@ public abstract class ResolvingPredicate<S, T> {
         protected Double convert(String string) {
             try {
                 return Double.parseDouble(string);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
             return null;
         }

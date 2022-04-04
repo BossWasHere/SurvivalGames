@@ -31,12 +31,12 @@ public class GameInvitationCancelledEvent extends GameInvitationEvent {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player PLAYER;
+    private final Player player;
     private final InvitationCancelType CANCEL_TYPE;
 
     public GameInvitationCancelledEvent(@NotNull Player player, @NotNull InvitedGameConfiguration gameConfiguration, @NotNull InvitationCancelType cancelType) {
         super(gameConfiguration);
-        PLAYER = player;
+        this.player = player;
         CANCEL_TYPE = cancelType;
     }
 
@@ -45,7 +45,7 @@ public class GameInvitationCancelledEvent extends GameInvitationEvent {
      * @return The {@link Player}
      */
     public @NotNull Player getWhoCancelled() {
-        return PLAYER;
+        return player;
     }
 
     /**

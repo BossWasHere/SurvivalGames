@@ -56,17 +56,17 @@ public enum EditorItems {
 	DEATHMATCH_BORDER_SWORD(Material.DIAMOND_SWORD, "deathmatchborder"),
 	HIDE_BORDER_BARRIER(Material.BARRIER, "hideborder");
 	
-	private final Material MATERIAL;
-	private final String UNLOCALIZED;
+	private final Material material;
+	private final String unlocalized;
 	
 	EditorItems(Material material, String unlocalized) {
-		this.MATERIAL = material;
-		this.UNLOCALIZED = unlocalized;
+		this.material = material;
+		this.unlocalized = unlocalized;
 	}
 	
 	public ItemStack getItem(Plugin plugin, String locale) {
-		String l = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + UNLOCALIZED, locale);
-		return Utils.addNameAndLore(new ItemStack(MATERIAL), plugin.getMessageProvider().compileUnregisteredMessage("item.name." + UNLOCALIZED, locale), l.split("\\n"));
+		String l = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + unlocalized, locale);
+		return Utils.addNameAndLore(new ItemStack(material), plugin.getMessageProvider().compileUnregisteredMessage("item.name." + unlocalized, locale), l.split("\\n"));
 	}
 	
 	public boolean isSimilar(Plugin plugin, String locale, ItemStack item) {
@@ -79,7 +79,7 @@ public enum EditorItems {
 		}
 		if (item.hasItemMeta()) {
 			if (item.getItemMeta().hasDisplayName()) {
-				return item.getItemMeta().getDisplayName().contentEquals(plugin.getMessageProvider().compileUnregisteredMessage("item.name." + model.UNLOCALIZED, locale));
+				return item.getItemMeta().getDisplayName().contentEquals(plugin.getMessageProvider().compileUnregisteredMessage("item.name." + model.unlocalized, locale));
 			}
 		}
 		return false;

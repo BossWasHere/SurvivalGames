@@ -26,42 +26,42 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class VaultConnector {
 
-    private final Economy ECONOMY;
+    private final Economy economy;
 
     public VaultConnector() {
         RegisteredServiceProvider<Economy> econServiceProvider = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
 
-        ECONOMY = econServiceProvider == null ? null : econServiceProvider.getProvider();
+        economy = econServiceProvider == null ? null : econServiceProvider.getProvider();
     }
 
     public boolean isConnected() {
-        return ECONOMY != null;
+        return economy != null;
     }
 
     public double getBalance(OfflinePlayer player) {
-        return ECONOMY == null ? 0 : ECONOMY.getBalance(player);
+        return economy == null ? 0 : economy.getBalance(player);
     }
 
     public void setBalance(OfflinePlayer player, double balance) {
-        double current = ECONOMY.getBalance(player);
+        double current = economy.getBalance(player);
         depositPlayer(player, balance - current);
     }
 
     public boolean depositPlayer(OfflinePlayer player, double amount) {
-        if (ECONOMY == null) {
+        if (economy == null) {
             return false;
         }
 
-        EconomyResponse response = ECONOMY.depositPlayer(player, amount);
+        EconomyResponse response = economy.depositPlayer(player, amount);
         return response.transactionSuccess();
     }
 
     public boolean withdrawPlayer(OfflinePlayer player, double amount) {
-        if (ECONOMY == null) {
+        if (economy == null) {
             return false;
         }
 
-        EconomyResponse response = ECONOMY.withdrawPlayer(player, amount);
+        EconomyResponse response = economy.withdrawPlayer(player, amount);
         return response.transactionSuccess();
     }
 }

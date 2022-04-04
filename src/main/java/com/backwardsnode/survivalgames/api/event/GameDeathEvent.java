@@ -31,13 +31,13 @@ public class GameDeathEvent extends GameEvent {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player WHO_DIED;
-    private final Player KILLED_BY;
+    private final Player whoDied;
+    private final Player killedBy;
 
     public GameDeathEvent(@NotNull GameInstance gameInstance, @NotNull Player whoDied, @Nullable Player killedBy) {
         super(gameInstance);
-        WHO_DIED = whoDied;
-        KILLED_BY = killedBy;
+        this.whoDied = whoDied;
+        this.killedBy = killedBy;
     }
 
     /**
@@ -45,7 +45,7 @@ public class GameDeathEvent extends GameEvent {
      * @return The {@link Player} who died
      */
     public @NotNull Player getWhoDied() {
-        return WHO_DIED;
+        return whoDied;
     }
 
     /**
@@ -53,7 +53,7 @@ public class GameDeathEvent extends GameEvent {
      * @return True if was killed
      */
     public boolean wasKilledByPlayer() {
-        return KILLED_BY != null;
+        return killedBy != null;
     }
 
     /**
@@ -61,7 +61,7 @@ public class GameDeathEvent extends GameEvent {
      * @return The {@link Player} who killed
      */
     public @Nullable Player getKiller() {
-        return KILLED_BY;
+        return killedBy;
     }
 
     @Override

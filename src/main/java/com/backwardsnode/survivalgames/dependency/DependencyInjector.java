@@ -19,13 +19,9 @@
 package com.backwardsnode.survivalgames.dependency;
 
 import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.Utils;
 import org.bukkit.Bukkit;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
@@ -38,28 +34,28 @@ public enum DependencyInjector {
 
     public static final String REPO_URL = "https://repo1.maven.org/maven2/";
 
-    private final String GROUP;
-    private final String ARTIFACT;
-    private final String VERSION;
-    private final String CLASS_TEST;
-    private final String HASH;
+    private final String group;
+    private final String artifact;
+    private final String version;
+    private final String classTest;
+    private final String hash;
 
     DependencyInjector(String group, String artifact, String version, String classTest, String hash) {
-        GROUP = group;
-        ARTIFACT = artifact;
-        VERSION = version;
-        CLASS_TEST = classTest;
-        HASH = hash;
+        this.group = group;
+        this.artifact = artifact;
+        this.version = version;
+        this.classTest = classTest;
+        this.hash = hash;
     }
 
     public String getLibraryName() {
-        return ARTIFACT + '-' + VERSION + ".jar";
+        return artifact + '-' + version + ".jar";
     }
 
     public String getDependencyUrl() {
-        return REPO_URL + GROUP.replace('.', '/') + '/' +
-                ARTIFACT + '/' +
-                VERSION + '/' +
+        return REPO_URL + group.replace('.', '/') + '/' +
+                artifact + '/' +
+                version + '/' +
                 getLibraryName();
     }
 
@@ -79,7 +75,7 @@ public enum DependencyInjector {
         File dependency = getLibraryFile(plugin.getLibraryFolder());
 
         if (!injectInternal(dependency)) {
-            plugin.getLogger().info("Downloading dependency " + ARTIFACT + '-' + VERSION);
+            plugin.getLogger().info("Downloading dependency " + artifact + '-' + version);
             downloadInternal(dependency);
 
             return injectInternal(dependency);
@@ -99,12 +95,12 @@ public enum DependencyInjector {
             try {
                 URLClassLoader loader = new URLClassLoader(new URL[] { dependency.toURI().toURL() }, getClass().getClassLoader());
 
-                Class.forName(CLASS_TEST, true, loader);
+                Class.forName(classTest, true, loader);
 
                 return true;
 
             } catch (ClassNotFoundException e) {
-                Bukkit.getLogger().warning("Class loading failed during dependency injection for " + ARTIFACT);
+                Bukkit.getLogger().warning("Class loading failed during dependency injection for " + artifact);
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -140,7 +136,7 @@ public enum DependencyInjector {
     private boolean verifyDependencyInternal(File dependency) {
         if (dependency.exists()) {
             try {
-                return HASH.equals(Utils.getFileChecksum(MessageDigest.getInstance("SHA-256"), dependency));
+                return hash.equals(getFileChecksum(MessageDigest.getInstance("SHA-256"), dependency));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -151,5 +147,30 @@ public enum DependencyInjector {
 
     private File getLibraryFile(File libraryDirectory) {
         return new File(libraryDirectory, getLibraryName());
+    }
+
+    private static String getFileChecksum(MessageDigest digest, File file) throws IOException
+    {
+        FileInputStream fis = new FileInputStream(file);
+
+        byte[] byteArray = new byte[1024];
+        int bytesCount = 0;
+
+        while ((bytesCount = fis.read(byteArray)) != -1) {
+            digest.update(byteArray, 0, bytesCount);
+        };
+
+        fis.close();
+
+        byte[] bytes = digest.digest();
+
+        StringBuilder sb = new StringBuilder(2 * bytes.length);
+        for(int i = 0; i< bytes.length; i++)
+        {
+            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+        //return complete hash
+        return sb.toString();
     }
 }

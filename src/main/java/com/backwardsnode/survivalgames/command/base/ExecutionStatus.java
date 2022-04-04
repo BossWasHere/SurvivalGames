@@ -24,6 +24,6 @@ public enum ExecutionStatus {
     BAD_USAGE,
     NO_PERMISSION,
     NOT_PLAYER,
-    NOT_CONSOLE;
+    NOT_CONSOLE
 
 }

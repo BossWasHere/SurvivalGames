@@ -32,46 +32,46 @@ public class MessageProvider {
 
     public static final String DEFAULT_LOCALE = "en_US";
 
-    private final Plugin PLUGIN;
-    private final String CURRENT_DEFAULT;
-    private final HashMap<String, Configuration> LANGUAGES;
+    private final Plugin plugin;
+    private final String currentDefault;
+    private final HashMap<String, Configuration> languages;
 
     public MessageProvider(Plugin plugin) {
         this(plugin, DEFAULT_LOCALE, false);
     }
 
     public MessageProvider(Plugin plugin, String defaultLocale, boolean preloadDefault) {
-        PLUGIN = plugin;
-        LANGUAGES = new HashMap<>();
+        this.plugin = plugin;
+        languages = new HashMap<>();
 
-        CURRENT_DEFAULT = defaultLocale;
+        currentDefault = defaultLocale;
 
         if (preloadDefault) {
-            loadLanguage(CURRENT_DEFAULT, false);
+            loadLanguage(currentDefault, false);
         }
     }
 
     public boolean loadLanguage(String language, boolean reload) {
-        if (!reload && LANGUAGES.containsKey(language)) {
+        if (!reload && languages.containsKey(language)) {
             return false;
         }
 
         Configuration languageConfig = loadLanguageInternal(language);
-        LANGUAGES.put(language, languageConfig);
+        languages.put(language, languageConfig);
 
         return languageConfig != null;
     }
 
     private Configuration loadLanguageInternal(String language) {
         String langFileName = language + ".yml";
-        File langFile = new File(PLUGIN.getLanguageFolder(), langFileName);
+        File langFile = new File(plugin.getLanguageFolder(), langFileName);
 
         if (!langFile.exists()) {
             try {
-                PLUGIN.extractFile(langFile.getAbsoluteFile().toPath(), langFileName);
-                PLUGIN.getLogger().info("Extracted language file for " + language);
+                plugin.extractFile(langFile.getAbsoluteFile().toPath(), langFileName);
+                plugin.getLogger().info("Extracted language file for " + language);
             } catch (Exception e) {
-                PLUGIN.getLogger().warning("Could not extract language " + language);
+                plugin.getLogger().warning("Could not extract language " + language);
 
                 return null;
             }
@@ -80,7 +80,7 @@ public class MessageProvider {
         try {
             return YamlConfiguration.loadConfiguration(langFile);
         } catch (Exception e) {
-            PLUGIN.getLogger().severe("Could not load language from " + langFileName);
+            plugin.getLogger().severe("Could not load language from " + langFileName);
 
             return null;
         }
@@ -90,7 +90,7 @@ public class MessageProvider {
         Configuration languageConfig = reExtractLanguageInternal(language);
 
         if (languageConfig != null) {
-            LANGUAGES.put(language, languageConfig);
+            languages.put(language, languageConfig);
             return true;
         }
 
@@ -99,11 +99,11 @@ public class MessageProvider {
 
     private Configuration reExtractLanguageInternal(String language) {
         String langFileName = language + ".yml";
-        File langFile = new File(PLUGIN.getLanguageFolder(), langFileName);
+        File langFile = new File(plugin.getLanguageFolder(), langFileName);
 
         try {
-            PLUGIN.extractFile(langFile.getAbsoluteFile().toPath(), langFileName, StandardCopyOption.REPLACE_EXISTING);
-            PLUGIN.getLogger().info("Extracted language file for " + language);
+            plugin.extractFile(langFile.getAbsoluteFile().toPath(), langFileName, StandardCopyOption.REPLACE_EXISTING);
+            plugin.getLogger().info("Extracted language file for " + language);
         } catch (Exception e) {
             return null;
         }
@@ -111,7 +111,7 @@ public class MessageProvider {
         try {
             return YamlConfiguration.loadConfiguration(langFile);
         } catch (Exception e) {
-            PLUGIN.getLogger().severe("Could not load language from " + langFileName);
+            plugin.getLogger().severe("Could not load language from " + langFileName);
 
             return null;
         }
@@ -120,26 +120,26 @@ public class MessageProvider {
     private Configuration selectLanguageInternal(String language) {
         Configuration languageConfig;
 
-        if (LANGUAGES.containsKey(language)) {
-            languageConfig = LANGUAGES.get(language);
+        if (languages.containsKey(language)) {
+            languageConfig = languages.get(language);
         } else {
             languageConfig = loadLanguageInternal(language);
-            LANGUAGES.put(language, languageConfig);
+            languages.put(language, languageConfig);
         }
 
         if (languageConfig == null) {
-            return LANGUAGES.get(CURRENT_DEFAULT);
+            return languages.get(currentDefault);
         }
 
         return languageConfig;
     }
 
     public void sendMessage(CommandSender sender, PluginMessage message, Object... formatVars) {
-        String locale = CURRENT_DEFAULT;
+        String locale = currentDefault;
 
         if (sender == null) {
-            for (String line : compileMessage(message, CURRENT_DEFAULT, formatVars).split("\\r?\\n")) {
-                PLUGIN.getLogger().info(line);
+            for (String line : compileMessage(message, currentDefault, formatVars).split("\\r?\\n")) {
+                plugin.getLogger().info(line);
             }
             return;
         }
@@ -153,7 +153,7 @@ public class MessageProvider {
     }
 
     public String compileDefaultMessage(PluginMessage message, Object... formatVars) {
-        return compileMessageInternal(message.getTarget(), message.getPrefix(), LANGUAGES.get(CURRENT_DEFAULT), formatVars);
+        return compileMessageInternal(message.getTarget(), message.getPrefix(), languages.get(currentDefault), formatVars);
     }
 
     public String compileMessage(PluginMessage message, String locale, Object... formatVars) {

@@ -23,7 +23,10 @@ import com.backwardsnode.survivalgames.message.JsonMessage;
 import com.google.common.base.Preconditions;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.Location;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -34,14 +37,13 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Utils {
 
@@ -120,9 +122,9 @@ public class Utils {
 //        }
 //        builder.append(']');
 //        return sendRawMessage(player, builder.toString());
-        BaseComponent[] components = new BaseComponent[compoundMessage.messages.size()];
+        BaseComponent[] components = new BaseComponent[compoundMessage.size()];
         int i = 0;
-        for (JsonMessage msg : compoundMessage.messages) {
+        for (JsonMessage msg : compoundMessage) {
             components[i++] = msg.toBungeeChatComponent();
         }
         player.spigot().sendMessage(components);
@@ -167,16 +169,16 @@ public class Utils {
         if (max < count) {
             throw new IllegalArgumentException("The maximum value must be greater than the number of values");
         }
-        int[] a = new int[count];
-        Random r = new Random();
-        int next;
-        for (int b = 0; b < count; b++) {
-            do {
-                next = r.nextInt(max);
-            } while (anyMatch(a, next));
-            a[b] = next;
+
+        List<Integer> ints = IntStream.range(0, max).boxed().toList();
+        Collections.shuffle(ints);
+
+        int[] slots = new int[count];
+        for (int i = 0; i < count; i++) {
+            slots[i] = ints.get(i);
         }
-        return a;
+
+        return slots;
     }
 
     public static boolean fillChest(Chest chest, Collection<ItemSet> allItemSets, Collection<String> permittedItemSets) {
@@ -286,10 +288,6 @@ public class Utils {
         return WordUtils.capitalizeFully(e.toString().replace('_', ' '));
     }
 
-    private static boolean anyMatch(final int[] array, final int value) {
-        return Arrays.stream(array).anyMatch(x -> x == value);
-    }
-
     public static void spawnRandomFirework(Location l) {
         Firework f = (Firework) l.getWorld().spawnEntity(l, EntityType.FIREWORK);
         FireworkMeta fm = f.getFireworkMeta();
@@ -303,32 +301,4 @@ public class Utils {
 
     }
 
-    public static String secondsToMMSS(long pTime) {
-        return String.format("%02d:%02d", pTime / 60, pTime % 60);
-    }
-
-    public static String getFileChecksum(MessageDigest digest, File file) throws IOException
-    {
-        FileInputStream fis = new FileInputStream(file);
-
-        byte[] byteArray = new byte[1024];
-        int bytesCount = 0;
-
-        while ((bytesCount = fis.read(byteArray)) != -1) {
-            digest.update(byteArray, 0, bytesCount);
-        };
-
-        fis.close();
-
-        byte[] bytes = digest.digest();
-
-        StringBuilder sb = new StringBuilder(2 * bytes.length);
-        for(int i = 0; i< bytes.length; i++)
-        {
-            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-        }
-
-        //return complete hash
-        return sb.toString();
-    }
 }

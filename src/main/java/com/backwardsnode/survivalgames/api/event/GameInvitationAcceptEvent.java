@@ -31,13 +31,13 @@ public class GameInvitationAcceptEvent extends GameInvitationEvent implements Ca
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player PLAYER;
+    private final Player player;
 
     private boolean cancelled = false;
 
     public GameInvitationAcceptEvent(@NotNull Player player, @NotNull InvitedGameConfiguration gameConfiguration) {
         super(gameConfiguration);
-        PLAYER = player;
+        this.player = player;
     }
 
     /**
@@ -45,7 +45,7 @@ public class GameInvitationAcceptEvent extends GameInvitationEvent implements Ca
      * @return The {@link Player}
      */
     public @NotNull Player getInvitee() {
-        return PLAYER;
+        return player;
     }
 
     @Override

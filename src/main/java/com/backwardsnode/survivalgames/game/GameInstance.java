@@ -45,13 +45,13 @@ import java.util.stream.IntStream;
 
 public class GameInstance {
 
-	private final GameManager MANAGER;
-	private final GameConfigurationWrapper CONFIG;
-	private final PlayerCacheSettings CACHE_SETTINGS;
-	private final Map<UUID, PlayerState> INGAME_PLAYERS;
-	private final Set<BlockLocation> OPENED_CHESTS;
-	private final Map<BlockLocation, LootDrop> DROPS_IN_PROGRESS;
-	private final Random RANDOM;
+	private final GameManager manager;
+	private final GameConfigurationWrapper gameConfiguration;
+	private final PlayerCacheSettings cacheSettings;
+	private final Map<UUID, PlayerState> ingamePlayers;
+	private final Set<BlockLocation> openedChests;
+	private final Map<BlockLocation, LootDrop> dropsInProgress;
+	private final Random random;
 
 	private ScoreboardController scoreboard;
 	private BossBarController bossbar;
@@ -80,14 +80,14 @@ public class GameInstance {
 			throw new GameConfigurationException("Not enough spawn locations");
 		}
 
-		MANAGER = manager;
-		CONFIG = gcw;
-		CACHE_SETTINGS = cacheSettings;
+		this.manager = manager;
+		gameConfiguration = gcw;
+		this.cacheSettings = cacheSettings;
 
-		INGAME_PLAYERS = new HashMap<>();
-		OPENED_CHESTS = new HashSet<>();
-		DROPS_IN_PROGRESS = new HashMap<>();
-		RANDOM = new Random();
+		ingamePlayers = new HashMap<>();
+		openedChests = new HashSet<>();
+		dropsInProgress = new HashMap<>();
+		random = new Random();
 
 		currentStatus = GameStatus.WAITING;
 	}
@@ -97,7 +97,7 @@ public class GameInstance {
 
 		// filter players already in-game
 		boolean acceptsSpectators = selectorMode.allowSpectators();
-		players.removeIf(MANAGER::isPlayerIngame);
+		players.removeIf(manager::isPlayerIngame);
 
 		// halt if this is "bad"
 		if (!ignoreIngamePlayers) {
@@ -115,8 +115,8 @@ public class GameInstance {
 
 		// check sufficient player funds
 		initialPlayers = 0;
-		float entryFee = CONFIG.getEntryFee();
-		VaultConnector vault = MANAGER.getPlugin().getDependencyManager().getVaultConnector();
+		float entryFee = gameConfiguration.getEntryFee();
+		VaultConnector vault = manager.getPlugin().getDependencyManager().getVaultConnector();
 		if (vault != null && entryFee > 0) {
 			for (Player pl : players) {
 				if (pl.hasPermission("survivalgames.freeentry") || vault.getBalance(pl) >= entryFee){
@@ -132,7 +132,7 @@ public class GameInstance {
 		}
 
 		// check if we have too many candidates
-		int spawnLocationCount = CONFIG.getSpawnLocations().size();
+		int spawnLocationCount = gameConfiguration.getSpawnLocations().size();
 		if (initialPlayers > spawnLocationCount) {
 			if (acceptsSpectators) {
 				currentStatus = GameStatus.START_SUCCESS_WITH_SPECTATORS;
@@ -151,7 +151,7 @@ public class GameInstance {
 			Collections.shuffle(players);
 		}
 
-		boolean allowSpectateWithoutFunds = PluginConfigKeys.PERMIT_SPECTATE_WITHOUT_FUNDS.get(MANAGER.getPlugin().getConfig());
+		boolean allowSpectateWithoutFunds = PluginConfigKeys.PERMIT_SPECTATE_WITHOUT_FUNDS.get(manager.getPlugin().getConfig());
 
 		// process players
 		int addedPlayers = 0;
@@ -161,13 +161,13 @@ public class GameInstance {
 
 				if (vault != null && entryFee > 0) {
 					if (pl.hasPermission("survivalgames.freeentry")){
-						MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.FREE_ENTRY);
+						manager.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.FREE_ENTRY);
 					} else if (!vault.withdrawPlayer(pl, entryFee)) {
 						if (allowSpectateWithoutFunds && acceptsSpectators) {
-							MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS_SPECTATING_INSTEAD);
+							manager.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS_SPECTATING_INSTEAD);
 							gotEntry = false;
 						} else {
-							MANAGER.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS);
+							manager.getPlugin().getMessageProvider().sendMessage(pl, Messages.Game.INSUFFICIENT_FUNDS);
 							continue;
 						}
 					}
@@ -175,8 +175,8 @@ public class GameInstance {
 
 				if (gotEntry) {
 					PlayerState ps = new PlayerState(pl, false);
-					ps.cache.cacheCurrent(CACHE_SETTINGS);
-					INGAME_PLAYERS.put(pl.getUniqueId(), ps);
+					ps.cache.cacheCurrent(cacheSettings);
+					ingamePlayers.put(pl.getUniqueId(), ps);
 					updatePlayerTime(pl, false);
 					addedPlayers++;
 
@@ -186,7 +186,7 @@ public class GameInstance {
 			if (acceptsSpectators) {
 				PlayerState ps = new PlayerState(pl, true);
 				ps.cache.cacheCurrentGamemode();
-				INGAME_PLAYERS.put(pl.getUniqueId(), ps);
+				ingamePlayers.put(pl.getUniqueId(), ps);
 				updatePlayerTime(pl, false);
 			}
 		}
@@ -198,14 +198,14 @@ public class GameInstance {
 		setupBorder(players.get(0).getWorld());
 		setupScoreboard(initialPlayers);
 		setupBossbar();
-		deathmatchConfig = CONFIG.selectDeathmatch();
+		deathmatchConfig = gameConfiguration.selectDeathmatch();
 
-		if (CONFIG.getDoChestPrefilling()) {
+		if (gameConfiguration.getDoChestPrefilling()) {
 			fillChests(initiator);
 		}
 
 		// game start
-		startCountdownTimer(CONFIG.getWaitPeriod(), GameStatus.RELEASE_PLAYERS);
+		startCountdownTimer(gameConfiguration.getWaitPeriod());
 
 		startedAt = new Date();
 
@@ -217,32 +217,30 @@ public class GameInstance {
 	private void setupScoreboard(int playersAlive) {
 		scoreboard = new ScoreboardController(ChatColor.DARK_AQUA + "[Survival Games]");
 		scoreboard.initialize();
-		scoreboard.updateScoreboardElement(ScoreboardElement.MAP_NAME, (CONFIG.getMapName()));
+		scoreboard.updateScoreboardElement(ScoreboardElement.MAP_NAME, (gameConfiguration.getMapName()));
 		scoreboard.updateScoreboardElement(ScoreboardElement.PLAYERS_LEFT, String.valueOf(playersAlive));
 		String dim = String.valueOf(Math.floor(border.getDiameter()));
 		scoreboard.updateScoreboardElement(ScoreboardElement.ZONE_SIZE, dim + "," + dim + " blocks");
-		scoreboard.setVisibleTo(INGAME_PLAYERS.values());
+		scoreboard.setVisibleTo(ingamePlayers.values());
 	}
 
 	private void setupBossbar() {
-		bossbar = new BossBarController("Game Starting...", BarColor.BLUE, CONFIG.getWaitPeriod());
-		bossbar.setVisibleTo(INGAME_PLAYERS.values());
+		bossbar = new BossBarController("Game Starting...", BarColor.BLUE, gameConfiguration.getWaitPeriod());
+		bossbar.setVisibleTo(ingamePlayers.values());
 	}
 
 	private void setupBorder(World defaultWorld) {
-		border = new BorderController(MANAGER.getPlugin().getDependencyManager().getProtocolConnector(), defaultWorld);
-		border.setTarget(CONFIG.getBorderStartDiameter(), 0);
-		border.setVisibleTo(INGAME_PLAYERS.values());
+		border = new BorderController(manager.getPlugin().getDependencyManager().getProtocolConnector(), defaultWorld);
+		border.setTarget(gameConfiguration.getBorderStartDiameter(), 0);
+		border.setVisibleTo(ingamePlayers.values());
 	}
 	
-	private boolean startCountdownTimer(int seconds, GameStatus nextPhase) {
+	private void startCountdownTimer(int seconds) {
 		if (timerTask == null) {
 			timerInstance = new TimerCountdown(this);
-			timerInstance.setOperation(nextPhase, seconds);
-			timerTask = Bukkit.getScheduler().runTaskTimer(MANAGER.getPlugin(), timerInstance, 20, 20);
-			return true;
+			timerInstance.setOperation(GameStatus.RELEASE_PLAYERS, seconds);
+			timerTask = Bukkit.getScheduler().runTaskTimer(manager.getPlugin(), timerInstance, 20, 20);
 		}
-		return false;
 	}
 	
 	protected void triggerEvent(GameStatus status) {
@@ -281,7 +279,7 @@ public class GameInstance {
 	protected void tick(long remaining, GameStatus nextOperation) {
 		// Update time left on tick
 		if (remaining >= 0) {
-			scoreboard.updateScoreboardElement(ScoreboardElement.TIME_LEFT, Utils.secondsToMMSS(remaining));
+			scoreboard.updateScoreboardElement(ScoreboardElement.TIME_LEFT, String.format("%02d:%02d", remaining / 60, remaining % 60));
 			bossbar.setHealth(remaining);
 		}
 
@@ -300,7 +298,7 @@ public class GameInstance {
 			double centerX = deathmatchConfig.getCenterX();
 			double centerZ = deathmatchConfig.getCenterZ();
 
-			for (PlayerState playerState : INGAME_PLAYERS.values()) {
+			for (PlayerState playerState : ingamePlayers.values()) {
 				if (playerState.alive) {
 					Player player = playerState.cache.getPlayer();
 					Location location = player.getLocation();
@@ -314,7 +312,7 @@ public class GameInstance {
 
 		// Decrement loot drop timer on tick
 		if (--timeToNextLootDrop == 0) {
-			if (nextLootDropProbability > 0 && nextLootDropProbability > RANDOM.nextFloat()) {
+			if (nextLootDropProbability > 0 && nextLootDropProbability > random.nextFloat()) {
 				if (summonLootDrop(true)) {
 					nextLootDropProbability = getGameConfiguration().getLootDropTriggerProbability();
 				} else {
@@ -331,15 +329,15 @@ public class GameInstance {
 		int selectionSize = lootDrops.size();
 		if (selectionSize > 0) {
 			List<Integer> selectionOrder = IntStream.range(0, selectionSize).boxed().toList();
-			Collections.shuffle(selectionOrder, RANDOM);
+			Collections.shuffle(selectionOrder, random);
 
 			for (int i : selectionOrder) {
 				LootDropConfiguration lootDropConfiguration = lootDrops.get(i);
-				if (!DROPS_IN_PROGRESS.containsKey(lootDropConfiguration.location)) {
+				if (!dropsInProgress.containsKey(lootDropConfiguration.location)) {
 					announce(Messages.Game.LOOT_DROPPING);
 
-					LootDrop lootDrop = MANAGER.getPlugin().getHost().getLootDropManager().summonLootDrop(lootDropConfiguration, true);
-					DROPS_IN_PROGRESS.put(lootDropConfiguration.location, lootDrop);
+					LootDrop lootDrop = manager.getPlugin().getHost().getLootDropManager().summonLootDrop(lootDropConfiguration, true);
+					dropsInProgress.put(lootDropConfiguration.location, lootDrop);
 
 					dropped = true;
 					break;
@@ -352,10 +350,10 @@ public class GameInstance {
 			if (dropped) {
 				timeToNextLootDrop = getGameConfiguration().getLootDropDelay();
 				if (timeToNextLootDrop > 0 && window > 0) {
-					timeToNextLootDrop += RANDOM.nextInt(window);
+					timeToNextLootDrop += random.nextInt(window);
 				}
 			} else {
-				timeToNextLootDrop = window == 0 ? 1 : RANDOM.nextInt(window);
+				timeToNextLootDrop = window == 0 ? 1 : random.nextInt(window);
 			}
 		}
 		return dropped;
@@ -363,16 +361,16 @@ public class GameInstance {
 
 	private void preparePlayers() {
 		int i = 0;
-		for (PlayerState player : INGAME_PLAYERS.values()) {
+		for (PlayerState player : ingamePlayers.values()) {
 			Player p = player.cache.getPlayer();
-			MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, CONFIG.getMapName());
+			manager.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.PLAYING_ON, gameConfiguration.getMapName());
 
-			List<BlockLocation> spawnLocations = CONFIG.getSpawnLocations();
+			List<BlockLocation> spawnLocations = gameConfiguration.getSpawnLocations();
 			Location commonSpawnLocation = spawnLocations.get(0).toBukkitLocation().add(0.5, 0, 0.5);
 			if (player.spectating) {
 				p.teleport(commonSpawnLocation);
 				p.setGameMode(GameMode.SPECTATOR);
-				MANAGER.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.AS_SPECTATOR);
+				manager.getPlugin().getMessageProvider().sendMessage(p, Messages.Game.AS_SPECTATOR);
 			} else {
 				p.teleport(spawnLocations.get(i).toBukkitLocation().add(0.5, 0, 0.5));
 				p.setGameMode(GameMode.ADVENTURE);
@@ -382,13 +380,13 @@ public class GameInstance {
 	}
 
 	private void updatePlayerTime(Player player, boolean reset) {
-		if (MANAGER.timeControlEnabled()) {
+		if (manager.timeControlEnabled()) {
 			if (reset) {
 				player.resetPlayerTime();
 			} else {
-				int time = CONFIG.getStartingDaytime();
+				int time = gameConfiguration.getStartingDaytime();
 				if (time >= 0) {
-					player.setPlayerTime(time, CONFIG.getDoDaylightCycle());
+					player.setPlayerTime(time, gameConfiguration.getDoDaylightCycle());
 				}
 			}
 		}
@@ -398,7 +396,7 @@ public class GameInstance {
 		flagDisableMovement = false;
 		playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 
-		int gracePeriod = CONFIG.getGracePeriod();
+		int gracePeriod = gameConfiguration.getGracePeriod();
 		if (gracePeriod <= 0) {
 			enablePVP(false);
 		} else {
@@ -417,9 +415,9 @@ public class GameInstance {
 			playGlobalSound(Sound.BLOCK_NOTE_BLOCK_PLING);
 			announce(Messages.Game.PVP_ENABLED);
 		}
-		bossbar.resetHealth(CONFIG.getPreShrinkPeriod());
+		bossbar.resetHealth(gameConfiguration.getPreShrinkPeriod());
 		bossbar.setOptions("PvP Enabled", BarColor.PURPLE);
-		timerInstance.setOperation(GameStatus.SHRINK_PLAY_AREA, CONFIG.getPreShrinkPeriod());
+		timerInstance.setOperation(GameStatus.SHRINK_PLAY_AREA, gameConfiguration.getPreShrinkPeriod());
 	}
 	
 	private void shrinkPlayArea() {
@@ -471,30 +469,30 @@ public class GameInstance {
 	private void fillChests(Player initiator) {
 		int missingChests = 0;
 		boolean foundBadItem = false;
-		for (ChestConfiguration co : CONFIG.getChests()) {
+		for (ChestConfiguration co : gameConfiguration.getChests()) {
 			Block b = co.location.getBlock();
 			if (b.getType() != Material.CHEST || !(b.getState() instanceof Chest chest)) {
 				if (missingChests < 5) {
-					MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.location.toString());
+					manager.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_IGNORE_MISSING, co.location.toString());
 				}
 				missingChests++;
 				continue;
 			}
 
-			if (!Utils.fillChest(chest, CONFIG.getItemSets(), co.itemSets)) {
+			if (!Utils.fillChest(chest, gameConfiguration.getItemSets(), co.itemSets)) {
 				foundBadItem = true;
 			}
 		}
 		if (missingChests > 0) {
-			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_MISSING_SIMPLE, missingChests);
+			manager.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_MISSING_SIMPLE, missingChests);
 		}
 		if (foundBadItem) {
-			MANAGER.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_BAD_ITEMS);
+			manager.getPlugin().getMessageProvider().sendMessage(initiator, Messages.Config.CHEST_BAD_ITEMS);
 		}
 	}
 
 	public void updateMostKills() {
-		List<PlayerState> states = INGAME_PLAYERS.values().stream().filter(x -> !x.spectating).sorted((p1, p2) -> Integer.compare(p2.kills, p1.kills)).toList();
+		List<PlayerState> states = ingamePlayers.values().stream().filter(x -> !x.spectating).sorted((p1, p2) -> Integer.compare(p2.kills, p1.kills)).toList();
 		int i = 0;
 		for (PlayerState state : states) {
 			switch (i) {
@@ -507,8 +505,8 @@ public class GameInstance {
 		}
 	}
 	
-	private void playGlobalSound(Sound sound) {
-		for (PlayerState ps : INGAME_PLAYERS.values()) {
+	public void playGlobalSound(Sound sound) {
+		for (PlayerState ps : ingamePlayers.values()) {
 			Player p = ps.cache.getPlayer();
 			p.playSound(p.getLocation(), sound, SoundCategory.PLAYERS, 1f, 1f);
 		}
@@ -517,7 +515,7 @@ public class GameInstance {
 	public int checkAlive() {
 		Player w = null;
 		int count = 0;
-		for (PlayerState ps : INGAME_PLAYERS.values()) {
+		for (PlayerState ps : ingamePlayers.values()) {
 			if (ps.alive) {
 				if (w == null) {
 					w = ps.cache.getPlayer();
@@ -545,13 +543,13 @@ public class GameInstance {
 			boolean firework;
 			if (killer == null) {
 				announce(Messages.Game.DEATH_GENERIC, player.getDisplayName());
-				firework = CONFIG.getSpawnFireworkOnDeath();
+				firework = gameConfiguration.getSpawnFireworkOnDeath();
 			} else if (otherEntity != null) {
 				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), otherEntity);
-				firework = CONFIG.getSpawnFireworkOnDeath();
+				firework = gameConfiguration.getSpawnFireworkOnDeath();
 			} else {
 				announce(Messages.Game.DEATH_KILLED, player.getDisplayName(), killer.getDisplayName());
-				firework = CONFIG.getSpawnFireworkOnKill();
+				firework = gameConfiguration.getSpawnFireworkOnKill();
 				PlayerState ps = getPlayerState(killer);
 				if (ps != null) {
 					ps.kills += 1;
@@ -562,7 +560,7 @@ public class GameInstance {
 				Utils.spawnRandomFirework(player.getLocation());
 			}
 
-			if (CONFIG.getLightningOnDeath()) {
+			if (gameConfiguration.getLightningOnDeath()) {
 				player.getWorld().strikeLightningEffect(player.getLocation());
 			}
 
@@ -574,11 +572,11 @@ public class GameInstance {
 	}
 	
 	public void endGame(String victor) {
-		OPENED_CHESTS.clear();
+		openedChests.clear();
 		if (victor != null) {
 			announce(Messages.Game.WON, victor);
 		}
-		ArrayList<PlayerState> listPlayerState = new ArrayList<>(INGAME_PLAYERS.values());
+		ArrayList<PlayerState> listPlayerState = new ArrayList<>(ingamePlayers.values());
 		listPlayerState.sort((p1, p2) -> Integer.compare(p2.kills, p1.kills));
 		announce(Messages.Game.KILLSTATS);
 
@@ -597,7 +595,7 @@ public class GameInstance {
 	}
 
 	public void rewardPlayer(PlayerState state) {
-		RewardConfiguration rewards = CONFIG.getReward(state.placement);
+		RewardConfiguration rewards = gameConfiguration.getReward(state.placement);
 
 		if (rewards == null) {
 			rewards = new RewardConfiguration();
@@ -611,7 +609,7 @@ public class GameInstance {
 
 		if (!gameRewardEvent.isCancelled()) {
 			Location location = player.getLocation();
-			VaultConnector vault = MANAGER.getPlugin().getDependencyManager().getVaultConnector();
+			VaultConnector vault = manager.getPlugin().getDependencyManager().getVaultConnector();
 			if (vault != null && rewards.cash != 0) {
 				vault.depositPlayer(player, rewards.cash);
 			}
@@ -629,14 +627,14 @@ public class GameInstance {
 			}
 
 			if (hadOverflow) {
-				MANAGER.getPlugin().getMessageProvider().sendMessage(player, Messages.Game.REWARDS_OVERFLOW);
+				manager.getPlugin().getMessageProvider().sendMessage(player, Messages.Game.REWARDS_OVERFLOW);
 			}
 		}
 	}
 	
 	public boolean removePlayer(Player player, boolean droppedFromSession) {
 		UUID uuid = player.getUniqueId();
-		PlayerState ps = INGAME_PLAYERS.get(uuid);
+		PlayerState ps = ingamePlayers.get(uuid);
 		boolean returning = ps.alive;
 		if (returning) {
 			if (droppedFromSession) {
@@ -644,13 +642,13 @@ public class GameInstance {
 					player.getLocation().getWorld().dropItemNaturally(player.getLocation(), item);
 				}
 			} else {
-				player.teleport(CONFIG.getSpawnLocations().get(0).toBukkitLocation());
+				player.teleport(gameConfiguration.getSpawnLocations().get(0).toBukkitLocation());
 				ps.alive = false;
 			}
 		}
 		if (droppedFromSession) {
 			restoreState(ps);
-			INGAME_PLAYERS.remove(uuid);
+			ingamePlayers.remove(uuid);
 			bossbar.unsetVisibleTo(player);
 			border.unsetVisibleTo(player);
 		} else {
@@ -665,7 +663,7 @@ public class GameInstance {
 	}
 
 	public void terminate() {
-		Collection<PlayerState> playerStates = INGAME_PLAYERS.values();
+		Collection<PlayerState> playerStates = ingamePlayers.values();
 
 		if (!flagIsActive) return;
 		flagIsActive = false;
@@ -684,34 +682,35 @@ public class GameInstance {
 		scoreboard.close();
 		border.close();
 		bossbar.close();
-		MANAGER.onGameFinished(this);
+		manager.onGameFinished(this);
 	}
 	
 	private void restoreState(PlayerState ps) {
 		if (!ps.spectating) {
-			ps.cache.restore(CACHE_SETTINGS);
-		} else if (CACHE_SETTINGS.cacheGamemode) {
+			ps.cache.restore(cacheSettings);
+		} else if (cacheSettings.cacheGamemode) {
 			ps.cache.restoreGamemode();
 		}
 
 		updatePlayerTime(ps.cache.getPlayer(), true);
 
-		MANAGER.getPlugin().getDefaultListener().cleanupPlayer(ps.cache.getPlayer());
+		manager.getPlugin().getDefaultListener().cleanupPlayer(ps.cache.getPlayer());
 	}
 	
 	public void announce(PluginMessage message, Object... formatVars) {
-		for (PlayerState ps : INGAME_PLAYERS.values()) {
+		for (PlayerState ps : ingamePlayers.values()) {
 			Player p = ps.cache.getPlayer();
-			MANAGER.getPlugin().getMessageProvider().sendMessage(p, message, formatVars);
+			manager.getPlugin().getMessageProvider().sendMessage(p, message, formatVars);
 		}
 	}
 	
 	public PlayerState getPlayerState(Player player) {
-		return INGAME_PLAYERS.get(player.getUniqueId());
+		return ingamePlayers.get(player.getUniqueId());
 	}
 
 	public void tryUnpackLootDrop(Block clicked) {
-		LootDrop lootDrop = DROPS_IN_PROGRESS.remove(clicked.getLocation());
+		// TODO check this works
+		LootDrop lootDrop = dropsInProgress.remove(new BlockLocation(clicked.getLocation()));
 		if (lootDrop != null) {
 			lootDrop.popAndClose(getGameConfiguration().getItemSets());
 		}
@@ -762,15 +761,15 @@ public class GameInstance {
 	}
 
 	public Set<BlockLocation> getOpenedChests() {
-		return OPENED_CHESTS;
+		return openedChests;
 	}
 
 	public GameConfigurationWrapper getGameConfiguration() {
-		return CONFIG;
+		return gameConfiguration;
 	}
 
 	public Iterable<PlayerState> getPlayerStates() {
-		return INGAME_PLAYERS.values();
+		return ingamePlayers.values();
 	}
 
 	public int getTeamSize() {

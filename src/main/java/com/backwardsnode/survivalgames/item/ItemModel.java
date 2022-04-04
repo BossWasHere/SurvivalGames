@@ -18,6 +18,7 @@
 package com.backwardsnode.survivalgames.item;
 
 import com.backwardsnode.survivalgames.config.Copyable;
+import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -47,14 +48,19 @@ public class ItemModel implements Copyable<ItemModel>, Serializable {
 	public ItemStack getEquivalent() {
 		try {
 			int ind = id.indexOf('#');
-			ItemStack item;
-			ItemMeta meta;
+
+			Material material = Material.matchMaterial(ind > 0 ? id.substring(0, ind) : id);
+			if (material == null) {
+				throw new GameConfigurationException("No material with id " + id);
+			}
+
+			ItemStack item = new ItemStack(material, count);
+			ItemMeta meta = item.getItemMeta();
+			assert meta != null;
+
 			if (ind > 0) {
-				String matId = id.substring(0, ind);
 				String special = id.substring(ind + 1);
-				
-				item = new ItemStack(Material.matchMaterial(matId), count);
-				meta = item.getItemMeta();
+
 				if (meta instanceof PotionMeta potMeta) {
 					PotionData eff = translatePotionData(special);
 					if (eff == null) {
@@ -67,10 +73,8 @@ public class ItemModel implements Copyable<ItemModel>, Serializable {
 						Bukkit.getLogger().warning("[SG ItemModel] An unknown enchant store data tag has been provided. Check the config! [Provided: #" + special + "]");
 					}
 				}
-			} else {
-				item = new ItemStack(Material.matchMaterial(id), count);
-				meta = item.getItemMeta();
 			}
+
 			if (name != null) {
 				meta.setDisplayName(name);
 			}	

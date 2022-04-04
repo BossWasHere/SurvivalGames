@@ -50,7 +50,7 @@ public class SGStart extends BaseCommand {
 		Player player = (Player) sender;
 
 		if (args.length > 0) {
-			boolean canStartAll = player.hasPermission(TYPE.getBasicPermission() + ".all");
+			boolean canStartAll = player.hasPermission(type.getBasicPermission() + ".all");
 			if (args.length > 1) {
 				args[1] = args[1].toLowerCase();
 				if (args[1].contentEquals("all")) {
@@ -81,11 +81,11 @@ public class SGStart extends BaseCommand {
 		GameConfigurationWrapper config = tryLoad(initiator, mapName);
 		
 		if (config != null) {
-			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
+			if (plugin.getHost().isMapInUse(config.getFileName())) {
 				sendMessage(initiator, Messages.Game.MAP_IN_USE, mapName);
 				return;
 			}
-			PLUGIN.getHost().getGameManager().startGame(config, PLUGIN.getCacheSettings(), initiator, players, true, PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS);
+			plugin.getHost().getGameManager().startGame(config, plugin.getCacheSettings(), initiator, players, true, PlayerSelectionMethod.SHUFFLED_WITH_SPECTATORS);
 		}
 	}
 	
@@ -93,13 +93,13 @@ public class SGStart extends BaseCommand {
 		GameConfigurationWrapper config = tryLoad(initiator, mapName);
 		
 		if (config != null) {
-			if (PLUGIN.getHost().isMapInUse(config.getFileName())) {
+			if (plugin.getHost().isMapInUse(config.getFileName())) {
 				sendMessage(initiator, Messages.Game.MAP_IN_USE, mapName);
 				return;
 			}
 
 			String indexName = config.getMapName().replace(' ', '-');
-			if (PLUGIN.getHost().mapHasPendingInvitation(indexName)) {
+			if (plugin.getHost().mapHasPendingInvitation(indexName)) {
 				sendMessage(initiator, Messages.Command.SGStart.EXISTING_INVITE);
 				return;
 			}
@@ -113,15 +113,15 @@ public class SGStart extends BaseCommand {
 					sendMessage(p, Messages.Game.INVITE_DURATION);
 				}
 			}
-			PLUGIN.getHost().addInvitation(initiator, config, indexName);
+			plugin.getHost().addInvitation(initiator, config, indexName);
 		}
 	}
 	
 	private GameConfigurationWrapper tryLoad(Player player, String mapName) {
 		try {
-			File target = new File(PLUGIN.getMapFolder(), mapName);
+			File target = new File(plugin.getMapFolder(), mapName);
 			if (!target.isFile()) {
-				target = new File(PLUGIN.getMapFolder(), mapName + ".json");
+				target = new File(plugin.getMapFolder(), mapName + ".json");
 			}
 			if (!target.isFile()) {
 				sendMessage(player, Messages.Plugin.IO_FILE_MISSING, mapName);

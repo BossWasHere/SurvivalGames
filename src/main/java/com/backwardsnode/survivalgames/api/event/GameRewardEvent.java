@@ -32,17 +32,17 @@ import org.jetbrains.annotations.Nullable;
 public class GameRewardEvent extends GameEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player PLAYER;
-    private final int PLACEMENT;
-    private final RewardConfiguration REWARDS;
+    private final Player player;
+    private final int placement;
+    private final RewardConfiguration rewards;
 
     private boolean cancelled = false;
 
     public GameRewardEvent(@NotNull GameInstance gameInstance, @NotNull Player player, int placement, @Nullable RewardConfiguration rewards) {
         super(gameInstance);
-        PLAYER = player;
-        PLACEMENT = placement;
-        REWARDS = rewards;
+        this.player = player;
+        this.placement = placement;
+        this.rewards = rewards;
     }
 
     /**
@@ -50,7 +50,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
      * @return The {@link Player}
      */
     public @NotNull Player getPlayer() {
-        return PLAYER;
+        return player;
     }
 
     /**
@@ -58,7 +58,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
      * @return The placement position
      */
     public int getPlacement() {
-        return PLACEMENT;
+        return placement;
     }
 
     /**
@@ -67,7 +67,7 @@ public class GameRewardEvent extends GameEvent implements Cancellable {
      * @apiNote this object will respect changes to rewards
      */
     public @Nullable RewardConfiguration getRewards() {
-        return REWARDS;
+        return rewards;
     }
 
     @Override

@@ -23,21 +23,22 @@ import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.message.PluginMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class BaseCommand extends Command {
 
-    protected final Plugin PLUGIN;
-    protected final CommandType TYPE;
+    protected final Plugin plugin;
+    protected final CommandType type;
 
     public BaseCommand(Plugin plugin, CommandType type) {
         super(type.getCommand(), type.getDefaultDescription(plugin), type.getDefaultUsage(plugin), type.getAliases());
-        PLUGIN = plugin;
-        TYPE = type;
+        this.plugin = plugin;
+        this.type = type;
     }
 
     @Override
-    public final boolean execute(CommandSender sender, String commandLabel, String[] args) {
-        ExecutionStatus currentStatus = TYPE.canExecute(sender);
+    public final boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, String[] args) {
+        ExecutionStatus currentStatus = type.canExecute(sender);
 
         if (currentStatus == ExecutionStatus.SUCCESS) {
             currentStatus = executeDelegate(sender, args);
@@ -48,20 +49,20 @@ public abstract class BaseCommand extends Command {
     }
 
     protected final void sendMessage(CommandSender sender, PluginMessage message, Object... formatArgs) {
-        PLUGIN.getMessageProvider().sendMessage(sender, message, formatArgs);
+        plugin.getMessageProvider().sendMessage(sender, message, formatArgs);
     }
 
     private void sendStatusMessage(CommandSender sender, ExecutionStatus status) {
         switch (status) {
-            case BAD_USAGE -> PLUGIN.getMessageProvider().sendMessage(sender, TYPE.getUsageMessage());
-            case NO_PERMISSION -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.NO_PERM);
-            case NOT_PLAYER -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_PLAYERS);
-            case NOT_CONSOLE -> PLUGIN.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_CONSOLE);
+            case BAD_USAGE -> plugin.getMessageProvider().sendMessage(sender, type.getUsageMessage());
+            case NO_PERMISSION -> plugin.getMessageProvider().sendMessage(sender, Messages.Command.NO_PERM);
+            case NOT_PLAYER -> plugin.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_PLAYERS);
+            case NOT_CONSOLE -> plugin.getMessageProvider().sendMessage(sender, Messages.Command.ONLY_CONSOLE);
         }
     }
 
     public CommandType getType() {
-        return TYPE;
+        return type;
     }
 
     public abstract ExecutionStatus executeDelegate(CommandSender sender, String[] args);
