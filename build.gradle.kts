@@ -1,5 +1,5 @@
 group = "com.backwardsnode"
-version = "2.0.0-ALPHA"
+version = "2.0.0"
 description = "Survival Games Bukkit Plugin"
 java.sourceCompatibility = JavaVersion.VERSION_16
 java.targetCompatibility = JavaVersion.VERSION_16

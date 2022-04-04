@@ -1,30 +1,108 @@
 # BackwardsNode's SurvivalGames
-##### Easy to use Spigot plugin with intuitive editor and interface
+
+Easy to use plugin with intuitive editor and interface
+
+## Features
++ Built-in map editor!
+  + Create your own maps with ease
+  + Place chests to be filled for every game
+  + Customize items that generate in each chest
+  + Customize every setting without touching configuration files! - **WIP**
++ Fully customizable Survival Games experience
+  + Play with 2 or more players!
+  + Loot drops
+  + Optional entry fees (requires Vault)
+  + Item or cash rewards (cash rewards require Vault)
+  + Shrinking play area and support for multiple deathmatch arenas
+  + Control time between phases
+    + PvP off duration
+    + Time until deathmatch
+    + Etc.
+  + Lightning and firework kill effects
+  + Custom spawn locations
+  + Control time of day
+  + Runs as a dedicated gamemode or alongside an existing world
++ Spectator mode
+  + Look at player inventories
+  + Vote on game events (bounties, loot drops, etc.) - **WIP**
++ World safety features
+  + Adventure mode by default
+  + Anvil protection
+  + Prevents use of ender chests
++ Multi-world support
++ Update migration support
++ Plugin hooks
+  + [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI)
+  + [ProtocolLib](https://github.com/dmulloy2/ProtocolLib) (required for world border)
+  + [Vault](https://github.com/MilkBowl/Vault) (required for fees and rewards)
++ Event API for your own plugins to use
+
+## Planned and upcoming features
++ Map voting
++ Chest refilling
++ Blocking specific items in-game
++ Blocking specific commands in-game
++ History & database support
+  + Game history
+  + Player stats
+    + Games played
+    + K/D
+    + Kills
+    + Wins
+    + Play time
++ Pre- and post-game lobbies
++ Game modifier voting
+  + Loot strength
+  + Starting health
+  + Etc.
++ Auto-start game on server start
++ Auto-rematch
++ Bounties
++ Player sponsor voting
++ Party mode (join with friends)
++ Team modes
+  + Respawn modes
+  + Team deathmatch modes
++ Bungeecord support
+  + Vote pass-in
+  + Game events
+  + Party support
++ Cosmetic items & rewards
++ Online statistics
++ World rollback support
+  + Regional
+  + Map-wide
++ World rules
+  + Mob spawning
+  + Grief management
++ Support for "survival mode"
+  + Customizable block lists
++ Special items
+  + Call in loot drops
+  + Player tracking compass
++ Automatic update checking
+
+### Placeholder API
+The following placeholders can be used from this plugin:
+- %sg_is_alive% - returns "alive" or "dead" when the player is in a game
+- %sg_current_kills% - returns the number of kills a player has when in a game
+- %sg_current_map% - returns the map the player is playing on/editing
+- %sg_current_map_file% - returns the start of the filename the player is playing on/editing
+
+## Version History
 
 ### Version 2.0.0
 + Updated to support MC 1.18
 + Updated to Java 16 & Refactored codebase
 + Added Vault/Economy support for entry fees/rewards
 + Added new post-game rewards
++ Added loot drops
++ Added basic world protection
 + Added new event API
 + Updated to configuration v2
 + Improved localization features
++ Improved performance
 + Quality-of-life improvements
 
-### Version 1.0.1
-+ Added support for enchanted books
-+ Added support for potions, splash potions, lingering potions and tipped arrows
-
-### Version 1.0
-* Universally known survival games, an all-in-one plugin
-* Written from the ground up to support 1.13+
-* Does not require other libraries or plugins
-* Includes scoreboard and bossbar functionality
-* Extremely customisable item sets, chest locations and much more
-* SGEdit, the in-game editor so you don't have to type in JSON
-* Supports enchantments, custom names and item randomizing
-* Features randomized deathmatch zones using Minecraft's built-in world border
-* Play-tested and error-checked
-
-### Info:
-Plugin developed as a school assignment challenge for Minecraft. There may be some bugs which need to be squashed and potentially some new features!
+### Versions < 1.0.1
++ A lot of this plugin has been rewritten since v1, and is no longer supported.
