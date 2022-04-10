@@ -74,7 +74,7 @@ public final class CommandRegistry {
                 commandMap.register(baseCommand.getName(), NAMESPACE, baseCommand);
             }
 
-            if (Plugin.TEST) {
+            if (Plugin.DEBUG) {
                 commandMap.register(testLootDropCommand.getName(), NAMESPACE, testLootDropCommand);
             }
 

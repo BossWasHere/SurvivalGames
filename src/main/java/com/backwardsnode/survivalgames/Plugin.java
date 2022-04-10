@@ -35,7 +35,9 @@ import java.util.logging.Level;
 
 public final class Plugin extends JavaPlugin {
 	
-	public static boolean TEST = true;
+	public static boolean TEST = false;
+
+	public static final boolean DEBUG = false;
 
 	private CommandRegistry commandRegistry;
 	private DataFrontend dataFrontend;
