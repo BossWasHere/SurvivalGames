@@ -1,6 +1,8 @@
 # BackwardsNode's SurvivalGames
 
-Easy to use plugin with intuitive editor and interface
+Survival Games evolved and updated to Minecraft 1.18.x.
+
+A lightweight plugin boasting an intuitive map editor and interface, fast-paced gameplay elements and many more features!
 
 ## Features
 + Built-in map editor!
@@ -88,6 +90,26 @@ The following placeholders can be used from this plugin:
 - %sg_current_kills% - returns the number of kills a player has when in a game
 - %sg_current_map% - returns the map the player is playing on/editing
 - %sg_current_map_file% - returns the start of the filename the player is playing on/editing
+
+## Compiling
+
+This plugin uses Gradle for building. This plugin currently requires JDK 16+ (kept for potential future backward-compatibility projects).
+
+To build:
+
+```./gradlew build```
+
+Or on Windows:
+
+```gradlew.bat build```
+
+The plugin will be saved to `build/libs/SurvivalGames.jar`
+
+## Contributing
+
+Pull requests for features or bug fixes are welcome! PRs may be rejected if there is a valid reason to do so, but if you wish to contribute, I invite you to do so!
+
+If you find a bug or wish to report an issue/feature suggestion, please use the appropriate issue templates.
 
 ## Version History
 
