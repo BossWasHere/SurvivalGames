@@ -24,6 +24,7 @@ import com.backwardsnode.survivalgames.command.base.ExecutionStatus;
 import com.backwardsnode.survivalgames.config.GameConfigurationWrapper;
 import com.backwardsnode.survivalgames.exception.GameConfigurationException;
 import com.backwardsnode.survivalgames.message.Messages;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -53,7 +54,7 @@ public class SGEdit extends BaseCommand {
 					}
 					GameConfigurationWrapper gcw;
 					try {
-						if (!target.createNewFile()) {
+						if (target.createNewFile()) {
 							gcw = new GameConfigurationWrapper(target, false);
 							sendMessage(sender, Messages.Command.SGEdit.CREATED);
 						} else {
