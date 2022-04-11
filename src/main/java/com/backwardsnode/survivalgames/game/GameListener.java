@@ -20,6 +20,7 @@ package com.backwardsnode.survivalgames.game;
 import com.backwardsnode.survivalgames.Utils;
 import com.backwardsnode.survivalgames.config.ChestConfiguration;
 import com.backwardsnode.survivalgames.config.PluginConfigKeys;
+import com.backwardsnode.survivalgames.world.BlockLocation;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -77,7 +78,7 @@ public class GameListener implements Listener {
 				e.setCancelled(true);
 
 			} else if (!instance.getGameConfiguration().getDoChestPrefilling() && clicked.getState() instanceof Chest) {
-				Optional<ChestConfiguration> co = instance.getGameConfiguration().getChestAt(clicked.getLocation());
+				Optional<ChestConfiguration> co = instance.getGameConfiguration().getChestAt(new BlockLocation(clicked.getLocation()));
 				if (co.isPresent()) {
 					ChestConfiguration chestConfiguration = co.get();
 					if (!instance.getOpenedChests().add(chestConfiguration.location)) {
@@ -271,6 +272,7 @@ public class GameListener implements Listener {
 		for (PotionEffect effect : effects) {
 			if (effect.getType().equals(PotionEffectType.HARM) || effect.getType().equals(PotionEffectType.WITHER)) {
 				isHarmfulEffect = true;
+				break;
 			}
 		}
 		if (!isHarmfulEffect) {

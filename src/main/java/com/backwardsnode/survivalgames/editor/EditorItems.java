@@ -18,9 +18,14 @@
 package com.backwardsnode.survivalgames.editor;
 
 import com.backwardsnode.survivalgames.Plugin;
-import com.backwardsnode.survivalgames.Utils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
+import java.util.*;
 
 public enum EditorItems {
 
@@ -29,59 +34,125 @@ public enum EditorItems {
 	 */
 	LOOT_CHEST(Material.CHEST, "chest"),
 	SPAWN_PLATE(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, "plate"),
-	ITEMSET_SWORD(Material.DIAMOND_SWORD, "itemset"),
-	SETTINGS_COMPARATOR(Material.COMPARATOR, "settings"),
-	CHEST_SETS_BOOK(Material.BOOK, "chestitems"),
-	WORLDBORDER_FENCE(Material.NETHER_BRICK_FENCE, "borderitem"),
-	INVSWITCH_BOOKSHELF(Material.BOOKSHELF, "invswitch"),
+	ITEMSET_VIEWER(Material.DIAMOND_SWORD, "itemsetviewer"),
+	SETTINGS(Material.COMPARATOR, "settings"),
+	CHEST_ITEMSET_MANAGER(Material.BOOK, "chestitems"),
+	WORLDBORDER(Material.NETHER_BRICK_FENCE, "borderitem"),
+	INVSWITCH(Material.BOOKSHELF, "invswitch"),
 	
 	/*
 	 * Settings items
 	 */
-	NEW_ITEMSET_CONCRETE(Material.GREEN_CONCRETE, "additemset"),
-	RENAME_MAP_NAMETAG(Material.NAME_TAG, "mapname"),
-	BORDER_DPS_CACTUS(Material.CACTUS, "borderdps"),
-	DEATHMATCH_CONFIG_FISHINGROD(Material.FISHING_ROD, "deathmatch"),
-	SHRINK_TIME_AXE(Material.IRON_AXE, "shrinktime"),
-	BORDER_START_MAP(Material.MAP, "borderstart"),
-	WAIT_PERIOD_CLOCK(Material.CLOCK, "waittime"),
-	GRACE_PERIOD_POPPY(Material.POPPY, "nopvptime"),
-	PREFILL_CHESTMINECART(Material.CHEST_MINECART, "prefill"),
+	ADD_ITEMSET(Material.GREEN_CONCRETE, "additemset"),
+	RENAME_MAP(Material.NAME_TAG, "mapname"),
+	BORDER_DPS(Material.CACTUS, "borderdps"),
+	DEATHMATCH_CONFIG(Material.FISHING_ROD, "deathmatch"),
+	SHRINK_TIME(Material.IRON_AXE, "shrinktime"),
+	BORDER_START(Material.MAP, "borderstart"),
+	WAIT_PERIOD(Material.CLOCK, "waittime"),
+	GRACE_PERIOD(Material.POPPY, "nopvptime"),
+	PREFILL_CHEST(Material.CHEST_MINECART, "prefill"),
 	DEATH_FIREWORK(Material.FIREWORK_ROCKET, "deathfirework"),
 	KILL_FIREWORK(Material.FIREWORK_ROCKET, "killfirework"),
-	LIGHTNING_ROD(Material.LIGHTNING_ROD, "lightningrod"),
-	ISWIP_BRICKS(Material.BRICKS, "iswip"),
+	DEATH_LIGHTNING(Material.LIGHTNING_ROD, "lightningrod"),
+	IS_WIP(Material.BRICKS, "iswip"),
 	
-	INITIAL_BORDER_MAP(Material.MAP, "initialborder"),
-	DEATHMATCH_BORDER_SWORD(Material.DIAMOND_SWORD, "deathmatchborder"),
-	HIDE_BORDER_BARRIER(Material.BARRIER, "hideborder");
-	
+	SET_INITIAL_BORDER(Material.MAP, "initialborder"),
+	SET_DEATHMATCH_BORDER(Material.DIAMOND_SWORD, "deathmatchborder"),
+	SET_HIDE_BORDER(Material.BARRIER, "hideborder"),
+
+	ENABLED_DEFAULT_ITEMSET(Material.LIME_STAINED_GLASS, "enableddefaultset"),
+	DISABLED_DEFAULT_ITEMSET(Material.RED_STAINED_GLASS, "disableddefaultset"),
+	ENABLED_ITEMSET(Material.LIME_CONCRETE, "enabledset"),
+	DISABLED_ITEMSET(Material.RED_CONCRETE, "disabledset"),
+
+	ITEMSET(Material.IRON_SWORD, "itemset"),
+
+	SELECT_BORDER(Material.OAK_FENCE, "borderselect"),
+	SELECTED_BORDER(Material.NETHER_BRICK_FENCE, "borderselected");
+
+	private static final Map<String, EditorItems> ITEMS_MAP = new HashMap<>();
+
 	private final Material material;
 	private final String unlocalized;
 	
 	EditorItems(Material material, String unlocalized) {
+		this(material, unlocalized, false);
+	}
+
+	EditorItems(Material material, String unlocalized, boolean isTemplateItem) {
 		this.material = material;
 		this.unlocalized = unlocalized;
 	}
 	
 	public ItemStack getItem(Plugin plugin, String locale) {
-		String l = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + unlocalized, locale);
-		return Utils.addNameAndLore(new ItemStack(material), plugin.getMessageProvider().compileUnregisteredMessage("item.name." + unlocalized, locale), l.split("\\n"));
+		ItemStack item = new ItemStack(material);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(plugin.getMessageProvider().compileUnregisteredMessage("item.name." + unlocalized, locale));
+		String lore = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + unlocalized, locale);
+		meta.setLore(Arrays.asList(lore.split("\\n")));
+		meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "id"), PersistentDataType.STRING, unlocalized);
+		item.setItemMeta(meta);
+
+		return item;
+	}
+
+	public ItemStack getTemplatedItem(Plugin plugin, String templateId, String name, String loreLocale) {
+		ItemStack item = new ItemStack(material);
+		ItemMeta meta = item.getItemMeta();
+		meta.setDisplayName(name);
+		String lore = plugin.getMessageProvider().compileUnregisteredMessage("item.lore." + unlocalized, loreLocale);
+		meta.setLore(Arrays.asList(lore.split("\\n")));
+		PersistentDataContainer pdc = meta.getPersistentDataContainer();
+		pdc.set(new NamespacedKey(plugin, "id"), PersistentDataType.STRING, unlocalized);
+		pdc.set(new NamespacedKey(plugin, "meta"), PersistentDataType.STRING, templateId);
+		item.setItemMeta(meta);
+
+		return item;
 	}
 	
-	public boolean isSimilar(Plugin plugin, String locale, ItemStack item) {
-		return isSimilar(plugin,this, locale, item);
-	}
-	
-	public static boolean isSimilar(Plugin plugin, EditorItems model, String locale, ItemStack item) {
-		if (item == null) {
-			return false;
-		}
-		if (item.hasItemMeta()) {
-			if (item.getItemMeta().hasDisplayName()) {
-				return item.getItemMeta().getDisplayName().contentEquals(plugin.getMessageProvider().compileUnregisteredMessage("item.name." + model.unlocalized, locale));
+	public boolean isSimilar(Plugin plugin, ItemStack item) {
+		ItemMeta meta = item.getItemMeta();
+		if (meta != null) {
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+			NamespacedKey key = new NamespacedKey(plugin, "id");
+			if (container.has(key, PersistentDataType.STRING)) {
+				return unlocalized.equals(container.get(key, PersistentDataType.STRING));
 			}
 		}
+
 		return false;
+	}
+
+	public static String getTemplateId(Plugin plugin, ItemStack item) {
+		ItemMeta meta = item.getItemMeta();
+		if (meta != null) {
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+			NamespacedKey template = new NamespacedKey(plugin, "meta");
+			return container.has(template, PersistentDataType.STRING) ? container.get(template, PersistentDataType.STRING) : null;
+		}
+
+		return null;
+	}
+
+	public static EditorItems getRepresentingItem(Plugin plugin, ItemStack item) {
+		if (ITEMS_MAP.isEmpty()) {
+			for (EditorItems constant : values()) {
+				ITEMS_MAP.put(constant.unlocalized, constant);
+			}
+		}
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta != null) {
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+			NamespacedKey key = new NamespacedKey(plugin, "id");
+			if (container.has(key, PersistentDataType.STRING)) {
+				String id = container.get(key, PersistentDataType.STRING);
+
+				return ITEMS_MAP.get(id);
+			}
+		}
+
+		return null;
 	}
 }

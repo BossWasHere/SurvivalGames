@@ -17,9 +17,10 @@
  */
 package com.backwardsnode.survivalgames.editor;
 
+import com.backwardsnode.survivalgames.Plugin;
+import com.backwardsnode.survivalgames.PluginWrapper;
 import com.backwardsnode.survivalgames.message.Messages;
 import com.backwardsnode.survivalgames.world.BlockLocation;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -37,31 +38,39 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class EditorListener implements Listener {
+public class EditorListener extends PluginWrapper implements Listener {
 
 	private final EditorManager handler;
 
-	public EditorListener(EditorManager handler) {
+	public EditorListener(Plugin plugin, EditorManager handler) {
+		super(plugin);
 		this.handler = handler;
 	}
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent e) {
-		Scene scene = handler.getEditor(e.getPlayer());
+		Player player = e.getPlayer();
+		Scene scene = handler.getEditor(player);
 		if (scene == null) {
 			return;
 		}
 
 		ItemStack item = e.getItemInHand();
-		String locale = e.getPlayer().getLocale();
 
-		if (EditorItems.LOOT_CHEST.isSimilar(handler.getHandler(), locale, item)) {
-			scene.addItemChest(e.getBlock().getLocation());
-		} else if (EditorItems.SPAWN_PLATE.isSimilar(handler.getHandler(), locale, item)) {
-			scene.addSpawnPlate(e.getBlock().getLocation());
+		EditorItems model = EditorItems.getRepresentingItem(plugin, item);
+		if (model == null) {
+			return;
+		}
+		
+		switch (model) {
+			case LOOT_CHEST -> {
+				scene.getGameConfiguration().addItemChest(new BlockLocation(e.getBlock().getLocation()), true);
+				getMessageProvider().sendMessage(player, Messages.Editor.ADDED_CHEST);
+			}
+			case SPAWN_PLATE -> {
+				scene.getGameConfiguration().addSpawnLocation(new BlockLocation(e.getBlock().getLocation()));
+				getMessageProvider().sendMessage(player, Messages.Editor.ADDED_SPAWN_POS);
+			}
 		}
 	}
 	
@@ -75,73 +84,81 @@ public class EditorListener implements Listener {
 		}
 
 		Block target = e.getClickedBlock();
+		BlockLocation blockLocation = new BlockLocation(target.getLocation());
 		ItemStack item = e.getItem();
-		String locale = player.getLocale();
 
 		Action action = e.getAction();
-		if (target != null) {
-			Material type = target.getType();
+		Material type = target.getType();
 
-			if (type == Material.CHEST) {
-				if (action == Action.RIGHT_CLICK_BLOCK) {
-					if (scene.isItemChest(target.getLocation())) {
-						if (item == null) {
-							scene.removeItemChest(target.getLocation());
-						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
-							handler.openChestItemSetInventory(player, target.getLocation());
-						}
-					} else {
-						if (item == null) {
-							scene.addItemChest(target.getLocation());
-						} else if (EditorItems.CHEST_SETS_BOOK.isSimilar(handler.getHandler(), locale, item)) {
-							handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ADD_CHEST_FIRST);
-						}
+		if (type == Material.CHEST) {
+			if (action == Action.RIGHT_CLICK_BLOCK) {
+				if (scene.getGameConfiguration().getChestAt(blockLocation).isPresent()) {
+					if (item == null) {
+						scene.getGameConfiguration().removeChestAt(blockLocation);
+						getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
+					} else if (EditorItems.CHEST_ITEMSET_MANAGER.isSimilar(plugin, item)) {
+						handler.openChestItemSetInventory(player, target.getLocation());
 					}
-					e.setCancelled(true);
 				} else {
-					scene.removeItemChest(target.getLocation());
+					if (item == null) {
+						scene.getGameConfiguration().addItemChest(blockLocation, true);
+						getMessageProvider().sendMessage(player, Messages.Editor.ADDED_CHEST);
+					} else if (EditorItems.CHEST_ITEMSET_MANAGER.isSimilar(plugin, item)) {
+						getMessageProvider().sendMessage(player, Messages.Editor.ADD_CHEST_FIRST);
+					}
 				}
-			} else if (type == Material.HEAVY_WEIGHTED_PRESSURE_PLATE) {
-				if (action == Action.RIGHT_CLICK_BLOCK) {
-					if (scene.isSpawnPlate(target.getLocation())) {
-						if (item == null) {
-							scene.removeSpawnPlate(target.getLocation());
-						}
-					} else {
-						if (item == null) {
-							scene.addSpawnPlate(target.getLocation());
-						}
-					}
-					e.setCancelled(true);
-				} else {
-					scene.removeSpawnPlate(target.getLocation());
+				e.setCancelled(true);
+			} else {
+				if (scene.getGameConfiguration().removeChestAt(blockLocation)) {
+					getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_CHEST);
 				}
 			}
-
+			return;
+		} else if (type == Material.HEAVY_WEIGHTED_PRESSURE_PLATE) {
+			if (action == Action.RIGHT_CLICK_BLOCK) {
+				if (item == null) {
+					if (scene.getGameConfiguration().removeSpawnLocation(blockLocation)) {
+						getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
+					} else {
+						scene.getGameConfiguration().addSpawnLocation(blockLocation);
+						getMessageProvider().sendMessage(player, Messages.Editor.ADDED_SPAWN_POS);
+					}
+					e.setCancelled(true);
+				}
+			} else if (scene.getGameConfiguration().removeSpawnLocation(blockLocation)) {
+				getMessageProvider().sendMessage(player, Messages.Editor.REMOVED_SPAWN_POS);
+			}
+			return;
 		}
-		if (EditorItems.ITEMSET_SWORD.isSimilar(handler.getHandler(), locale, item)) {
-			handler.openItemSetInventory(player);
-			e.setCancelled(true);
 
-		} else if (EditorItems.SETTINGS_COMPARATOR.isSimilar(handler.getHandler(), locale, item)) {
-			handler.openSettingInventory(player);
-			e.setCancelled(true);
+		if (item != null) {
+			EditorItems model = EditorItems.getRepresentingItem(plugin, item);
 
-		} else if (EditorItems.WORLDBORDER_FENCE.isSimilar(handler.getHandler(), locale, item)) {
-			if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
-				scene.toggleWorldBorder();
-			} else {
-				handler.openWorldBorderInventory(player);
-			}
-			e.setCancelled(true);
-
-		} else if (EditorItems.INVSWITCH_BOOKSHELF.isSimilar(handler.getHandler(), locale, item)) {
-			if (scene.isToolkitOpen()) {
-				scene.hideToolkit();
-			} else {
-				scene.showToolkit();
+			if (model == null) {
+				return;
 			}
 
+			switch (model) {
+				case ITEMSET_VIEWER -> handler.openItemSetInventory(player);
+				case SETTINGS -> handler.openSettingInventory(player);
+				case WORLDBORDER -> {
+					if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+						scene.toggleWorldBorder();
+					} else {
+						handler.openWorldBorderInventory(player);
+					}
+				}
+				case INVSWITCH -> {
+					if (scene.isToolkitOpen()) {
+						scene.hideToolkit();
+					} else {
+						scene.showToolkit();
+					}
+				}
+				case LOOT_CHEST, SPAWN_PLATE -> {
+					return;
+				}
+			}
 			e.setCancelled(true);
 		}
 	}
@@ -151,155 +168,117 @@ public class EditorListener implements Listener {
 		if (!(e.getWhoClicked() instanceof Player player)) {
 			return;
 		}
+
+		Inventory i = e.getClickedInventory();
+		ItemStack item = e.getCurrentItem();
+		if (i == null || item == null) {
+			return;
+		}
+
 		Scene scene = handler.getEditor(player);
 		if (scene == null) {
 			return;
 		}
 
-		String locale = player.getLocale();
-		Inventory i = e.getClickedInventory();
-		ItemStack item = e.getCurrentItem();
-		String title = i == null ? "" : e.getView().getTitle();
-
-		if (i == null || item == null) {
+		EditorItems model = EditorItems.getRepresentingItem(plugin, item);
+		if (model == null) {
 			return;
 		}
-
-		if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.ALL_ITEM_SETS_TITLE, locale))) {
-			if (EditorItems.NEW_ITEMSET_CONCRETE.isSimilar(handler.getHandler(), locale, item)) {
-				player.closeInventory();
-				scene.queryInput(EditorQueries.NEW_ITEMSET_NAME);
-			} else {
-				if (item.hasItemMeta()) {
-					if (item.getItemMeta().hasDisplayName()) {
-						handler.openItemSetCustomiseInventory(player, item.getItemMeta().getDisplayName());
-					}
-				}
-			}
-			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.CHOOSE_SET_TITLE, locale))) {
-			ItemStack chestBlockData = i.getItem(i.getSize() - 1);
-			if (chestBlockData != null) {
-				Location loc = new BlockLocation(chestBlockData.getItemMeta().getLore().get(0)).toBukkitLocation();
-				ItemStack[] items = i.getContents();
-				List<String> selected = new ArrayList<>();
-				for (ItemStack itemStack : items) {
-					if (itemStack != null) {
-						if (itemStack.equals(item)) {
-							switch (itemStack.getType()) {
-								case LIME_STAINED_GLASS:
-									itemStack.setType(Material.RED_STAINED_GLASS);
-									break;
-								case LIME_CONCRETE:
-									itemStack.setType(Material.RED_CONCRETE);
-									break;
-								case RED_STAINED_GLASS:
-									itemStack.setType(Material.LIME_STAINED_GLASS);
-									break;
-								case RED_CONCRETE:
-									itemStack.setType(Material.LIME_CONCRETE);
-									break;
-								default:
-									continue;
-							}
-						}
-						switch (itemStack.getType()) {
-							case LIME_STAINED_GLASS:
-							case LIME_CONCRETE:
-								selected.add(itemStack.getItemMeta().getDisplayName());
-							default:
-								break;
-						}
-					}
-				}
-				if (scene.setChestItemSets(loc, selected)) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFIED_ITEMS);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.MODIFY_ITEMS_ERR);
-					player.closeInventory();
-				}
-			}
-			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.SETTINGS_TITLE, locale))) {
-			if (EditorItems.RENAME_MAP_NAMETAG.isSimilar(handler.getHandler(), locale, item)) {
+		switch (model) {
+			case RENAME_MAP -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.MAP_NAME);
-			} else if (EditorItems.BORDER_DPS_CACTUS.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case BORDER_DPS -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.BORDER_DPS);
-			} else if (EditorItems.DEATHMATCH_CONFIG_FISHINGROD.isSimilar(handler.getHandler(), locale, item)) {
-				handler.openDeathmatchInventory(player);
-			} else if (EditorItems.SHRINK_TIME_AXE.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case DEATHMATCH_CONFIG -> handler.openDeathmatchInventory(player);
+			case SHRINK_TIME -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.TIME_TO_SHRINK);
-			} else if (EditorItems.BORDER_START_MAP.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case BORDER_START -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.BORDER_START_RADIUS);
-			} else if (EditorItems.WAIT_PERIOD_CLOCK.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case WAIT_PERIOD -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.WAIT_PERIOD);
-			} else if (EditorItems.GRACE_PERIOD_POPPY.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case GRACE_PERIOD -> {
 				player.closeInventory();
 				scene.queryInput(EditorQueries.GRACE_PERIOD);
-			} else if (EditorItems.PREFILL_CHESTMINECART.isSimilar(handler.getHandler(), locale, item)) {
+			}
+			case ADD_ITEMSET -> {
+				player.closeInventory();
+				scene.queryInput(EditorQueries.NEW_ITEMSET_NAME);
+			}
+			case PREFILL_CHEST -> {
 				boolean doChestPrefilling = !scene.getGameConfiguration().getDoChestPrefilling();
 				scene.getGameConfiguration().setDoChestPrefilling(doChestPrefilling);
-				if (doChestPrefilling) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_AUTOFILL);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_AUTOFILL);
-				}
-			} else if (EditorItems.DEATH_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
+				getMessageProvider().sendMessage(player, doChestPrefilling ? Messages.Editor.ENABLED_AUTOFILL : Messages.Editor.DISABLED_AUTOFILL);
+			}
+			case DEATH_FIREWORK -> {
 				boolean deathFirework = !scene.getGameConfiguration().getSpawnFireworkOnDeath();
 				scene.getGameConfiguration().setSpawnFireworkOnDeath(deathFirework);
-				if (deathFirework) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_DEATH_FIREWORK);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_DEATH_FIREWORK);
-				}
-			} else if (EditorItems.KILL_FIREWORK.isSimilar(handler.getHandler(), locale, item)) {
+				getMessageProvider().sendMessage(player, deathFirework ? Messages.Editor.ENABLED_DEATH_FIREWORK : Messages.Editor.DISABLED_DEATH_FIREWORK);
+			}
+			case KILL_FIREWORK -> {
 				boolean killFirework = !scene.getGameConfiguration().getSpawnFireworkOnKill();
 				scene.getGameConfiguration().setSpawnFireworkOnKill(killFirework);
-				if (killFirework) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_KILL_FIREWORK);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_KILL_FIREWORK);
-				}
-			} else if (EditorItems.LIGHTNING_ROD.isSimilar(handler.getHandler(), locale, item)) {
+				getMessageProvider().sendMessage(player, killFirework ? Messages.Editor.ENABLED_KILL_FIREWORK : Messages.Editor.DISABLED_KILL_FIREWORK);
+			}
+			case DEATH_LIGHTNING -> {
 				boolean deathLightning = !scene.getGameConfiguration().getLightningOnDeath();
 				scene.getGameConfiguration().setLightningOnDeath(deathLightning);
-				if (deathLightning) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_DEATH_LIGHTNING);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_DEATH_LIGHTNING);
-				}
-			} else if (EditorItems.ISWIP_BRICKS.isSimilar(handler.getHandler(), locale, item)) {
+				getMessageProvider().sendMessage(player, deathLightning ? Messages.Editor.ENABLED_DEATH_LIGHTNING : Messages.Editor.DISABLED_DEATH_LIGHTNING);
+			}
+			case IS_WIP -> {
 				boolean wip = !scene.getGameConfiguration().getIsWIP();
 				scene.getGameConfiguration().setIsWIP(wip);
-				if (wip) {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.ENABLED_WIP);
-				} else {
-					handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.DISABLED_WIP);
-				}
+				getMessageProvider().sendMessage(player, wip ? Messages.Editor.ENABLED_WIP : Messages.Editor.DISABLED_WIP);
 			}
-			e.setCancelled(true);
-		} else if (title.equals(handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.BORDER_TITLE, locale))) {
-			if (EditorItems.INITIAL_BORDER_MAP.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setBorderTargetType(false);
-			} else if (EditorItems.DEATHMATCH_BORDER_SWORD.isSimilar(handler.getHandler(), locale, item)) {
-				scene.setBorderTargetType(true);
-			} else if (EditorItems.HIDE_BORDER_BARRIER.isSimilar(handler.getHandler(), locale, item)) {
-				scene.hideBorder();
-			} else {
-				if (item.hasItemMeta()) {
-					if (item.getItemMeta().hasDisplayName()) {
-						scene.setBorderDeathmatchTarget(item.getItemMeta().getDisplayName());
+			case SET_INITIAL_BORDER -> scene.setBorderTargetType(false);
+			case SET_DEATHMATCH_BORDER -> scene.setBorderTargetType(true);
+			case SET_HIDE_BORDER -> scene.hideBorder();
+			case ENABLED_DEFAULT_ITEMSET, DISABLED_DEFAULT_ITEMSET, ENABLED_ITEMSET, DISABLED_ITEMSET -> {
+				String blockLocationString = EditorItems.getTemplateId(plugin, item);
+				if (blockLocationString != null) {
+					BlockLocation location = new BlockLocation(blockLocationString);
+
+					String name = item.getItemMeta().getDisplayName();
+					String locale = player.getLocale();
+
+					switch (model) {
+						case ENABLED_DEFAULT_ITEMSET -> {
+							i.setItem(e.getSlot(), EditorItems.DISABLED_DEFAULT_ITEMSET.getTemplatedItem(plugin, blockLocationString, name, locale));
+							scene.getGameConfiguration().removeChestItemSet(location, name);
+						}
+						case DISABLED_DEFAULT_ITEMSET -> {
+							i.setItem(e.getSlot(), EditorItems.ENABLED_DEFAULT_ITEMSET.getTemplatedItem(plugin, blockLocationString, name, locale));
+							scene.getGameConfiguration().addChestItemSet(location, name);
+						}
+						case ENABLED_ITEMSET -> {
+							i.setItem(e.getSlot(), EditorItems.DISABLED_ITEMSET.getTemplatedItem(plugin, blockLocationString, name, locale));
+							scene.getGameConfiguration().removeChestItemSet(location, name);
+						}
+						case DISABLED_ITEMSET -> {
+							i.setItem(e.getSlot(), EditorItems.ENABLED_ITEMSET.getTemplatedItem(plugin, blockLocationString, name, locale));
+							scene.getGameConfiguration().addChestItemSet(location, name);
+						}
 					}
+					getMessageProvider().sendMessage(player, Messages.Editor.MODIFIED_ITEMS);
 				}
 			}
-			e.setCancelled(true);
-			player.closeInventory();
+			case SELECT_BORDER, SELECTED_BORDER -> {
+				String location = EditorItems.getTemplateId(plugin, item);
+				scene.setBorderDeathmatchTarget(location);
+				player.closeInventory();
+			}
+			case ITEMSET -> handler.openItemSetCustomiseInventory(player, EditorItems.getTemplateId(plugin, item));
 		}
+		e.setCancelled(true);
 	}
 	
 	@EventHandler
@@ -313,13 +292,13 @@ public class EditorListener implements Listener {
 		}
 
 		Inventory i = e.getInventory();
-		String expectedTitleSubstr = handler.getHandler().getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), "");
+		String expectedTitleSubstr = getMessageProvider().compileMessage(Messages.Editor.Inventory.ITEM_SET_TITLE, player.getLocale(), "");
 		if (e.getView().getTitle().startsWith(expectedTitleSubstr)) {
 			String set = e.getView().getTitle().substring(expectedTitleSubstr.length());
 			if (scene.replaceItemSet(i.getContents(), set)) {
-				handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.UPDATED_ITEM_SET, set);
+				getMessageProvider().sendMessage(player, Messages.Editor.UPDATED_ITEM_SET, set);
 			} else {
-				handler.getHandler().getMessageProvider().sendMessage(player, Messages.Editor.UPDATE_ITEM_SET_ERR, set);
+				getMessageProvider().sendMessage(player, Messages.Editor.UPDATE_ITEM_SET_ERR, set);
 			}
 		}
 	}

@@ -26,12 +26,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameConfigurationWrapper {
 
@@ -195,6 +195,19 @@ public class GameConfigurationWrapper {
         return spawnLocs;
     }
 
+    public boolean isSpawnLocation(BlockLocation location) {
+        //return spawnLocs.stream().anyMatch(l -> l.equals(location));
+        return spawnLocs.contains(location);
+    }
+
+    public boolean removeSpawnLocation(BlockLocation location) {
+        return spawnLocs.removeIf(l -> l.equals(location));
+    }
+
+    public void addSpawnLocation(BlockLocation location) {
+        spawnLocs.add(location);
+    }
+
     public boolean getDoChestPrefilling() {
         return gameConfiguration.preFillChests;
     }
@@ -335,8 +348,54 @@ public class GameConfigurationWrapper {
         return gameConfiguration.chestLocations;
     }
 
-    public Optional<ChestConfiguration> getChestAt(Location location) {
-        return getChests().stream().filter(co -> co.location.compareTo(location)).findFirst();
+    public Optional<ChestConfiguration> getChestAt(BlockLocation location) {
+        return gameConfiguration.chestLocations.stream().filter(co -> co.location.equals(location)).findFirst();
+    }
+
+    public void addItemChest(BlockLocation location, boolean addDefaultItemSet) {
+        ChestConfiguration co = new ChestConfiguration();
+        co.location = location;
+        co.itemSets = new ArrayList<>();
+        if (addDefaultItemSet) {
+            co.itemSets.add(getDefaultItemSet().name);
+        }
+
+        gameConfiguration.chestLocations.add(co);
+    }
+
+    public boolean removeChestAt(BlockLocation location) {
+        return gameConfiguration.chestLocations.removeIf(co -> co.location.equals(location));
+    }
+
+    public List<String> getChestItemSetNames(BlockLocation location) {
+        return getChestAt(location).map(co -> co.itemSets).orElse(null);
+    }
+
+    public Collection<ItemSet> getChestItemSets(BlockLocation location) {
+        List<String> itemSetNames = getChestItemSetNames(location);
+        if (itemSetNames == null) {
+            return null;
+        }
+
+        return getItemSets().stream().filter(itemSet -> itemSetNames.contains(itemSet.name)).collect(Collectors.toSet());
+    }
+
+    public boolean addChestItemSet(BlockLocation location, String itemSet) {
+        Optional<ChestConfiguration> co = getChestAt(location);
+        if (co.isPresent()) {
+            co.get().itemSets.add(itemSet);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeChestItemSet(BlockLocation location, String itemSet) {
+        Optional<ChestConfiguration> co = getChestAt(location);
+        if (co.isPresent()) {
+            co.get().itemSets.remove(itemSet);
+            return true;
+        }
+        return false;
     }
 
     public List<ItemSet> getItemSets() {
@@ -351,12 +410,38 @@ public class GameConfigurationWrapper {
         return gameConfiguration.itemSets.get(defaultSetIndex);
     }
 
-    public void addItemSet(ItemSet itemSet, boolean makeDefault) {
+    public boolean addItemSet(ItemSet itemSet, boolean makeDefault) {
+        if (itemSet.name == null || getItemSetByName(itemSet.name) != null) {
+            return false;
+        }
+
         gameConfiguration.itemSets.add(itemSet);
 
         if (makeDefault) {
             defaultSetIndex = gameConfiguration.itemSets.size() - 1;
         }
+        return true;
+    }
+
+    public boolean renameItemSet(String from, String to) {
+        ItemSet src = getItemSetByName(from);
+        ItemSet dst = getItemSetByName(to);
+        if (src == null || dst != null) {
+            return false;
+        }
+        src.name = to;
+        for (ChestConfiguration co : gameConfiguration.chestLocations) {
+            if (co.itemSets.remove(from)) {
+                co.itemSets.add(to);
+            }
+        }
+        for (LootDropConfiguration ldc : gameConfiguration.lootDropLocations) {
+            if (ldc.itemSets.remove(from)) {
+                ldc.itemSets.add(to);
+            }
+        }
+
+        return true;
     }
 
     public ItemSet getItemSetByName(String name) {

@@ -18,8 +18,6 @@
 
 package com.backwardsnode.survivalgames.editor;
 
-import com.google.common.base.Preconditions;
-
 public abstract class ResolvingPredicate<S, T> {
 
     public static final ResolvingPredicate<String, String> STRING_PREDICATE = new ResolvingPredicate<>() {
@@ -62,7 +60,7 @@ public abstract class ResolvingPredicate<S, T> {
     };
 
     public PredicateResult<S, T> validate(S object) {
-        Preconditions.checkNotNull(object);
+        assert object != null;
         T value = convert(object);
         if (value != null) {
             return new PredicateResult<>(true, object, value);

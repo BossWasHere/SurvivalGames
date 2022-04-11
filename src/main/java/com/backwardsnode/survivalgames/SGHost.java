@@ -257,7 +257,10 @@ public class SGHost {
             controller = gameInstance.getBorderController();
         }
         if (controller == null) {
-            controller = editorManager.getBorderFor(player);
+            Scene scene = editorManager.getEditor(player);
+            if (scene != null) {
+                controller = scene.getBorderController();
+            }
         }
 
         return controller;

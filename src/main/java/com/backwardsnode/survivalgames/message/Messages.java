@@ -239,6 +239,7 @@ public class Messages {
         public static final PluginMessage REMOVED_ITEM_SET = new PluginMessage("editor.removeditemset");
         public static final PluginMessage RENAME_ITEM_SET_REQUEST = new PluginMessage("editor.renameitemset");
         public static final PluginMessage RENAMED_ITEM_SET = new PluginMessage("editor.setitemsetname");
+        public static final PluginMessage RENAME_ITEM_SET_ERR = new PluginMessage("editor.setitemsetnameerr");
         public static final PluginMessage UPDATED_ITEM_SET = new PluginMessage("editor.updateditems");
         public static final PluginMessage UPDATE_ITEM_SET_ERR = new PluginMessage("editor.updateditemserr");
 
@@ -287,12 +288,6 @@ public class Messages {
         public static final PluginMessage LOOT_DROPPING = new PluginMessage("game.lootdropping");
         public static final PluginMessage WON = new PluginMessage("game.won");
         public static final PluginMessage REWARDS_OVERFLOW = new PluginMessage("game.rewardsoverflow");
-    }
-
-    public static final class Misc {
-
-        public static final PluginMessage BORDER_SELECT_LORE = new PluginMessage("item.borderselect.lore", false);
-
     }
 
     public static final class Plugin {

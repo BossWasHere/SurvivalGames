@@ -23,6 +23,8 @@ import com.backwardsnode.survivalgames.database.DataStoreSource;
 import com.backwardsnode.survivalgames.dependency.DependencyManager;
 import com.backwardsnode.survivalgames.game.PlayerCacheSettings;
 import com.backwardsnode.survivalgames.message.MessageProvider;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -33,8 +35,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 
-public final class Plugin extends JavaPlugin {
-	
+public final class Plugin extends JavaPlugin implements PluginAccess {
+
+	private static Plugin currentInstance;
+
 	public static boolean TEST = false;
 
 	public static final boolean DEBUG = false;
@@ -75,6 +79,7 @@ public final class Plugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		getLogger().info("BackwardsNode's Survival Games (C) 2019-2022 BossWasHere/BackwardsNode | Version: " + getDescription().getVersion());
+		currentInstance = this;
 
 		dependencyManager.loadPlugins();
 
@@ -111,46 +116,57 @@ public final class Plugin extends JavaPlugin {
 		dependencyManager.disconnect();
 	}
 
+	@Override
 	public File getBackupFolder() {
 		return new File(getDataFolder(), "backup/");
 	}
 
+	@Override
 	public File getLanguageFolder() {
 		return new File(getDataFolder(), "lang/");
 	}
 
+	@Override
 	public File getLibraryFolder() {
 		return new File(getDataFolder(), "lib/");
 	}
 
+	@Override
 	public File getMapFolder() {
 		return new File(getDataFolder(), "maps/");
 	}
 
+	@Override
 	public CommandRegistry getCommandRegistry() {
 		return commandRegistry;
 	}
 
+	@Override
 	public PluginListener getDefaultListener() {
 		return pluginListener;
 	}
 
+	@Override
 	public DependencyManager getDependencyManager() {
 		return dependencyManager;
 	}
 
+	@Override
 	public MessageProvider getMessageProvider() {
 		return messageProvider;
 	}
 
+	@Override
 	public PlayerCacheSettings getCacheSettings() {
 		return cacheSettings;
 	}
 
+	@Override
 	public SGHost getHost() {
 		return sgHost;
 	}
 
+	@Override
 	public boolean extractFileSafe(Path destination, String internalPath, String errorMsg) {
 		try {
 			extractFile(destination, internalPath);
@@ -161,9 +177,17 @@ public final class Plugin extends JavaPlugin {
 		return false;
 	}
 
+	@Override
 	public void extractFile(Path destination, String internalPath, CopyOption... copyOptions) throws IOException {
 		InputStream is = this.getClass().getResourceAsStream("/" + internalPath);
 		assert is != null;
 		Files.copy(is, destination, copyOptions);
+	}
+
+	public static NamespacedKey getLiveNamespacedKey(String key) {
+		if (currentInstance == null) {
+			currentInstance = (Plugin) Bukkit.getPluginManager().getPlugin("SurvivalGames");
+		}
+		return new NamespacedKey(currentInstance, key);
 	}
 }
